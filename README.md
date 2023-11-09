@@ -1,1 +1,33 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # lifetableprojection
+
+<!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+<!-- badges: end -->
+
+This package aims to create a shiny webapp to make lifetable projections
+available to users which are not familiar with R. The web application
+allows to upload data, validate it and conduct lifetable projections.
+
+## Installation
+
+You can install the development version of lifetableprojection from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("cimentadaj/lifetableprojection")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+library(lifetableprojection)
+run_app()
+```

@@ -1,0 +1,25 @@
+Package: lifetableprojection
+Title: A Shiny Dashboard for Life Table Projections
+Version: 0.0.0.9000
+Authors@R:
+    person(given = "Jorge",
+           family = "Cimentada",
+           role = c("aut", "cre"),
+           email = "cimentadaj@gmail.com")
+Description: This package aims to create a shiny webapp to make lifetable projections available to users which are not familiar with R. The web application allows to upload data, validate it and conduct lifetable projections.
+License: MIT + file LICENSE
+Imports:
+    config,
+    golem,
+    magrittr,
+    shiny,
+    shiny.semantic,
+    shinyjs,
+    untheme
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Language: en-US
