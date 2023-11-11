@@ -12,6 +12,8 @@ Imports:
     config,
     golem,
     magrittr,
+    ODAPbackend (>= 0.0.13),
+    rhandsontable,
     shiny,
     shiny.semantic,
     shinyjs,
@@ -23,3 +25,5 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Language: en-US
+Remotes:  
+    timriffe/ODAPbackend

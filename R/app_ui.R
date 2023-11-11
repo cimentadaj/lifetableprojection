@@ -30,18 +30,27 @@ create_field_set <- function(icon_name, label_text, input_id, input_choices, inp
 #' @noRd
 input_page <- function() {
   div(
-    create_field_set(
-      "globe",
-      "Select a country",
-      "wpp_country",
-      c("Spain", "Netherlands"),
-      NULL
-    ),
+    class = "ui form",
+    # Basic Inputs
+    create_field_set("hashtag", "OAnew", "input_oanew", c(100), 100),
+    create_field_set("hashtag", "Age Output", "input_age_out", c("single", "range"), "single"),
+    create_field_set("hashtag", "Sex", "input_sex", c("m", "f"), "m"),
+
+    # Advanced Inputs - Initially Hidden
     div(
-      class = "two fields",
-      create_field_set("calendar", "Starting Year", "wpp_starting_year", 2023:2099, 2023),
-      create_field_set("calendar", "Ending Year", "wpp_ending_year", 2024:2100, 2024)
-    )
+      id = "advanced_inputs",
+      style = "display: none;",
+      create_field_set("hashtag", "Extrap From", "input_extrapFrom", c(80), 80),
+      create_field_set("hashtag", "Extrap Fit", "input_extrapFit", c(60, 65, 70, 75, 80), 60),
+      create_field_set("hashtag", "Extrap Law", "input_extrapLaw", c("kannisto"), "kannisto"),
+      create_field_set("hashtag", "Radix", "input_radix", c(1e+05), 1e+05),
+      create_field_set("hashtag", "SRB", "input_srb", c(1.05), 1.05),
+      create_field_set("hashtag", "a0 Rule", "input_a0rule", c("ak", "other"), "ak"),
+      create_field_set("hashtag", "Ax Method", "input_axmethod", c("un", "other"), "un")
+    ),
+
+    # Dropdown to toggle Advanced Inputs
+    action_button("toggle_advanced", "Show Advanced Options", class = "ui button")
   )
 }
 
@@ -49,10 +58,11 @@ input_page <- function() {
 #'
 #' @param request Internal parameter for `{shiny}`.
 #' @return A shiny semantic UI for the application.
-#' @importFrom shiny div HTML h1 p uiOutput
-#' @importFrom shinyjs useShinyjs
-#' @importFrom shiny.semantic main_panel action_button selectInput file_input
+#' @importFrom shiny div HTML h1 p uiOutput br plotOutput
+#' @importFrom shinyjs useShinyjs hidden
+#' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout
 #' @importFrom untheme fluidUnTheme
+#' @importFrom rhandsontable rHandsontableOutput
 #' @noRd
 app_ui <- function(request) {
   fluidUnTheme(
@@ -70,6 +80,10 @@ app_ui <- function(request) {
                 position: absolute;
                 left: 50%;
                 transform: translateX(-50%);
+            }
+            .semi-centered-two {
+                position: absolute;
+                left: 30%;
             }
             .info-box {
                 border: 1px solid #ddd;
@@ -103,13 +117,10 @@ app_ui <- function(request) {
                 background-color: #d4edda; /* Light green for success */
                 border-color: #c3e6cb;
             }
-            .emoji {
-                vertical-align: middle;
-                font-size: 40px; /* Adjusted emoji size */
-            }
         "))
       ),
       div(
+        id = "landing_page",
         class = "centered",
         tags$div(
           style = "text-align: left;",
@@ -123,11 +134,37 @@ app_ui <- function(request) {
         div(
           class = "semi-centered",
           file_input("file1", ""),
+          rHandsontableOutput("data_table"),
+          br(),
           div(
             class = "validation-results",
             uiOutput("validation_results")
+          ),
+          br(),
+          div(class = "semi-centered-two", uiOutput("forward_step2"))
+        )
+      ),
+      tags$head(
+        tags$script(HTML("
+          $(document).on('click', '#toggle_advanced', function() {
+            $('#advanced_inputs').slideToggle();
+          });
+        "))
+      ),
+      hidden(
+        div(
+          id = "step_input",
+          div(
+            style = "display: flex; gap: 10px;",
+            action_button("back_to_landing", "Back", class = "ui grey button"),
+            action_button("calculate_lt", "Calculate", class = "ui blue button")
+          ),
+          br(),
+          sidebar_layout(
+            input_page(),
+            plotOutput("lt_plt")
           )
-        ),
+        )
       ),
       width = NULL
     )
