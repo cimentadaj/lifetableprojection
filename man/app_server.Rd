@@ -2,14 +2,17 @@
 % Please edit documentation in R/app_server.R
 \name{app_server}
 \alias{app_server}
-\title{The Application Server-Side Logic}
+\title{Shiny Server Function}
 \usage{
 app_server(input, output, session)
 }
 \arguments{
-\item{input, output, session}{Internal parameters for `{shiny}`.}
+\item{input}{Shiny input object.}
+
+\item{output}{Shiny output object.}
+
+\item{session}{Shiny session object.}
 }
 \description{
-This function defines the server logic for the Shiny application,
-managing data processing, UI rendering, and routing.
+Defines the server logic for the Shiny application, managing data processing, UI rendering, and user interactions.
 }

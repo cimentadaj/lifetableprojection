@@ -1,58 +1,48 @@
-#' Create a field set with a given icon, label, and selectInput
-#'
-#' @param icon_name Name of the icon.
-#' @param label_text Text for the label.
-#' @param input_id ID for the select input.
-#' @param input_choices Choices for the select input.
-#' @param input_selected Selected choice for the select input.
-#' @importFrom shiny.semantic icon label selectInput
-#' @noRd
-create_field_set <- function(icon_name, label_text, input_id, input_choices, input_selected) {
-  div(
-    class = "field",
-    icon(icon_name),
-    label(
-      class = "main label",
-      label_text
-    ),
-    selectInput(
-      input_id,
-      NULL,
-      choices = input_choices,
-      selected = input_selected
-    )
-  )
-}
-
 #' The application User-Interface for input page
 #'
 #' @return A div containing the input page UI elements.
+#' @importFrom untheme create_field_set
+#' @importFrom shiny downloadButton
 #' @noRd
 input_page <- function() {
   div(
     class = "ui form",
-    # Basic Inputs
-    create_field_set("hashtag", "OAnew", "input_oanew", c(100), 100),
-    create_field_set("hashtag", "Age Output", "input_age_out", c("single", "range"), "single"),
+    # Basic Inputs as in initial setup
+    create_field_set("hashtag", "Open Age Group", "input_oanew", seq(60, 100, by = 5), 100),
+    create_field_set("hashtag", "Single / Abridged Ages", "input_age_out", c("single", "abridged"), "single"),
     create_field_set("hashtag", "Sex", "input_sex", c("m", "f"), "m"),
 
     # Advanced Inputs - Initially Hidden
     div(
       id = "advanced_inputs",
       style = "display: none;",
-      create_field_set("hashtag", "Extrap From", "input_extrapFrom", c(80), 80),
-      create_field_set("hashtag", "Extrap Fit", "input_extrapFit", c(60, 65, 70, 75, 80), 60),
-      create_field_set("hashtag", "Extrap Law", "input_extrapLaw", c("kannisto"), "kannisto"),
-      create_field_set("hashtag", "Radix", "input_radix", c(1e+05), 1e+05),
-      create_field_set("hashtag", "SRB", "input_srb", c(1.05), 1.05),
-      create_field_set("hashtag", "a0 Rule", "input_a0rule", c("ak", "other"), "ak"),
-      create_field_set("hashtag", "Ax Method", "input_axmethod", c("un", "other"), "un")
+      div(
+        class = "ui two column grid",
+        div(
+          class = "column",
+          create_field_set("hashtag", "Age Extrapolate Mortality", "input_extrapFrom", input_selected = 80, numeric_input = TRUE),
+          create_field_set("hashtag", "Ages to fit in model", "input_extrapFit", c(60, 65, 70, 75, 80), 60),
+          create_field_set("hashtag", "Extrapolation Law", "input_extrapLaw", c("Kannisto", "Kannisto_Makeham", "Makeham", "Gompertz", "GGompertz", "Beard", "Beard_Makeham", "Quadratic"), "Kannisto"),
+          create_field_set("hashtag", "Lifetable Radix", "input_radix", input_selected = 100000, numeric_input = TRUE)
+        ),
+        div(
+          class = "column",
+          create_field_set("hashtag", "Sex Ratio at Birth", "input_srb", input_selected = 1.05, numeric_input = TRUE),
+          create_field_set("hashtag", "a0 Rule", "input_a0rule", c("ak", "cd"), "ak"),
+          create_field_set("hashtag", "Ax Method", "input_axmethod", c("un", "pas"), "un")
+        )
+      )
     ),
 
     # Dropdown to toggle Advanced Inputs
-    action_button("toggle_advanced", "Show Advanced Options", class = "ui button")
+    action_button("toggle_advanced", "Show Advanced Options", class = "ui button"),
+    br(),
+    br(),
+    downloadButton("downloadPlot", "Download Plot"),
+    downloadButton("downloadData", "Download Data")
   )
 }
+
 
 #' The application User-Interface
 #'
@@ -60,8 +50,10 @@ input_page <- function() {
 #' @return A shiny semantic UI for the application.
 #' @importFrom shiny div HTML h1 p uiOutput br plotOutput
 #' @importFrom shinyjs useShinyjs hidden
-#' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout
+#' @importFrom plotly plotlyOutput
+#' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout sidebar_panel tabset
 #' @importFrom untheme fluidUnTheme
+#' @importFrom shinycssloaders withSpinner
 #' @importFrom rhandsontable rHandsontableOutput
 #' @noRd
 app_ui <- function(request) {
@@ -161,8 +153,10 @@ app_ui <- function(request) {
           ),
           br(),
           sidebar_layout(
-            input_page(),
-            plotOutput("lt_plt")
+            list(children = div(input_page()), width = 1.3),
+            main_panel(
+              uiOutput("tabs")
+            )
           )
         )
       ),

@@ -10,12 +10,15 @@ Description: This package aims to create a shiny webapp to make lifetable projec
 License: MIT + file LICENSE
 Imports:
     config,
+    ggplot2,
     golem,
     magrittr,
     ODAPbackend (>= 0.0.13),
+    plotly,
     rhandsontable,
     shiny,
     shiny.semantic,
+    shinycssloaders,
     shinyjs,
     untheme
 Encoding: UTF-8
@@ -25,5 +28,5 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Language: en-US
-Remotes:  
+Remotes: 
     timriffe/ODAPbackend
