@@ -38,8 +38,7 @@ input_page <- function() {
     action_button("toggle_advanced", "Show Advanced Options", class = "ui button"),
     br(),
     br(),
-    downloadButton("downloadPlot", "Download Plot"),
-    downloadButton("downloadData", "Download Data")
+    uiOutput("download_buttons")
   )
 }
 
@@ -64,7 +63,7 @@ app_ui <- function(request) {
         tags$style(HTML("
             .centered {
                 position: absolute;
-                top: 30%;
+                top: 35%;
                 left: 50%;
                 transform: translate(-50%, -50%);
             }
@@ -117,16 +116,24 @@ app_ui <- function(request) {
         tags$div(
           style = "text-align: left;",
           class = "info-box",
-          h1("Welcome to the Data Uploader! \U0001F680"),
-          p("Upload your CSV file with the button below. Make sure it follows the format:"),
-          p("\U0001F4C4 Headers on the first row."),
-          p("\U0001F522 Numeric and text fields properly arranged."),
-          p("If there are any issues with your file, we'll let you know!")
+          h1("\xF0\x9F\x9A\x80 Welcome to the Lifetable Projection App! \xF0\x9F\x8E\xAF"),
+          p("\xF0\x9F\x93\x88 Transform your data into insightful forecasts. Begin by uploading your CSV file."),
+          p("\xF0\x9F\xA7\x90 Not sure about your file? Here's what we're looking for:"),
+          br(),
+          rHandsontableOutput("data_table"),
+          br(),
+          p("\xF0\x9F\x94\x8D Our uploader will check for:"),
+          tags$ul(
+              tags$li("Column names should be the same as the example above"),
+              tags$li("Same number of columns"),
+            ),
+          br(),
+          strong(h3("\xF0\x9F\x93\xA4 Ready to get started? Click 'Browse...' to select your file"))
         ),
         div(
           class = "semi-centered",
+          br(),
           file_input("file1", ""),
-          rHandsontableOutput("data_table"),
           br(),
           div(
             class = "validation-results",

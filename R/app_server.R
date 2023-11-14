@@ -104,26 +104,26 @@ setupDownloadHandlers <- function(output, plots, input) {
 #' @importFrom ODAPbackend lt_flexible
 #' @export
 calculateLifeTable <- function(data_in, input) {
-    req(input$calculate_lt) # Trigger recalculation when button is clicked
-    input_extrapfrom <- as.numeric(input$input_extrapFrom)
+  req(input$calculate_lt) # Trigger recalculation when button is clicked
+  input_extrapfrom <- as.numeric(input$input_extrapFrom)
 
-    lt_res <- lt_flexible(
-      Deaths = data_in$Deaths,
-      Exposures = data_in$Exposures,
-      Age = data_in$Age,
-      OAnew = as.numeric(input$input_oanew),
-      age_out = input$input_age_out,
-      extrapFrom = input_extrapfrom,
-      extrapFit = data_in$Age[data_in$Age >= 60],
-      extrapLaw = input$input_extrapLaw,
-      radix = as.numeric(input$input_radix),
-      SRB = as.numeric(input$input_srb),
-      a0rule = input$input_a0rule,
-      axmethod = input$input_axmethod,
-      Sex = input$input_sex
-    )
+  lt_res <- lt_flexible(
+    Deaths = data_in$Deaths,
+    Exposures = data_in$Exposures,
+    Age = data_in$Age,
+    OAnew = as.numeric(input$input_oanew),
+    age_out = input$input_age_out,
+    extrapFrom = input_extrapfrom,
+    extrapFit = data_in$Age[data_in$Age >= 60],
+    extrapLaw = input$input_extrapLaw,
+    radix = as.numeric(input$input_radix),
+    SRB = as.numeric(input$input_srb),
+    a0rule = input$input_a0rule,
+    axmethod = input$input_axmethod,
+    Sex = input$input_sex
+  )
 
-    list(lt = lt_res, extrapfrom = input_extrapfrom)
+  list(lt = lt_res, extrapfrom = input_extrapfrom)
 }
 
 #' Generate Plotly Plot
@@ -147,7 +147,7 @@ generatePlot <- function(data, results) {
 #' @param input Shiny input object.
 #' @param output Shiny output object.
 #' @param session Shiny session object.
-#' @importFrom shiny renderUI observeEvent eventReactive actionButton reactive
+#' @importFrom shiny renderUI observeEvent eventReactive actionButton reactive reactiveVal
 #' @importFrom shiny.semantic tabset
 #' @importFrom shinyjs show hide
 #' @importFrom plotly plotlyOutput renderPlotly
@@ -155,10 +155,16 @@ generatePlot <- function(data, results) {
 #' @importFrom shinycssloaders withSpinner
 #' @export
 app_server <- function(input, output, session) {
+  add_resource_path(
+    "www",
+    app_sys("app/www")
+  )
+
   data_in <- reactive(readData(input))
   check_results <- reactive(validateData(data_in()))
 
-  output$data_table <- renderRHandsontable(renderDataTable(data_in()))
+  dt_ex <- system.file("data/abridged_data.csv", package = "lifetableprojection")
+  output$data_table <- renderRHandsontable(renderDataTable(read.csv(dt_ex)))
   output$validation_results <- renderUI(displayValidationResults(check_results()))
 
   output$forward_step2 <- renderUI({
@@ -184,20 +190,65 @@ app_server <- function(input, output, session) {
     generatePlot(data_in(), data_out())
   })
 
-  plots <- list("Mx" = lt_plt, "Yx" = lt_plt)
+  plots <- list("Mortality Rate Comparison" = lt_plt)
+
+  plotRendered <- reactiveVal(FALSE)
+
+  observeEvent(input$calculate_lt, {
+    plotRendered(TRUE)
+  })
+
+  output$download_buttons <- renderUI({
+    if (plotRendered()) {
+      div(
+        downloadButton("downloadPlot", "Download Plot"),
+        downloadButton("downloadData", "Download Data")
+      )
+    }
+  })
 
   output$tabs <- renderUI({
     tabset(
       id = "tabset",
-      lapply(names(plots), function(p) {
-        list(menu = p, id = p, content = withSpinner(plotlyOutput(p, height = "600px")))
-      })
+      tabs = lapply(
+        names(plots),
+        function(p) {
+          list(
+            menu = p,
+            id = p,
+            content = list(
+              if (!plotRendered()) {
+                uiOutput(paste0("placeholder_", to_snake(p)))
+              } else {
+                withSpinner(
+                  plotlyOutput(
+                    paste0("plot_", to_snake(p)),
+                    height = "600px"
+                  )
+                )
+              }
+            )
+          )
+        }
+      )
     )
   })
 
-  lapply(names(plots), function(p) {
-    output[[p]] <- renderPlotly(plots[[p]]()$plotly)
-  })
+  for (p in names(plots)) {
+    p_clean <- to_snake(p)
+    output[[paste0("placeholder_", p_clean)]] <- renderUI({
+      tags$img(
+        src = "www/placeholder_plot.png",
+        height = "600px",
+        width = "100%"
+      )
+    })
+
+    output[[paste0("plot_", p_clean)]] <- renderPlotly(plots[[p]]()$plotly)
+  }
 
   setupDownloadHandlers(output, plots, input)
 }
+
+
+to_snake <- function(x) tolower(gsub(" ", "", x))
