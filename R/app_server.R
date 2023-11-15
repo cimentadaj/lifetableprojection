@@ -1,3 +1,5 @@
+to_snake <- function(x) tolower(gsub(" ", "", x))
+
 #' Read Data from Uploaded File
 #'
 #' Reads and returns data from the uploaded CSV file in Shiny.
@@ -152,7 +154,12 @@ generatePlot <- function(data, results) {
 #' @importFrom shinyjs show hide
 #' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom rhandsontable renderRHandsontable
+#' @importFrom ggplot2 element_blank theme
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom shinyalert shinyalert
+#' @importFrom stats reshape
+#' @importFrom DT datatable renderDT dataTableOutput
+#' @importFrom ODAPbackend plot_initial_data check_heaping_general
 #' @export
 app_server <- function(input, output, session) {
   add_resource_path(
@@ -170,8 +177,114 @@ app_server <- function(input, output, session) {
   output$forward_step2 <- renderUI({
     req(input$file1)
     if (all(check_results()$pass == "Pass")) {
-      actionButton("forward_step", "Continue", class = "ui blue button")
+      div(
+        actionButton("diagnostics", "Diagnostics", class = "ui blue button"),
+        actionButton("forward_step", "Continue", class = "ui blue button")
+      )
     }
+  })
+
+  diagnostic_plt <- reactive({
+    # TODO
+    library(dplyr)
+    plts <- plot_initial_data(data_in())
+    names(plts) <- to_snake(names(plts))
+    plts
+  })
+
+  output$diag_exposures <- renderPlotly({
+    plt <-
+      diagnostic_plt()$exposures +
+      theme_minimal(base_size = 16) +
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
+      )
+
+    ggplotly(plt)
+  })
+
+  output$diag_deaths <- renderPlotly({
+    plt <-
+      diagnostic_plt()$deaths +
+      theme_minimal(base_size = 16) +
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()
+      )
+
+    ggplotly(plt)
+  })
+
+  output$diag_empirical_mx <- renderPlotly({
+    plt <-
+      diagnostic_plt()$`empiricalmx` +
+      theme_minimal(base_size = 16)
+
+    ggplotly(plt)
+  })
+
+  output$table <- renderDT({
+    heaping_exposure <- check_heaping_general(data_in(), "Exposures")
+    heaping_deaths <- check_heaping_general(data_in(), "Deaths")
+
+    heaping_exposure$Type <- "Exposures"
+    heaping_deaths$Type <- "Deaths"
+
+    heaping_res <- rbind(heaping_exposure, heaping_deaths)
+    heaping_res$result <- round(heaping_res$result, 2)
+
+    wide_data <- reshape(
+      heaping_res,
+      timevar = "Type",
+      idvar = "method",
+      direction = "wide"
+    )
+
+    wide_data$method <- toTitleCase(wide_data$method)
+
+    names(wide_data) <- toTitleCase(gsub("result.", "", names(wide_data)))
+
+    datatable(
+      wide_data,
+      rownames = FALSE,
+      options = list(paging = FALSE, searching = FALSE, info = FALSE)
+    )
+    }, server = FALSE
+  )
+
+  observeEvent(input$diagnostics, {
+    myContent <- div(
+      id = "content-wrapper",
+      style = "display: flex; flex-direction: row; align-items: flex-start;",
+      div(
+        class = "plot-container",
+        style = "width: 55%;",
+        tabset(
+          list(
+            list(
+              menu = "Exposures",
+              content = plotlyOutput("diag_exposures", width = "90%")
+            ),
+            list(
+              menu = "Deaths",
+              content = plotlyOutput("diag_deaths", width = "90%")
+            ),
+            list(
+              menu = "Empirical Mx",
+              content = plotlyOutput("diag_empirical_mx", width = "90%")
+            )
+          )
+        )
+      ),
+      div(
+        style = "width: 45%; padding-left: 20px;",
+        dataTableOutput("table")
+      )
+    )
+
+    # Show the alert with the custom content
+    shinyalert(title = "&#x1F50D Data Diagnostics", html = TRUE, size = "l", text = myContent)
   })
 
   observeEvent(input$forward_step, {
@@ -248,7 +361,5 @@ app_server <- function(input, output, session) {
   }
 
   setupDownloadHandlers(output, plots, input)
+
 }
-
-
-to_snake <- function(x) tolower(gsub(" ", "", x))

@@ -6,8 +6,9 @@
 #' @param data_in A reactive expression or data frame containing the initial data set.
 #' @param data_out A reactive expression or data frame containing the calculated data set, typically the result of some transformation or analysis of 'data_in'.
 #' @return A list containing two elements: 'gg', the ggplot object, and 'plotly', the corresponding interactive Plotly object.
-#' @importFrom ggplot2 ggplot theme_minimal
+#' @importFrom ggplot2 ggplot theme_minimal ggtitle
 #' @importFrom plotly ggplotly
+#' @importFrom tools toTitleCase
 #' @importFrom ODAPbackend plot_compare_rates
 #' @export
 plot_compare_rates_interactive <- function(data_in, data_out) {
@@ -19,7 +20,10 @@ plot_compare_rates_interactive <- function(data_in, data_out) {
       data_out$lt,
       extrapFrom = data_out$extrapfrom
     ) +
-    theme_minimal(base_size = 16)
+    ggtitle(
+      label = "Difference Between Empirical Mx and Extrapolated Values on Log10 Scale"
+    ) +
+    theme_minimal(base_size = 13)
 
   list(gg = plt, plotly = ggplotly(plt))
 }

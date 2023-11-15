@@ -47,7 +47,7 @@ input_page <- function() {
 #'
 #' @param request Internal parameter for `{shiny}`.
 #' @return A shiny semantic UI for the application.
-#' @importFrom shiny div HTML h1 p uiOutput br plotOutput
+#' @importFrom shiny div HTML h1 p uiOutput br plotOutput strong h3
 #' @importFrom shinyjs useShinyjs hidden
 #' @importFrom plotly plotlyOutput
 #' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout sidebar_panel tabset
@@ -74,14 +74,14 @@ app_ui <- function(request) {
             }
             .semi-centered-two {
                 position: absolute;
-                left: 30%;
+                left: 15%;
             }
             .info-box {
                 border: 1px solid #ddd;
                 border-radius: 5px;
                 padding: 20px;
                 margin-bottom: 20px;
-                text-align: center;
+                text-align: left;
                 color: #555;
             }
             .info-box h1 {
@@ -114,19 +114,12 @@ app_ui <- function(request) {
         id = "landing_page",
         class = "centered",
         tags$div(
-          style = "text-align: left;",
           class = "info-box",
           h1("\xF0\x9F\x9A\x80 Welcome to the Lifetable Projection App! \xF0\x9F\x8E\xAF"),
           p("\xF0\x9F\x93\x88 Transform your data into insightful forecasts. Begin by uploading your CSV file."),
           p("\xF0\x9F\xA7\x90 Not sure about your file? Here's what we're looking for:"),
           br(),
           rHandsontableOutput("data_table"),
-          br(),
-          p("\xF0\x9F\x94\x8D Our uploader will check for:"),
-          tags$ul(
-              tags$li("Column names should be the same as the example above"),
-              tags$li("Same number of columns"),
-            ),
           br(),
           strong(h3("\xF0\x9F\x93\xA4 Ready to get started? Click 'Browse...' to select your file"))
         ),

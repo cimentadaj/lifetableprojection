@@ -10,6 +10,7 @@ Description: This package aims to create a shiny webapp to make lifetable projec
 License: MIT + file LICENSE
 Imports:
     config,
+    DT,
     ggplot2,
     golem,
     magrittr,
@@ -18,6 +19,7 @@ Imports:
     rhandsontable,
     shiny,
     shiny.semantic,
+    shinyalert,
     shinycssloaders,
     shinyjs,
     untheme
