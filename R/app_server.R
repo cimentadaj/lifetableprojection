@@ -106,8 +106,12 @@ setupDownloadHandlers <- function(output, plots, input) {
 #' @importFrom ODAPbackend lt_flexible
 #' @export
 calculateLifeTable <- function(data_in, input) {
-  req(input$calculate_lt) # Trigger recalculation when button is clicked
+  req(input$calculate_lt)
   input_extrapfrom <- as.numeric(input$input_extrapFrom)
+
+  begin_age <- which(data_in$Age == input$slider_ages_to_use[1])
+  end_age <- which(data_in$Age == input$slider_ages_to_use[2])
+  ages_to_use <- data_in$Age[begin_age:end_age]
 
   lt_res <- lt_flexible(
     Deaths = data_in$Deaths,
@@ -116,7 +120,7 @@ calculateLifeTable <- function(data_in, input) {
     OAnew = as.numeric(input$input_oanew),
     age_out = input$input_age_out,
     extrapFrom = input_extrapfrom,
-    extrapFit = data_in$Age[data_in$Age >= 60],
+    extrapFit = ages_to_use,
     extrapLaw = input$input_extrapLaw,
     radix = as.numeric(input$input_radix),
     SRB = as.numeric(input$input_srb),
@@ -149,15 +153,15 @@ generatePlot <- function(data, results) {
 #' @param input Shiny input object.
 #' @param output Shiny output object.
 #' @param session Shiny session object.
-#' @importFrom shiny renderUI observeEvent eventReactive actionButton reactive reactiveVal
-#' @importFrom shiny.semantic tabset
+#' @importFrom shiny renderUI observeEvent eventReactive actionButton reactive reactiveVal sliderInput
+#' @importFrom shiny.semantic tabset icon
 #' @importFrom shinyjs show hide
 #' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom rhandsontable renderRHandsontable
 #' @importFrom ggplot2 element_blank theme
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom shinyalert shinyalert
-#' @importFrom stats reshape
+#' @importFrom stats reshape quantile
 #' @importFrom DT datatable renderDT dataTableOutput
 #' @importFrom ODAPbackend plot_initial_data check_heaping_general
 #' @export
@@ -225,32 +229,33 @@ app_server <- function(input, output, session) {
   })
 
   output$table <- renderDT({
-    heaping_exposure <- check_heaping_general(data_in(), "Exposures")
-    heaping_deaths <- check_heaping_general(data_in(), "Deaths")
+      heaping_exposure <- check_heaping_general(data_in(), "Exposures")
+      heaping_deaths <- check_heaping_general(data_in(), "Deaths")
 
-    heaping_exposure$Type <- "Exposures"
-    heaping_deaths$Type <- "Deaths"
+      heaping_exposure$Type <- "Exposures"
+      heaping_deaths$Type <- "Deaths"
 
-    heaping_res <- rbind(heaping_exposure, heaping_deaths)
-    heaping_res$result <- round(heaping_res$result, 2)
+      heaping_res <- rbind(heaping_exposure, heaping_deaths)
+      heaping_res$result <- round(heaping_res$result, 2)
 
-    wide_data <- reshape(
-      heaping_res,
-      timevar = "Type",
-      idvar = "method",
-      direction = "wide"
-    )
+      wide_data <- reshape(
+        heaping_res,
+        timevar = "Type",
+        idvar = "method",
+        direction = "wide"
+      )
 
-    wide_data$method <- toTitleCase(wide_data$method)
+      wide_data$method <- toTitleCase(wide_data$method)
 
-    names(wide_data) <- toTitleCase(gsub("result.", "", names(wide_data)))
+      names(wide_data) <- toTitleCase(gsub("result.", "", names(wide_data)))
 
-    datatable(
-      wide_data,
-      rownames = FALSE,
-      options = list(paging = FALSE, searching = FALSE, info = FALSE)
-    )
-    }, server = FALSE
+      datatable(
+        wide_data,
+        rownames = FALSE,
+        options = list(paging = FALSE, searching = FALSE, info = FALSE)
+      )
+    },
+    server = FALSE
   )
 
   observeEvent(input$diagnostics, {
@@ -320,6 +325,41 @@ app_server <- function(input, output, session) {
     }
   })
 
+  ages_data <- reactive({
+    all_ages <- unique(data_in()$Age)
+    min_age <- if (60 %in% all_ages) 60 else round(quantile(all_ages, .60))
+    step_ages <- diff(all_ages)
+    step_repeat <- which.max(table(step_ages))
+    step_ages <- as.numeric(names(table(step_ages))[step_repeat])
+    list(all_ages = all_ages, min_age_fit = min_age, step_ages = step_ages)
+  })
+
+  output$ages_to_use <- renderUI({
+
+    slider_widget <-
+      sliderInput(
+        "slider_ages_to_use",
+        label = NULL,
+        min = min(ages_data()$all_ages),
+        max = max(ages_data()$all_ages),
+        value = c(ages_data()$min_age_fit, max(ages_data()$all_ages)),
+        step = ages_data()$step_ages
+      )
+
+    print("slider working")
+
+    div(
+      class = "field",
+      icon("hashtag"),
+      shiny.semantic::label(
+        class = "main label",
+        "Ages to include in model fit"
+      ),
+      slider_widget
+    )
+  })
+
+
   output$tabs <- renderUI({
     tabset(
       id = "tabset",
@@ -361,5 +401,4 @@ app_server <- function(input, output, session) {
   }
 
   setupDownloadHandlers(output, plots, input)
-
 }

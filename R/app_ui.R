@@ -1,3 +1,14 @@
+extrap_laws <- c(
+  "Kannisto",
+  "Kannisto_Makeham",
+  "Makeham",
+  "Gompertz",
+  "GGompertz",
+  "Beard",
+  "Beard_Makeham",
+  "Quadratic"
+)
+
 #' The application User-Interface for input page
 #'
 #' @return A div containing the input page UI elements.
@@ -11,7 +22,8 @@ input_page <- function() {
     create_field_set("hashtag", "Open Age Group", "input_oanew", seq(60, 100, by = 5), 100),
     create_field_set("hashtag", "Single / Abridged Ages", "input_age_out", c("single", "abridged"), "single"),
     create_field_set("hashtag", "Sex", "input_sex", c("m", "f"), "m"),
-
+    uiOutput("ages_to_use"),
+    br(),
     # Advanced Inputs - Initially Hidden
     div(
       id = "advanced_inputs",
@@ -21,8 +33,7 @@ input_page <- function() {
         div(
           class = "column",
           create_field_set("hashtag", "Age Extrapolate Mortality", "input_extrapFrom", input_selected = 80, numeric_input = TRUE),
-          create_field_set("hashtag", "Ages to fit in model", "input_extrapFit", c(60, 65, 70, 75, 80), 60),
-          create_field_set("hashtag", "Extrapolation Law", "input_extrapLaw", c("Kannisto", "Kannisto_Makeham", "Makeham", "Gompertz", "GGompertz", "Beard", "Beard_Makeham", "Quadratic"), "Kannisto"),
+          create_field_set("hashtag", "Extrapolation Law", "input_extrapLaw", extrap_laws, extrap_laws[1]),
           create_field_set("hashtag", "Lifetable Radix", "input_radix", input_selected = 100000, numeric_input = TRUE)
         ),
         div(
@@ -33,7 +44,6 @@ input_page <- function() {
         )
       )
     ),
-
     # Dropdown to toggle Advanced Inputs
     action_button("toggle_advanced", "Show Advanced Options", class = "ui button"),
     br(),
