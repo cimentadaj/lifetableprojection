@@ -125,7 +125,7 @@ app_ui <- function(request) {
         class = "centered",
         tags$div(
           class = "info-box",
-          h1("\xF0\x9F\x9A\x80 Welcome to the Lifetable Projection App! \xF0\x9F\x8E\xAF"),
+          h1("\xF0\x9F\x9A\x80 Welcome to the Online Demographic Analysis Platform! \xF0\x9F\x8E\xAF"),
           p("\xF0\x9F\x93\x88 Transform your data into insightful forecasts. Begin by uploading your CSV file."),
           p("\xF0\x9F\xA7\x90 Not sure about your file? Here's what we're looking for:"),
           br(),

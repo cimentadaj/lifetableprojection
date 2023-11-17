@@ -90,7 +90,7 @@ setupDownloadHandlers <- function(output, plots, input) {
       paste(input$tabset, "data.csv", sep = "_")
     },
     content = function(file) {
-      data <- plots[[input$tabset]]()$gg$data
+      data <- mtcars ## plots[[input$tabset]]()$gg$data
       write.csv(data, file, row.names = FALSE)
     }
   )
@@ -191,6 +191,7 @@ app_server <- function(input, output, session) {
   diagnostic_plt <- reactive({
     # TODO
     library(dplyr)
+    library(ggplot2)
     plts <- plot_initial_data(data_in())
     names(plts) <- to_snake(names(plts))
     plts
