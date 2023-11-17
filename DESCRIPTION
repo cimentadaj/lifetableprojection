@@ -15,6 +15,7 @@ Imports:
     golem,
     magrittr,
     ODAPbackend (>= 0.0.13),
+    pkgload,
     plotly,
     rhandsontable,
     shiny,
