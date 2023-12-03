@@ -69,15 +69,16 @@ displayValidationResults <- function(results) {
 #'
 #' @param output Shiny output object.
 #' @param plots List of reactive expressions for plots.
+#' @param data data to be saved in the download button
 #' @param input Shiny input object.
 #' @importFrom shiny downloadHandler
 #' @importFrom ggplot2 ggsave
 #' @importFrom utils write.csv
 #' @export
-setupDownloadHandlers <- function(output, plots, input) {
+setupDownloadHandlers <- function(output, plots, data, input) {
   output$downloadPlot <- downloadHandler(
     filename = function() {
-      paste(input$tabset, "plot.png", sep = "_")
+      paste(to_snake(input$tabset), "plot.png", sep = "_")
     },
     content = function(file) {
       plot <- plots[[input$tabset]]()$gg
@@ -87,11 +88,10 @@ setupDownloadHandlers <- function(output, plots, input) {
 
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste(input$tabset, "data.csv", sep = "_")
+      paste(to_snake(input$tabset), "data.csv", sep = "_")
     },
     content = function(file) {
-      data <- mtcars ## plots[[input$tabset]]()$gg$data
-      write.csv(data, file, row.names = FALSE)
+      write.csv(data()$lt$lt, file, row.names = FALSE)
     }
   )
 }
@@ -114,6 +114,7 @@ calculateLifeTable <- function(data_in, input) {
   ages_to_use <- data_in$Age[begin_age:end_age]
 
   lt_res <- lt_flexible(
+    data_in = data_in,
     Deaths = data_in$Deaths,
     Exposures = data_in$Exposures,
     Age = data_in$Age,
@@ -158,7 +159,7 @@ generatePlot <- function(data, results) {
 #' @importFrom shinyjs show hide
 #' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom rhandsontable renderRHandsontable
-#' @importFrom ggplot2 element_blank theme
+#' @importFrom ggplot2 element_blank theme geom_line
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom shinyalert shinyalert
 #' @importFrom stats reshape quantile
@@ -224,12 +225,15 @@ app_server <- function(input, output, session) {
   output$diag_empirical_mx <- renderPlotly({
     plt <-
       diagnostic_plt()$`empiricalmx` +
-      theme_minimal(base_size = 16)
+      geom_line(color = "black") +
+      theme_minimal(base_size = 16) +
+      theme(legend.position = "none")
 
     ggplotly(plt)
   })
 
-  output$table <- renderDT({
+  output$table <- renderDT(
+    {
       heaping_exposure <- check_heaping_general(data_in(), "Exposures")
       heaping_deaths <- check_heaping_general(data_in(), "Deaths")
 
@@ -305,11 +309,29 @@ app_server <- function(input, output, session) {
 
   data_out <- eventReactive(input$calculate_lt, calculateLifeTable(data_in(), input))
 
-  lt_plt <- reactive({
-    generatePlot(data_in(), data_out())
+  lt_nmx <- reactive({
+    gg_plt <- data_out()$lt$plots$nMx
+    list(gg = gg_plt, plotly = ggplotly(gg_plt))
   })
 
-  plots <- list("Mortality Rate Comparison" = lt_plt)
+  lt_ndx <- reactive({
+    gg_plt <- data_out()$lt$plots$ndx
+    list(gg = gg_plt, plotly = ggplotly(gg_plt))
+  })
+
+  lt_lx <- reactive({
+    gg_plt <- data_out()$lt$plots$lx
+    list(
+      gg = gg_plt,
+      plotly = ggplotly(gg_plt)
+    )
+  })
+
+  plots <- list(
+    "Mortality Rate Comparison" = lt_nmx,
+    "Survival Curve" = lt_ndx,
+    "Death Distribution" = lt_lx
+  )
 
   plotRendered <- reactiveVal(FALSE)
 
@@ -336,7 +358,6 @@ app_server <- function(input, output, session) {
   })
 
   output$ages_to_use <- renderUI({
-
     slider_widget <-
       sliderInput(
         "slider_ages_to_use",
@@ -346,8 +367,6 @@ app_server <- function(input, output, session) {
         value = c(ages_data()$min_age_fit, max(ages_data()$all_ages)),
         step = ages_data()$step_ages
       )
-
-    print("slider working")
 
     div(
       class = "field",
@@ -360,46 +379,100 @@ app_server <- function(input, output, session) {
     )
   })
 
-
-  output$tabs <- renderUI({
-    tabset(
-      id = "tabset",
-      tabs = lapply(
-        names(plots),
-        function(p) {
-          list(
-            menu = p,
-            id = p,
-            content = list(
-              if (!plotRendered()) {
-                uiOutput(paste0("placeholder_", to_snake(p)))
-              } else {
-                withSpinner(
-                  plotlyOutput(
-                    paste0("plot_", to_snake(p)),
-                    height = "600px"
-                  )
-                )
-              }
+  tabs <- reactive({
+    list(
+      list(
+        menu = "Mortality Rate Comparison",
+        id = "Mortality Rate Comparison",
+        content = list(
+          if (!plotRendered()) {
+            uiOutput("placeholder_mortality_rate_comparison")
+          } else {
+            withSpinner(
+              plotlyOutput("plot_mortality_rate_comparison", height = "600px")
             )
-          )
-        }
+          }
+        )
+      ),
+      list(
+        menu = "Survival Curve",
+        id = "Survival Curve",
+        content = list(
+          if (!plotRendered()) {
+            uiOutput("placeholder_survival_curve")
+          } else {
+            withSpinner(
+              plotlyOutput("plot_survival_curve", height = "600px")
+            )
+          }
+        )
+      ),
+      list(
+        menu = "Death Distribution",
+        id = "Death Distribution",
+        content = list(
+          if (!plotRendered()) {
+            uiOutput("placeholder_death_distribution")
+          } else {
+            withSpinner(
+              plotlyOutput("plot_death_distribution", height = "600px")
+            )
+          }
+        )
       )
     )
   })
 
-  for (p in names(plots)) {
-    p_clean <- to_snake(p)
-    output[[paste0("placeholder_", p_clean)]] <- renderUI({
-      tags$img(
-        src = "www/placeholder_plot.png",
-        height = "600px",
-        width = "100%"
-      )
-    })
+  # Render the tabs in the UI
+  output$tabs <- renderUI({
+    tabset(
+      id = "tabset",
+      tabs = tabs()
+    )
+  })
 
-    output[[paste0("plot_", p_clean)]] <- renderPlotly(plots[[p]]()$plotly)
-  }
+  # Placeholder for Mortality Rate Comparison
+  output$placeholder_mortality_rate_comparison <- renderUI({
+    tags$img(
+      src = "www/placeholder_plot.png",
+      height = "600px",
+      width = "100%"
+    )
+  })
 
-  setupDownloadHandlers(output, plots, input)
+  # Plot for Mortality Rate Comparison
+  output$plot_mortality_rate_comparison <- renderPlotly({
+    plots[["Mortality Rate Comparison"]]()$plotly
+  })
+
+  # Placeholder for Survival Curve
+  output$placeholder_survival_curve <- renderUI({
+    tags$img(
+      src = "www/placeholder_plot.png",
+      height = "600px",
+      width = "100%"
+    )
+  })
+
+  # Plot for Survival Curve
+  output$plot_survival_curve <- renderPlotly({
+    plots[["Survival Curve"]]()$plotly
+  })
+
+  # Placeholder for Mortality Rate Comparison
+  output$placeholder_death_distribution <- renderUI({
+    tags$img(
+      src = "www/placeholder_plot.png",
+      height = "600px",
+      width = "100%"
+    )
+  })
+
+  # Plot for Mortality Rate Comparison
+  output$plot_death_distribution <- renderPlotly({
+    print(input$tabset)
+    plots[["Death Distribution"]]()$plotly
+  })
+
+  setupDownloadHandlers(output, plots, data_out, input)
 }

@@ -4,12 +4,14 @@
 \alias{setupDownloadHandlers}
 \title{Setup Download Handlers}
 \usage{
-setupDownloadHandlers(output, plots, input)
+setupDownloadHandlers(output, plots, data, input)
 }
 \arguments{
 \item{output}{Shiny output object.}
 
 \item{plots}{List of reactive expressions for plots.}
+
+\item{data}{data to be saved in the download button}
 
 \item{input}{Shiny input object.}
 }
