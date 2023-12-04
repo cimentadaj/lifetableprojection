@@ -88,7 +88,7 @@ setupDownloadHandlers <- function(output, plots, data, input) {
 
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste(to_snake(input$tabset), "data.csv", sep = "_")
+      "lifetable_data.csv"
     },
     content = function(file) {
       write.csv(data()$lt$lt, file, row.names = FALSE)
@@ -113,8 +113,9 @@ calculateLifeTable <- function(data_in, input) {
   end_age <- which(data_in$Age == input$slider_ages_to_use[2])
   ages_to_use <- data_in$Age[begin_age:end_age]
 
+  library(ggplot2)
+
   lt_res <- lt_flexible(
-    data_in = data_in,
     Deaths = data_in$Deaths,
     Exposures = data_in$Exposures,
     Age = data_in$Age,
