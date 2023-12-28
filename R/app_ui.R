@@ -19,9 +19,9 @@ input_page <- function() {
   div(
     class = "ui form",
     # Basic Inputs as in initial setup
-    create_field_set("hashtag", "Open Age Group", "input_oanew", seq(60, 100, by = 5), 100),
-    create_field_set("hashtag", "Single / Abridged Ages", "input_age_out", c("single", "abridged"), "single"),
-    create_field_set("hashtag", "Sex", "input_sex", c("m", "f"), "m"),
+    create_field_set("", "Desired Open Age Group", "input_oanew", seq(70, 100, by = 5), 100),
+    create_field_set("", "Output Age Classes", "input_age_out", c("single", "abridged"), "single"),
+    create_field_set("", "Sex", "input_sex", c("Total", "Female", "Male"), "Total"),
     uiOutput("ages_to_use"),
     br(),
     # Advanced Inputs - Initially Hidden
@@ -32,15 +32,15 @@ input_page <- function() {
         class = "ui two column grid",
         div(
           class = "column",
-          create_field_set("hashtag", "Age Extrapolate Mortality", "input_extrapFrom", input_selected = 80, numeric_input = TRUE),
-          create_field_set("hashtag", "Extrapolation Law", "input_extrapLaw", extrap_laws, extrap_laws[1]),
-          create_field_set("hashtag", "Lifetable Radix", "input_radix", input_selected = 100000, numeric_input = TRUE)
+          create_field_set("", "Extrap. Jump-off Age", "input_extrapFrom", input_selected = 80, numeric_input = TRUE),
+          create_field_set("", "Extrapolation Law", "input_extrapLaw", extrap_laws, extrap_laws[1]),
+          create_field_set("", "Lifetable Radix", "input_radix", input_selected = 100000, numeric_input = TRUE)
         ),
         div(
           class = "column",
-          create_field_set("hashtag", "Sex Ratio at Birth", "input_srb", input_selected = 1.05, numeric_input = TRUE),
-          create_field_set("hashtag", "a0 Rule", "input_a0rule", c("ak", "cd"), "ak"),
-          create_field_set("hashtag", "Ax Method", "input_axmethod", c("un", "pas"), "un")
+          create_field_set("", "Sex Ratio at Birth", "input_srb", input_selected = 1.05, numeric_input = TRUE),
+          create_field_set("", "a(0) Rule", "input_a0rule", c("Andreev-Kingkade", "Coale-Demeny"), "Andreev-Kingkade"),
+          create_field_set("", "a(x) Method", "input_axmethod", c("UN (Greville)", "PASEX"), "UN (Greville)")
         )
       )
     ),
@@ -51,7 +51,6 @@ input_page <- function() {
     uiOutput("download_buttons")
   )
 }
-
 
 #' The application User-Interface
 #'
@@ -64,6 +63,7 @@ input_page <- function() {
 #' @importFrom untheme fluidUnTheme
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom rhandsontable rHandsontableOutput
+#' @importFrom shiny.fluent TooltipHost Image
 #' @noRd
 app_ui <- function(request) {
   fluidUnTheme(
@@ -129,14 +129,44 @@ app_ui <- function(request) {
           p("\xF0\x9F\x93\x88 Transform your data into insightful forecasts. Begin by uploading your CSV file."),
           p("\xF0\x9F\xA7\x90 Not sure about your file? Here's what we're looking for:"),
           br(),
-          rHandsontableOutput("data_table"),
+          div(
+            style = "display: flex; gap: 5px;",
+            div(
+              style = "",
+              rHandsontableOutput("data_table")
+            ),
+            div(
+              TooltipHost(
+                content = "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refers to a single year, then sometimes mid-year population can be used to approximate Exposures.",
+                delay = 0,
+                Image(
+                  src = "www/info.png",
+                  width = "20px",
+                  shouldStartVisible = TRUE
+                )
+              )
+            )
+          ),
           br(),
           strong(h3("\xF0\x9F\x93\xA4 Ready to get started? Click 'Browse...' to select your file"))
         ),
         div(
-          class = "semi-centered",
+          class = "semi-centered-two",
           br(),
-          file_input("file1", ""),
+          div(
+            style = "display: flex; gap: 10px;",
+            file_input("file1", ""),
+            div(
+              style = "flex: none;",
+              action_button(
+                "continue_no_data",
+                "Use sample data",
+                class = "ui blue button",
+                width = "100%",
+                height = "10%"
+              )
+            )
+          ),
           br(),
           div(
             class = "validation-results",
@@ -148,10 +178,20 @@ app_ui <- function(request) {
       ),
       tags$head(
         tags$script(HTML("
-          $(document).on('click', '#toggle_advanced', function() {
-            $('#advanced_inputs').slideToggle();
-          });
-        "))
+    $(document).on('click', '#toggle_advanced', function() {
+      $('#advanced_inputs').slideToggle('fast', function() {
+        // This callback function is called after the slideToggle animation completes
+        var isVisible = $('#advanced_inputs').is(':visible');
+        if(isVisible) {
+          // If the advanced inputs are now visible, change button text to 'Hide Advanced Options'
+          $('#toggle_advanced').text('Hide Advanced Options');
+        } else {
+          // If the advanced inputs are now hidden, change button text to 'Show Advanced Options'
+          $('#toggle_advanced').text('Show Advanced Options');
+        }
+      });
+    });
+  "))
       ),
       hidden(
         div(
@@ -159,7 +199,8 @@ app_ui <- function(request) {
           div(
             style = "display: flex; gap: 10px;",
             action_button("back_to_landing", "Back", class = "ui grey button"),
-            action_button("calculate_lt", "Calculate", class = "ui blue button")
+            action_button("calculate_lt", "Calculate", class = "ui blue button"),
+            action_button("reset_lt", "Reset Options", class = "ui blue button")
           ),
           br(),
           sidebar_layout(

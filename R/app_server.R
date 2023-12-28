@@ -116,9 +116,7 @@ calculateLifeTable <- function(data_in, input) {
   library(ggplot2)
 
   lt_res <- lt_flexible(
-    Deaths = data_in$Deaths,
-    Exposures = data_in$Exposures,
-    Age = data_in$Age,
+    data_in = data_in,
     OAnew = as.numeric(input$input_oanew),
     age_out = input$input_age_out,
     extrapFrom = input_extrapfrom,
@@ -155,8 +153,8 @@ generatePlot <- function(data, results) {
 #' @param input Shiny input object.
 #' @param output Shiny output object.
 #' @param session Shiny session object.
-#' @importFrom shiny renderUI observeEvent eventReactive actionButton reactive reactiveVal sliderInput
-#' @importFrom shiny.semantic tabset icon
+#' @importFrom shiny renderUI observeEvent eventReactive actionButton reactive reactiveVal sliderInput observe
+#' @importFrom shiny.semantic tabset icon updateSelectInput update_numeric_input updateSliderInput
 #' @importFrom shinyjs show hide
 #' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom rhandsontable renderRHandsontable
@@ -173,15 +171,33 @@ app_server <- function(input, output, session) {
     app_sys("app/www")
   )
 
-  data_in <- reactive(readData(input))
-  check_results <- reactive(validateData(data_in()))
-
   dt_ex <- system.file("data/abridged_data.csv", package = "lifetableprojection")
+
+  # Initialize a reactive value to store the data if csv if uploaded
+  # or if sample data button is clciked.
+  data_in <- reactiveVal()
+
+  # Update data_in when a file is uploaded
+  observe({
+    data_in(readData(input))
+  })
+
+  # Update data_in when the button is clicked
+  observeEvent(input$continue_no_data, {
+    data_in(read.csv(dt_ex))
+  })
+
+  check_results <- reactive({
+    # Since nor the cSV file has been loaded nor the sample data
+    # has been clicked, we need to wait.
+    req(data_in())
+    validateData(data_in())
+  })
+
   output$data_table <- renderRHandsontable(renderDataTable(read.csv(dt_ex)))
   output$validation_results <- renderUI(displayValidationResults(check_results()))
 
   output$forward_step2 <- renderUI({
-    req(input$file1)
     if (all(check_results()$pass == "Pass")) {
       div(
         actionButton("diagnostics", "Diagnostics", class = "ui blue button"),
@@ -200,37 +216,43 @@ app_server <- function(input, output, session) {
   })
 
   output$diag_exposures <- renderPlotly({
-    plt <-
-      diagnostic_plt()$exposures +
-      theme_minimal(base_size = 16) +
-      theme(
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()
-      )
-
-    ggplotly(plt)
+    fig <- diagnostic_plt()$exposures$figure
+    dt <- diagnostic_plt()$exposures$data
+    ggplotly(fig, tooltip = c("y", "text"))
   })
 
   output$diag_deaths <- renderPlotly({
-    plt <-
-      diagnostic_plt()$deaths +
-      theme_minimal(base_size = 16) +
-      theme(
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()
-      )
-
-    ggplotly(plt)
+    fig <- diagnostic_plt()$deaths$figure
+    dt <- diagnostic_plt()$deaths$data
+    ggplotly(fig, tooltip = c("y", "text"))
   })
 
   output$diag_empirical_mx <- renderPlotly({
-    plt <-
-      diagnostic_plt()$`empiricalmx` +
-      geom_line(color = "black") +
-      theme_minimal(base_size = 16) +
-      theme(legend.position = "none")
+    fig <- diagnostic_plt()$empiricalmx$figure
+    dt <- diagnostic_plt()$empiricalmx$data
 
-    ggplotly(plt)
+    ## Attempt at showing the log scale values
+    ## plt <-
+    ##   ggplotly(fig, tooltip = c("y", "text"))
+    ## tp <- as.numeric(plt$x$layout$yaxis$ticktext)
+    ## lb <- scales::label_log()(tp)
+    ## expr_strings <- sapply(lb, deparse)
+    ## plt$x$layout$yaxis$ticktext <- sapply(expr_strings, plotly::TeX)
+    ## plt <- plt %>% plotly::config(mathjax = "cdn")
+
+    ggplotly(fig, tooltip = c("y", "text"))
+  })
+
+  diagnostics_text <- reactive({
+    req(data_in())
+    is_single_ages <- all(diff(sort(data_in()$Age)) == 1)
+
+    diagnostic_paragraph <- paste0(
+      "The Roughness method measures the average absolute percentage deviation from a smoothed trend through the five-year age group data. The Sawtooth method takes the average of the ratios of the value in each five-year age group (in adult ages) to the average of the two adjacent age groups (age groups below and above). Both of these methods are trying to pick up on a phenomenon known as differential age heaping where digit preference is stronger on zeroes than on fives. This phenomenon can cause an apparent sawtooth pattern in demographic count data.",
+      ifelse(is_single_ages, "", "")
+    )
+
+    diagnostic_paragraph
   })
 
   output$table <- renderDT(
@@ -244,22 +266,32 @@ app_server <- function(input, output, session) {
       heaping_res <- rbind(heaping_exposure, heaping_deaths)
       heaping_res$result <- round(heaping_res$result, 2)
 
-      wide_data <- reshape(
-        heaping_res,
-        timevar = "Type",
-        idvar = "method",
-        direction = "wide"
-      )
+      heaping_res$method <- toTitleCase(heaping_res$method)
 
-      wide_data$method <- toTitleCase(wide_data$method)
+      df <- heaping_res
+      df <- df[c("Type", "age scale", "method", "result", "level")]
 
-      names(wide_data) <- toTitleCase(gsub("result.", "", names(wide_data)))
+      df <- df[order(df$method), ]
+
+      names(df) <- toTitleCase(names(df))
 
       datatable(
-        wide_data,
-        rownames = FALSE,
-        options = list(paging = FALSE, searching = FALSE, info = FALSE)
-      )
+        df,
+        options = list(
+          dom = "t",
+          paging = FALSE,
+          initComplete = DT::JS(
+            "function(settings, json) {",
+            "$('.dataTable th').css({'font-size': '15px'});",
+            "}"
+          )
+        )
+      ) %>%
+        DT::formatStyle(
+          columns = "Result", # Specify the column to color
+          backgroundColor = DT::styleEqual(heaping_res$result, heaping_res$color)
+        ) %>%
+        DT::formatStyle(columns = colnames(df), fontSize = "90%")
     },
     server = FALSE
   )
@@ -289,8 +321,13 @@ app_server <- function(input, output, session) {
         )
       ),
       div(
-        style = "width: 45%; padding-left: 20px;",
-        dataTableOutput("table")
+        style = "padding-left: 1%; width: 40%; max-height: 400px; overflow-y: auto;",
+        dataTableOutput("table"),
+        br(),
+        div(
+          style = "font-style: italic; font-size: 12px; ",
+          diagnostics_text()
+        )
       )
     )
 
@@ -311,27 +348,36 @@ app_server <- function(input, output, session) {
   data_out <- eventReactive(input$calculate_lt, calculateLifeTable(data_in(), input))
 
   lt_nmx <- reactive({
-    gg_plt <- data_out()$lt$plots$nMx
-    list(gg = gg_plt, plotly = ggplotly(gg_plt))
+    gg_plt <- data_out()$lt$plots$nMx$nMx_plot
+    list(
+      gg = gg_plt,
+      plotly = ggplotly(gg_plt),
+      dt = data_out()$lt$plots$nMx$nMx_plot_data
+    )
   })
 
   lt_ndx <- reactive({
-    gg_plt <- data_out()$lt$plots$ndx
-    list(gg = gg_plt, plotly = ggplotly(gg_plt))
+    gg_plt <- data_out()$lt$plots$ndx$ndx_plot
+    list(
+      gg = gg_plt,
+      plotly = ggplotly(gg_plt),
+      dt = data_out()$lt$plots$nDx$nDx_plot_data
+    )
   })
 
   lt_lx <- reactive({
-    gg_plt <- data_out()$lt$plots$lx
+    gg_plt <- data_out()$lt$plots$lx$lx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt)
+      plotly = ggplotly(gg_plt),
+      dt = data_out()$lt$plots$lx$lx_data
     )
   })
 
   plots <- list(
     "Mortality Rate Comparison" = lt_nmx,
-    "Survival Curve" = lt_ndx,
-    "Death Distribution" = lt_lx
+    "Survival Curve" = lt_lx,
+    "Death Distribution" = lt_ndx
   )
 
   plotRendered <- reactiveVal(FALSE)
@@ -371,10 +417,9 @@ app_server <- function(input, output, session) {
 
     div(
       class = "field",
-      icon("hashtag"),
       shiny.semantic::label(
         class = "main label",
-        "Ages to include in model fit"
+        "Ages to fit extrapolation model"
       ),
       slider_widget
     )
@@ -456,8 +501,8 @@ app_server <- function(input, output, session) {
   })
 
   # Plot for Survival Curve
-  output$plot_survival_curve <- renderPlotly({
-    plots[["Survival Curve"]]()$plotly
+  output$plot_death_distribution <- renderPlotly({
+    plots[["Death Distribution"]]()$plotly
   })
 
   # Placeholder for Mortality Rate Comparison
@@ -470,10 +515,31 @@ app_server <- function(input, output, session) {
   })
 
   # Plot for Mortality Rate Comparison
-  output$plot_death_distribution <- renderPlotly({
+  output$plot_survival_curve <- renderPlotly({
     print(input$tabset)
-    plots[["Death Distribution"]]()$plotly
+    plots[["Survival Curve"]]()$plotly
   })
 
   setupDownloadHandlers(output, plots, data_out, input)
+
+  observeEvent(input$reset_lt, {
+    # Update widgets to their default values
+    updateSelectInput(session, "input_oanew", selected = 100)
+    updateSelectInput(session, "input_age_out", selected = "single")
+    updateSelectInput(session, "input_sex", selected = "Total")
+    updateSelectInput(session, "input_extrapLaw", selected = extrap_laws[1])
+    updateSelectInput(session, "input_a0rule", selected = "Andreev-Kingkade")
+    updateSelectInput(session, "input_axmethod", selected = "UN (Greville)")
+
+    updateSliderInput(
+      session,
+      "slider_ages_to_use",
+      value = c(ages_data()$min_age_fit, max(ages_data()$all_ages))
+    )
+
+    # Update the numeric inputs
+    update_numeric_input(session, "input_extrapFrom", value = 80)
+    update_numeric_input(session, "input_radix", value = 100000)
+    update_numeric_input(session, "input_srb", value = 1.05)
+  })
 }

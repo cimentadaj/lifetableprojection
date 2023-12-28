@@ -19,6 +19,7 @@ Imports:
     plotly,
     rhandsontable,
     shiny,
+    shiny.fluent,
     shiny.semantic,
     shinyalert,
     shinycssloaders,

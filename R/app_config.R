@@ -1,3 +1,5 @@
+options(scipen = 99999999)
+
 #' Access files in the current app
 #'
 #' NOTE: If you manually change your package name in the DESCRIPTION,
