@@ -210,7 +210,12 @@ app_ui <- function(request) {
             style = "display: flex; gap: 10px;",
             action_button("back_to_landing", "Back", class = "ui grey button"),
             action_button("calculate_lt", "Calculate", class = "ui blue button"),
-            action_button("reset_lt", "Reset Options", class = "ui blue button")
+            action_button("reset_lt", "Reset Options", class = "ui blue button"),
+            div(
+              style = "margin-left: auto;",
+              uiOutput("download_button")
+
+            )
           ),
           br(),
           sidebar_layout(

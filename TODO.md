@@ -41,11 +41,12 @@ Actual TODO:
 
 - [X] Fix diagnostics text fitting
 - [ ] Add conditional text for diagnostics table for single ages
-- [ ] Provide the age label in the analysis plots as well
 - [X] Show summary life table statistics
-
-- [ ] Use the more informative message from the error checks
+- [X] Add download all button
 - [ ] Add subtitles to plotly
+
+- [ ] Provide the age label in the analysis plots as well
+- [ ] Use the more informative message from the error checks
 - [ ] Add a download plot / data from the diagnostics tab
 - [ ] Add smoothing UI page
 

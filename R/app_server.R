@@ -164,6 +164,7 @@ generatePlot <- function(data, results) {
 #' @importFrom stats reshape quantile
 #' @importFrom DT datatable renderDT dataTableOutput
 #' @importFrom ODAPbackend plot_initial_data check_heaping_general lt_summary
+#' @importFrom utils zip
 #' @export
 app_server <- function(input, output, session) {
   add_resource_path(
@@ -255,28 +256,28 @@ app_server <- function(input, output, session) {
     diagnostic_paragraph
   })
 
-  output$table <- renderDT(
-    {
-      heaping_exposure <- check_heaping_general(data_in(), "Exposures")
-      heaping_deaths <- check_heaping_general(data_in(), "Deaths")
+  diagnostics_table <- reactive({
+    heaping_exposure <- check_heaping_general(data_in(), "Exposures")
+    heaping_deaths <- check_heaping_general(data_in(), "Deaths")
 
-      heaping_exposure$Type <- "Exposures"
-      heaping_deaths$Type <- "Deaths"
+    heaping_exposure$Type <- "Exposures"
+    heaping_deaths$Type <- "Deaths"
 
-      heaping_res <- rbind(heaping_exposure, heaping_deaths)
-      heaping_res$result <- round(heaping_res$result, 2)
+    heaping_res <- rbind(heaping_exposure, heaping_deaths)
+    heaping_res$result <- round(heaping_res$result, 2)
 
-      heaping_res$method <- toTitleCase(heaping_res$method)
+    heaping_res$method <- toTitleCase(heaping_res$method)
+    df <- heaping_res
+    df <- df[c("Type", "age scale", "method", "result", "level")]
+    df <- df[order(df$method), ]
+    names(df) <- toTitleCase(names(df))
 
-      df <- heaping_res
-      df <- df[c("Type", "age scale", "method", "result", "level")]
+    df
+  })
 
-      df <- df[order(df$method), ]
-
-      names(df) <- toTitleCase(names(df))
-
+  output$table <- renderDT({
       datatable(
-        df,
+        diagnostics_table(),
         options = list(
           dom = "t",
           paging = FALSE,
@@ -351,7 +352,7 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$nMx$nMx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt),
+      plotly = ggplotly(gg_plt) %>% layout(title = list(text = "hey")),
       dt = data_out()$lt$plots$nMx$nMx_plot_data
     )
   })
@@ -360,8 +361,8 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$ndx$ndx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt),
-      dt = data_out()$lt$plots$nDx$nDx_plot_data
+      plotly = ggplotly(gg_plt) %>% layout(title = list(text = gg_plt$labels$subtitle)),
+      dt = data_out()$lt$plots$ndx$ndx_plot_data
     )
   })
 
@@ -369,12 +370,12 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$lx$lx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt),
-      dt = data_out()$lt$plots$lx$lx_data
+      plotly = ggplotly(gg_plt) %>% layout(title = list(text = gg_plt$labels$subtitle)),
+      dt = data_out()$lt$plots$lx$lx_plot_data
     )
   })
 
-  plots <- list(
+  lt_plots <- list(
     "Mortality Rate Comparison" = lt_nmx,
     "Survival Curve" = lt_lx,
     "Death Distribution" = lt_ndx
@@ -491,13 +492,17 @@ app_server <- function(input, output, session) {
     })
   })
 
-  # Render the table
-  output$lt_summary_table <- renderDT({
+  lifetable_summary_table <- reactive({
     lt_res <- lt_summary(data_out()$lt$lt)
     lt_res$message <- tools::toTitleCase(lt_res$message)
     names(lt_res) <- tools::toTitleCase(names(lt_res))
+    lt_res
+  })
+
+  # Render the table
+  output$lt_summary_table <- renderDT({
     datatable(
-      lt_res[c("Label", "Message", "Value")],
+      lifetable_summary_table()[c("Label", "Message", "Value")],
       options = list(
         dom = "t",
         paging = FALSE,
@@ -522,7 +527,7 @@ app_server <- function(input, output, session) {
 
   # Plot for Mortality Rate Comparison
   output$plot_mortality_rate_comparison <- renderPlotly({
-    plots[["Mortality Rate Comparison"]]()$plotly
+    lt_plots[["Mortality Rate Comparison"]]()$plotly
   })
 
   # Placeholder for Survival Curve
@@ -536,7 +541,7 @@ app_server <- function(input, output, session) {
 
   # Plot for Survival Curve
   output$plot_death_distribution <- renderPlotly({
-    plots[["Death Distribution"]]()$plotly
+    lt_plots[["Death Distribution"]]()$plotly
   })
 
   # Placeholder for Mortality Rate Comparison
@@ -550,11 +555,101 @@ app_server <- function(input, output, session) {
 
   # Plot for Mortality Rate Comparison
   output$plot_survival_curve <- renderPlotly({
-    print(input$tabset)
-    plots[["Survival Curve"]]()$plotly
+    lt_plots[["Survival Curve"]]()$plotly
   })
 
-  setupDownloadHandlers(output, plots, data_out, input)
+  setupDownloadHandlers(output, lt_plots, data_out, input)
+
+  output$download_button <- renderUI({
+    if (plotRendered()) {
+      downloadButton("download_all", "Download All", class = "ui blue button")
+    }
+  })
+
+  output$download_all <- downloadHandler(
+    filename = function() {
+      paste("lifetable_analysis_", Sys.Date(), ".zip", sep = "")
+    },
+    content = function(file) {
+      # Main directory to store the plot folders
+      main_plot_path <- file.path(tempdir(), "lifetable_analysis")
+      unlink(main_plot_path, recursive = TRUE)
+      dir.create(main_plot_path)
+
+      # Assuming 'lt_plots' is your list of ggplot objects
+      lt_analysis <- lt_plots
+      names(lt_analysis) <- to_snake(names(lt_analysis))
+      lt_analysis_plots <- lapply(lt_analysis, function(x) x()$gg)
+      lt_analysis_dt <- lapply(lt_analysis, function(x) x()$dt)
+
+      # Save each plot and its corresponding DataTable in its own folder
+      lapply(names(lt_analysis_plots), function(plot_name) {
+        plot_folder_path <- file.path(main_plot_path, "analysis", plot_name)
+        dir.create(plot_folder_path)
+
+        # Save the plot
+        ggsave(
+          filename = file.path(plot_folder_path, paste0(plot_name, ".png")),
+          plot = lt_analysis_plots[[plot_name]],
+          device = "png"
+        )
+
+        # Save the DataTable as a CSV
+        write.csv(
+          lt_analysis_dt[[plot_name]],
+          file = file.path(plot_folder_path, paste0(plot_name, ".csv")),
+          row.names = FALSE
+        )
+      })
+
+      # Assuming 'lt_plots' is your list of ggplot objects
+      diagnostic_analysis <- diagnostic_plt()
+      names(diagnostic_analysis) <- to_snake(names(diagnostic_analysis))
+      diagnostic_analysis_plots <- lapply(diagnostic_analysis, function(x) x$figure)
+      diagnostic_analysis_dt <- lapply(diagnostic_analysis, function(x) x$data)
+
+      lapply(names(diagnostic_analysis_plots), function(plot_name) {
+        plot_folder_path <- file.path(main_plot_path, "diagnostics", plot_name)
+        dir.create(plot_folder_path)
+
+        # Save the plot
+        ggsave(
+          filename = file.path(plot_folder_path, paste0(plot_name, ".png")),
+          plot = diagnostic_analysis_plots[[plot_name]],
+          device = "png"
+        )
+
+        # Save the DataTable as a CSV
+        write.csv(
+          diagnostic_analysis_dt[[plot_name]],
+          file = file.path(plot_folder_path, paste0(plot_name, ".csv")),
+          row.names = FALSE
+        )
+      })
+
+      write.csv(
+        lifetable_summary_table()[c("Measure", "Message", "Value")],
+        file = file.path(main_plot_path, "analysis", "lifetable_summary.csv"),
+        row.names = FALSE
+      )
+
+      write.csv(
+        diagnostics_table(),
+        file = file.path(main_plot_path, "diagnostics", "diagnostics_summary.csv"),
+        row.names = FALSE
+      )
+
+      writeLines(
+        text = diagnostics_text(),
+        con = file.path(main_plot_path, "diagnostics", "diagnostics_text.txt"),
+      )
+
+      # Zip only the "lifetable_analysis" folder
+      setwd(main_plot_path)
+      zip(file, files = list.files(".", full.names = TRUE, recursive = TRUE))
+      setwd(tempdir()) # Reset working directory to tempdir()
+    }
+  )
 
   observeEvent(input$reset_lt, {
     # Update widgets to their default values
