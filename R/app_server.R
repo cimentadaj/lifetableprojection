@@ -268,7 +268,7 @@ app_server <- function(input, output, session) {
 
     heaping_res$method <- toTitleCase(heaping_res$method)
     df <- heaping_res
-    df <- df[c("Type", "age scale", "method", "result", "level")]
+    df <- df[c("Type", "age scale", "method", "result", "level", "color")]
     df <- df[order(df$method), ]
     names(df) <- toTitleCase(names(df))
 
@@ -277,7 +277,7 @@ app_server <- function(input, output, session) {
 
   output$table <- renderDT({
       datatable(
-        diagnostics_table(),
+        diagnostics_table()[, names(diagnostics_table()) != "Color"],
         options = list(
           dom = "t",
           paging = FALSE,
@@ -290,7 +290,10 @@ app_server <- function(input, output, session) {
       ) %>%
         DT::formatStyle(
           columns = "Result",
-          backgroundColor = DT::styleEqual(heaping_res$result, heaping_res$color)
+          backgroundColor = DT::styleEqual(
+            diagnostics_table()$Result,
+            diagnostics_table()$Color
+          )
         ) %>%
         DT::formatStyle(columns = colnames(df), fontSize = "90%")
     },
@@ -352,7 +355,7 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$nMx$nMx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt) %>% layout(title = list(text = "hey")),
+      plotly = ggplotly(gg_plt),
       dt = data_out()$lt$plots$nMx$nMx_plot_data
     )
   })
@@ -361,7 +364,7 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$ndx$ndx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt) %>% layout(title = list(text = gg_plt$labels$subtitle)),
+      plotly = ggplotly(gg_plt),
       dt = data_out()$lt$plots$ndx$ndx_plot_data
     )
   })
@@ -370,7 +373,7 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$lx$lx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt) %>% layout(title = list(text = gg_plt$labels$subtitle)),
+      plotly = ggplotly(gg_plt),
       dt = data_out()$lt$plots$lx$lx_plot_data
     )
   })
@@ -573,8 +576,8 @@ app_server <- function(input, output, session) {
     content = function(file) {
       # Main directory to store the plot folders
       main_plot_path <- file.path(tempdir(), "lifetable_analysis")
-      unlink(main_plot_path, recursive = TRUE)
-      dir.create(main_plot_path)
+      unlink(main_plot_path, recursive = TRUE, force = TRUE)
+      dir.create(main_plot_path, recursive = TRUE)
 
       # Assuming 'lt_plots' is your list of ggplot objects
       lt_analysis <- lt_plots
@@ -585,7 +588,7 @@ app_server <- function(input, output, session) {
       # Save each plot and its corresponding DataTable in its own folder
       lapply(names(lt_analysis_plots), function(plot_name) {
         plot_folder_path <- file.path(main_plot_path, "analysis", plot_name)
-        dir.create(plot_folder_path)
+        dir.create(plot_folder_path, recursive = TRUE)
 
         # Save the plot
         ggsave(
@@ -610,7 +613,7 @@ app_server <- function(input, output, session) {
 
       lapply(names(diagnostic_analysis_plots), function(plot_name) {
         plot_folder_path <- file.path(main_plot_path, "diagnostics", plot_name)
-        dir.create(plot_folder_path)
+        dir.create(plot_folder_path, recursive = TRUE)
 
         # Save the plot
         ggsave(

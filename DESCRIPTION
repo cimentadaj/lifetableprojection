@@ -14,7 +14,7 @@ Imports:
     ggplot2,
     golem,
     magrittr,
-    ODAPbackend (>= 0.0.13),
+    ODAPbackend (>= 00.01.002),
     pkgload,
     plotly,
     rhandsontable,
