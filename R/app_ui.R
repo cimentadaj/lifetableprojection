@@ -1,14 +1,3 @@
-extrap_laws <- c(
-  "Kannisto",
-  "Kannisto_Makeham",
-  "Makeham",
-  "Gompertz",
-  "GGompertz",
-  "Beard",
-  "Beard_Makeham",
-  "Quadratic"
-)
-
 #' The application User-Interface for input page
 #'
 #' @return A div containing the input page UI elements.
@@ -52,6 +41,7 @@ input_page <- function() {
   )
 }
 
+
 #' The application User-Interface
 #'
 #' @param request Internal parameter for `{shiny}`.
@@ -61,6 +51,7 @@ input_page <- function() {
 #' @importFrom plotly plotlyOutput
 #' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout sidebar_panel tabset
 #' @importFrom untheme fluidUnTheme
+#' @importFrom DT DTOutput formatRound JS
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom rhandsontable rHandsontableOutput
 #' @importFrom shiny.fluent TooltipHost Image
@@ -68,6 +59,7 @@ input_page <- function() {
 app_ui <- function(request) {
   fluidUnTheme(
     useShinyjs(),
+    latex_pre_tags,
     main_panel(
       tags$head(
         tags$style(HTML("
@@ -117,6 +109,24 @@ app_ui <- function(request) {
             .well.success {
                 background-color: #d4edda; /* Light green for success */
                 border-color: #c3e6cb;
+            }
+            .below-main-panel {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              margin-top: 20px; /* Adjust as needed */
+            }
+
+            /* Keyframe animation for fading in */
+            @keyframes fadeIn {
+              from { opacity: 0; }
+              to { opacity: 1; }
+            }
+
+            /* Apply the fadeIn animation to the icon */
+            .fade-in-icon {
+              animation: fadeIn 2s ease-in-out; /* Animation lasts 2 seconds */
             }
         "))
       ),
@@ -208,6 +218,12 @@ app_ui <- function(request) {
             main_panel(
               uiOutput("tabs")
             )
+          ),
+          uiOutput("lt_summary_indication"),
+          div(
+            class = "ui container",
+            style = "padding-top: 20px;",
+            DTOutput("lt_summary_table")
           )
         )
       ),

@@ -1,5 +1,41 @@
 options(scipen = 99999999)
 
+extrap_laws <- c(
+  "Kannisto",
+  "Kannisto_Makeham",
+  "Makeham",
+  "Gompertz",
+  "GGompertz",
+  "Beard",
+  "Beard_Makeham",
+  "Quadratic"
+)
+
+renderKaTeX <- c(
+  "function(data, type, row, meta){",
+  "  if(type === 'display'){",
+  "    data = katex.renderToString(data);",
+  "  }",
+  "  return data;",
+  "}"
+)
+
+latex_pre_tags <- tags$head(
+  tags$link(
+    rel = "stylesheet",
+    href = "https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css",
+    integrity = "sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ",
+    crossorigin = "anonymous"
+  ),
+  tags$script(
+    defer = "",
+    src = "https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js",
+    integrity = "sha384-VQ8d8WVFw0yHhCk5E8I86oOhv48xLpnDZx5T9GogA/Y84DcCKWXDmSDfn13bzFZY",
+    crossorigin = "anonymous"
+  )
+)
+
+
 #' Access files in the current app
 #'
 #' NOTE: If you manually change your package name in the DESCRIPTION,

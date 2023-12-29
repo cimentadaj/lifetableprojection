@@ -163,7 +163,7 @@ generatePlot <- function(data, results) {
 #' @importFrom shinyalert shinyalert
 #' @importFrom stats reshape quantile
 #' @importFrom DT datatable renderDT dataTableOutput
-#' @importFrom ODAPbackend plot_initial_data check_heaping_general
+#' @importFrom ODAPbackend plot_initial_data check_heaping_general lt_summary
 #' @export
 app_server <- function(input, output, session) {
   add_resource_path(
@@ -288,7 +288,7 @@ app_server <- function(input, output, session) {
         )
       ) %>%
         DT::formatStyle(
-          columns = "Result", # Specify the column to color
+          columns = "Result",
           backgroundColor = DT::styleEqual(heaping_res$result, heaping_res$color)
         ) %>%
         DT::formatStyle(columns = colnames(df), fontSize = "90%")
@@ -475,6 +475,40 @@ app_server <- function(input, output, session) {
       id = "tabset",
       tabs = tabs()
     )
+  })
+
+  observeEvent(input$calculate_lt, {
+    output$lt_summary_indication <- renderUI({
+      div(
+        div(
+          class = "below-main-panel fade-in-icon", # Add the class here
+          shiny.semantic::icon("arrow down circle", style = "font-size: 3rem;")
+        ), div(
+          class = "below-main-panel",
+          h1("Life Table Summary Statistics"),
+        )
+      )
+    })
+  })
+
+  # Render the table
+  output$lt_summary_table <- renderDT({
+    lt_res <- lt_summary(data_out()$lt$lt)
+    lt_res$message <- tools::toTitleCase(lt_res$message)
+    names(lt_res) <- tools::toTitleCase(names(lt_res))
+    datatable(
+      lt_res[c("Label", "Message", "Value")],
+      options = list(
+        dom = "t",
+        paging = FALSE,
+        info = FALSE,
+        searching = FALSE,
+        columnDefs = list(
+          list(targets = c("Label"), render = JS(renderKaTeX))
+        )
+      )
+    ) %>%
+      formatRound("Value", 8)
   })
 
   # Placeholder for Mortality Rate Comparison
