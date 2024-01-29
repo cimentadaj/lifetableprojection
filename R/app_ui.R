@@ -22,7 +22,7 @@ input_page <- function() {
         div(
           class = "column",
           create_field_set("", "Extrap. Jump-off Age", "input_extrapFrom", input_selected = 80, numeric_input = TRUE),
-          create_field_set("", "Extrapolation Law", "input_extrapLaw", extrap_laws, extrap_laws[1]),
+          create_field_set("", "Extrapolation Law", "input_extrapLaw", EXTRAP_LAWS, EXTRAP_LAWS[1]),
           create_field_set("", "Lifetable Radix", "input_radix", input_selected = 100000, numeric_input = TRUE)
         ),
         div(
@@ -42,6 +42,7 @@ input_page <- function() {
 }
 
 
+
 #' The application User-Interface
 #'
 #' @param request Internal parameter for `{shiny}`.
@@ -50,7 +51,7 @@ input_page <- function() {
 #' @importFrom shinyjs useShinyjs hidden
 #' @importFrom plotly plotlyOutput
 #' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout sidebar_panel tabset
-#' @importFrom untheme fluidUnTheme
+#' @importFrom untheme fluidUnTheme sidebar_layout_responsive
 #' @importFrom DT DTOutput formatRound JS
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom rhandsontable rHandsontableOutput
@@ -59,131 +60,219 @@ input_page <- function() {
 app_ui <- function(request) {
   fluidUnTheme(
     useShinyjs(),
-    latex_pre_tags,
+    LATEX_PRE_TAGS,
+    tags$script(JS_CODE_SCREEN_SIZE),
     main_panel(
       tags$head(
         tags$style(HTML("
-            .centered {
-                position: absolute;
-                top: 35%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-            .semi-centered {
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-            }
-            .semi-centered-two {
-                position: absolute;
-                left: 15%;
-            }
-            .info-box {
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                padding: 20px;
-                margin-bottom: 20px;
-                text-align: left;
-                color: #555;
-            }
-            .info-box h1 {
-                color: #337ab7;
-            }
-            .info-box p {
-                font-size: 16px;
-            }
-            .validation-results {
-                text-align: left;
-                font-size: 15px; /* Adjusted font size */
-                color: #555;
-                font-family: 'Arial', sans-serif; /* Changed font family */
-                font-weight: bold; /* Making text bold */
-            }
-            .well {
-                background-color: #f8d7da; /* Light red for error */
-                border-color: #f5c6cb;
-                border-radius: 5px;
-                padding: 15px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Added shadow */
-            }
-            .well.success {
-                background-color: #d4edda; /* Light green for success */
-                border-color: #c3e6cb;
-            }
-            .below-main-panel {
+          /* Base styles with Flexbox */
+          .main-content {
               display: flex;
               flex-direction: column;
               align-items: center;
               justify-content: center;
-              margin-top: 20px; /* Adjust as needed */
-            }
+          }
 
-            /* Keyframe animation for fading in */
-            @keyframes fadeIn {
+          .info-box {
+              border: 1px solid #ddd;
+              border-radius: 5px;
+              padding: 20px;
+              margin: 20px 0; /* Add margin to the top and bottom */
+              text-align: left;
+              color: #555;
+          }
+
+          .info-box h1 {
+              color: #337ab7;
+          }
+
+          .info-box p {
+              font-size: 16px;
+          }
+
+          .validation-results {
+              text-align: center;
+              font-size: 15px;
+              color: #555;
+              font-family: 'Arial', sans-serif;
+              font-weight: bold;
+          }
+
+          .well {
+              background-color: #f8d7da;
+              border-color: #f5c6cb;
+              border-radius: 5px;
+              padding: 15px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+
+          .well.success {
+              background-color: #d4edda;
+              border-color: #c3e6cb;
+          }
+
+          .below-main-panel {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              margin-top: 20px;
+          }
+
+          /* Keyframe animation for fading in */
+          @keyframes fadeIn {
               from { opacity: 0; }
               to { opacity: 1; }
-            }
+          }
 
-            /* Apply the fadeIn animation to the icon */
-            .fade-in-icon {
-              animation: fadeIn 2s ease-in-out; /* Animation lasts 2 seconds */
-            }
-        "))
+          /* Centering container for buttons */
+          .button-container {
+              display: flex;
+              justify-content: center; /* Aligns children (buttons) in the center horizontally */
+              align-items: center; /* Aligns children (buttons) in the center vertically */
+              gap: 10px; /* Space between buttons */
+          }
+
+          /* Centering container for buttons */
+          .button-container-file {
+              display: flex;
+              justify-content: center; /* Aligns children (buttons) in the center horizontally */
+              gap: 10px; /* Space between buttons */
+          }
+
+          /* Apply the fadeIn animation to the icon */
+          .fade-in-icon {
+              animation: fadeIn 2s ease-in-out;
+          }
+
+          @media (max-width: 1024px) {
+              .info-box {
+                  margin-top: 40px; /* Increase margin-top to avoid header overlap */
+              }
+
+              .content {
+                max-width: 90% !important;
+              }
+          }
+
+          @media (max-width: 768px) {
+              .info-box p, .validation-results {
+                  font-size: 14px; /* Smaller font size for smaller screens */
+              }
+
+              /* Stack elements vertically on small screens */
+              .main-content {
+                  flex-direction: column;
+                  align-items: center;
+              }
+          }
+          @media (max-width: 480px) {
+              .info-box p, .validation-results {
+                  font-size: 14px; /* Even smaller font size for very small screens */
+              }
+
+              .main-content {
+                  display: block;
+              }
+
+              .info-box h1, h3 {
+                  font-size: 18px;
+              }
+
+              p div#content-wrapper {
+                flex-direction: column !important;
+              }
+
+              .plot-container {
+                width: 100% !important;
+              }
+
+              .table-container {
+                width: 100% !important;
+              }
+
+              .button-container-file {
+                flex-direction: column;
+                flex-wrap: wrap;
+                gap: 1px;
+                width: 100%;
+              }
+
+              .button-container-forecast {
+                flex-direction: column;
+                flex-wrap: wrap;
+                align-items: center;
+              }
+
+              .button-container-forecast > * {
+                width: 100%;
+                margin: auto;
+                flex-wrap: wrap;
+                align-items: center;
+              }
+          }"))
       ),
       div(
-        id = "landing_page",
-        class = "centered",
-        tags$div(
-          class = "info-box",
-          h1("\xF0\x9F\x9A\x80 Welcome to the Online Demographic Analysis Platform! \xF0\x9F\x8E\xAF"),
-          p("\xF0\x9F\x93\x88 Transform your data into insightful forecasts. Begin by uploading your CSV file."),
-          p("\xF0\x9F\xA7\x90 Not sure about your file? Here's what we're looking for:"),
-          br(),
-          div(
-            style = "display: flex; gap: 5px;",
+        class = "main-content",
+        div(
+          id = "landing_page",
+          tags$div(
+            class = "info-box",
+            h1("\xF0\x9F\x9A\x80 Welcome to the Online Demographic Analysis Platform! \xF0\x9F\x8E\xAF"),
+            p("\xF0\x9F\x93\x88 Transform your data into insightful forecasts. Begin by uploading your CSV file."),
+            p("\xF0\x9F\xA7\x90 Not sure about your file? Here's what we're looking for:"),
+            br(),
             div(
-              style = "",
-              rHandsontableOutput("data_table")
-            ),
-            div(
-              TooltipHost(
-                content = "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refers to a single year, then sometimes mid-year population can be used to approximate Exposures.",
-                delay = 0,
-                Image(
-                  src = "www/info.png",
-                  width = "20px",
-                  shouldStartVisible = TRUE
+              style = "display: flex; gap: 5px;",
+              div(
+                style = "",
+                rHandsontableOutput("data_table")
+              ),
+              div(
+                TooltipHost(
+                  content = "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refers to a single year, then sometimes mid-year population can be used to approximate Exposures.",
+                  delay = 0,
+                  Image(
+                    src = "www/info.png",
+                    width = "20px",
+                    shouldStartVisible = TRUE
+                  )
                 )
               )
-            )
+            ),
+            br(),
+            strong(h3("\xF0\x9F\x93\xA4 Ready? Click 'Browse...' to select your file or start with our sample data."))
           ),
-          br(),
-          strong(h3("\xF0\x9F\x93\xA4 Ready to get started? Click 'Browse...' to select your file"))
-        ),
-        div(
-          class = "semi-centered-two",
-          br(),
+          tags$script(HTML("
+            $(document).ready(function() {
+              $('div.ui.left.action.input.ui-ss-input').css('display', 'flex');
+            });
+          ")),
           div(
-            style = "display: flex; gap: 10px;",
-            file_input("file1", ""),
+            br(),
             div(
-              style = "flex: none;",
+              class = "button-container-file",
+              style = "display: flex; gap: 10px;",
+              file_input("file1", "", type = "flex-override"),
               action_button(
                 "continue_no_data",
                 "Use sample data",
                 class = "ui blue button",
-                width = "100%",
-                height = "10%"
+                style = "height: 4%;"
               )
+            ),
+            br(),
+            div(
+              class = "validation-results",
+              uiOutput("validation_results")
+            ),
+            br(),
+            div(
+              class = "button-container",
+              style = "display: flex; gap: 10px;",
+              uiOutput("forward_step2")
             )
-          ),
-          br(),
-          div(
-            class = "validation-results",
-            uiOutput("validation_results")
-          ),
-          br(),
-          div(class = "semi-centered-two", uiOutput("forward_step2"))
+          )
         )
       ),
       tags$head(
@@ -207,21 +296,23 @@ app_ui <- function(request) {
         div(
           id = "step_input",
           div(
+            class = "button-container-forecast",
             style = "display: flex; gap: 10px;",
             action_button("back_to_landing", "Back", class = "ui grey button"),
             action_button("calculate_lt", "Calculate", class = "ui blue button"),
             action_button("reset_lt", "Reset Options", class = "ui blue button"),
-            div(
-              style = "margin-left: auto;",
-              uiOutput("download_button")
-
-            )
+            uiOutput("download_button")
           ),
           br(),
-          sidebar_layout(
-            list(children = div(input_page()), width = 1.3),
-            main_panel(
-              uiOutput("tabs")
+          div(
+            sidebar_layout_responsive(
+              list(children = div(input_page())),
+              div(
+                id = "tabContent",
+                uiOutput("select_plots"),
+                br(),
+                uiOutput("render_plots")
+              )
             )
           ),
           uiOutput("lt_summary_indication"),

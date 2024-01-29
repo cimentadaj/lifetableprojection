@@ -25,6 +25,12 @@ plot_compare_rates_interactive <- function(data_in, data_out) {
     ) +
     theme_minimal(base_size = 13)
 
-  list(gg = plt, plotly = ggplotly(plt))
+  list(
+    gg = plt,
+    plotly = config(
+      ggplotly(plt),
+      displayModeBar = FALSE
+    )
+  )
 }
 

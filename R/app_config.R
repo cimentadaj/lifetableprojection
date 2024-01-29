@@ -1,6 +1,6 @@
 options(scipen = 99999999)
 
-extrap_laws <- c(
+EXTRAP_LAWS <- c(
   "Kannisto",
   "Kannisto_Makeham",
   "Makeham",
@@ -11,7 +11,7 @@ extrap_laws <- c(
   "Quadratic"
 )
 
-renderKaTeX <- c(
+RENDERKATEX <- c(
   "function(data, type, row, meta){",
   "  if(type === 'display'){",
   "    data = katex.renderToString(data);",
@@ -20,7 +20,7 @@ renderKaTeX <- c(
   "}"
 )
 
-latex_pre_tags <- tags$head(
+LATEX_PRE_TAGS <- tags$head(
   tags$link(
     rel = "stylesheet",
     href = "https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css",
@@ -35,6 +35,11 @@ latex_pre_tags <- tags$head(
   )
 )
 
+JS_CODE_SCREEN_SIZE <- '$(document).on("shiny:connected", function(e) {
+  var jsWidth = screen.width;
+  Shiny.onInputChange("get_screen_width",jsWidth);
+});
+'
 
 #' Access files in the current app
 #'

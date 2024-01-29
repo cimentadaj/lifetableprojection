@@ -78,10 +78,10 @@ displayValidationResults <- function(results) {
 setupDownloadHandlers <- function(output, plots, data, input) {
   output$downloadPlot <- downloadHandler(
     filename = function() {
-      paste(to_snake(input$tabset), "plot.png", sep = "_")
+      paste(to_snake(input$tabSelector), "plot.png", sep = "_")
     },
     content = function(file) {
-      plot <- plots[[input$tabset]]()$gg
+      plot <- plots[[input$tabSelector]]()$gg
       ggsave(file, plot)
     }
   )
@@ -153,16 +153,17 @@ generatePlot <- function(data, results) {
 #' @param input Shiny input object.
 #' @param output Shiny output object.
 #' @param session Shiny session object.
-#' @importFrom shiny renderUI observeEvent eventReactive actionButton reactive reactiveVal sliderInput observe
+#' @importFrom shiny renderUI observeEvent eventReactive actionButton reactive reactiveVal sliderInput observe conditionalPanel
 #' @importFrom shiny.semantic tabset icon updateSelectInput update_numeric_input updateSliderInput
 #' @importFrom shinyjs show hide
-#' @importFrom plotly plotlyOutput renderPlotly
+#' @importFrom plotly plotlyOutput renderPlotly config
 #' @importFrom rhandsontable renderRHandsontable
 #' @importFrom ggplot2 element_blank theme geom_line
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom shinyalert shinyalert
 #' @importFrom stats reshape quantile
 #' @importFrom DT datatable renderDT dataTableOutput
+#' @importFrom untheme detect_font_size
 #' @importFrom ODAPbackend plot_initial_data check_heaping_general lt_summary
 #' @importFrom utils zip
 #' @export
@@ -201,8 +202,8 @@ app_server <- function(input, output, session) {
   output$forward_step2 <- renderUI({
     if (all(check_results()$pass == "Pass")) {
       div(
-        actionButton("diagnostics", "Diagnostics", class = "ui blue button"),
-        actionButton("forward_step", "Continue", class = "ui blue button")
+        action_button("diagnostics", "Diagnostics", class = "ui blue button"),
+        action_button("forward_step", "Continue", class = "ui blue button")
       )
     }
   })
@@ -219,13 +220,23 @@ app_server <- function(input, output, session) {
   output$diag_exposures <- renderPlotly({
     fig <- diagnostic_plt()$exposures$figure
     dt <- diagnostic_plt()$exposures$data
-    ggplotly(fig, tooltip = c("y", "text"))
+    ggplt <- ggplotly(fig, tooltip = c("y", "text"))
+
+    config(
+      ggplt,
+      displayModeBar = FALSE
+    )
   })
 
   output$diag_deaths <- renderPlotly({
     fig <- diagnostic_plt()$deaths$figure
     dt <- diagnostic_plt()$deaths$data
-    ggplotly(fig, tooltip = c("y", "text"))
+    ggplt <- ggplotly(fig, tooltip = c("y", "text"))
+
+    config(
+      ggplt,
+      displayModeBar = FALSE
+    )
   })
 
   output$diag_empirical_mx <- renderPlotly({
@@ -241,7 +252,11 @@ app_server <- function(input, output, session) {
     ## plt$x$layout$yaxis$ticktext <- sapply(expr_strings, plotly::TeX)
     ## plt <- plt %>% plotly::config(mathjax = "cdn")
 
-    ggplotly(fig, tooltip = c("y", "text"))
+    ggplt <- ggplotly(fig, tooltip = c("y", "text"))
+    config(
+      ggplt,
+      displayModeBar = FALSE
+    )
   })
 
   diagnostics_text <- reactive({
@@ -250,7 +265,7 @@ app_server <- function(input, output, session) {
 
     diagnostic_paragraph <- paste0(
       "The Roughness method measures the average absolute percentage deviation from a smoothed trend through the five-year age group data. The Sawtooth method takes the average of the ratios of the value in each five-year age group (in adult ages) to the average of the two adjacent age groups (age groups below and above). Both of these methods are trying to pick up on a phenomenon known as differential age heaping where digit preference is stronger on zeroes than on fives. This phenomenon can cause an apparent sawtooth pattern in demographic count data.",
-      ifelse(is_single_ages, "", "")
+      ifelse(is_single_ages, "The Myers and Bachi indices both measure digit preference for single-age data. If there were no digit preference, then the distribution over terminal digits (0-9) would be roughly uniform. Both of these indices measure the departure from uniformity, with slight variations on the implementation. Higher values indicate digit distributions that are farther from uniform. If these indices are high, but the _roughness_ and _sawtooth_ indices are low, then you might adjust data using one of the _fine_ smoothing methods offered.", "")
     )
 
     diagnostic_paragraph
@@ -275,7 +290,8 @@ app_server <- function(input, output, session) {
     df
   })
 
-  output$table <- renderDT({
+  output$table <- renderDT(
+    {
       datatable(
         diagnostics_table()[, names(diagnostics_table()) != "Color"],
         options = list(
@@ -325,6 +341,7 @@ app_server <- function(input, output, session) {
         )
       ),
       div(
+        class = "table-container",
         style = "padding-left: 1%; width: 40%; max-height: 400px; overflow-y: auto;",
         dataTableOutput("table"),
         br(),
@@ -355,7 +372,7 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$nMx$nMx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt),
+      plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
       dt = data_out()$lt$plots$nMx$nMx_plot_data
     )
   })
@@ -364,7 +381,7 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$ndx$ndx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt),
+      plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
       dt = data_out()$lt$plots$ndx$ndx_plot_data
     )
   })
@@ -373,7 +390,7 @@ app_server <- function(input, output, session) {
     gg_plt <- data_out()$lt$plots$lx$lx_plot
     list(
       gg = gg_plt,
-      plotly = ggplotly(gg_plt),
+      plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
       dt = data_out()$lt$plots$lx$lx_plot_data
     )
   })
@@ -384,19 +401,17 @@ app_server <- function(input, output, session) {
     "Death Distribution" = lt_ndx
   )
 
+  # Define tab names and IDs
+  tabNames <- names(lt_plots)
+
+  output$select_plots <- renderUI({
+    selectInput(inputId = "tabSelector", label = NULL, choices = tabNames)
+  })
+
   plotRendered <- reactiveVal(FALSE)
 
   observeEvent(input$calculate_lt, {
     plotRendered(TRUE)
-  })
-
-  output$download_buttons <- renderUI({
-    if (plotRendered()) {
-      div(
-        downloadButton("downloadPlot", "Download Plot"),
-        downloadButton("downloadData", "Download Data")
-      )
-    }
   })
 
   ages_data <- reactive({
@@ -429,56 +444,27 @@ app_server <- function(input, output, session) {
     )
   })
 
-  tabs <- reactive({
-    list(
-      list(
-        menu = "Mortality Rate Comparison",
-        id = "Mortality Rate Comparison",
-        content = list(
-          if (!plotRendered()) {
-            uiOutput("placeholder_mortality_rate_comparison")
-          } else {
-            withSpinner(
-              plotlyOutput("plot_mortality_rate_comparison", height = "600px")
-            )
-          }
-        )
-      ),
-      list(
-        menu = "Survival Curve",
-        id = "Survival Curve",
-        content = list(
-          if (!plotRendered()) {
-            uiOutput("placeholder_survival_curve")
-          } else {
-            withSpinner(
-              plotlyOutput("plot_survival_curve", height = "600px")
-            )
-          }
-        )
-      ),
-      list(
-        menu = "Death Distribution",
-        id = "Death Distribution",
-        content = list(
-          if (!plotRendered()) {
-            uiOutput("placeholder_death_distribution")
-          } else {
-            withSpinner(
-              plotlyOutput("plot_death_distribution", height = "600px")
-            )
-          }
-        )
-      )
-    )
+  renderTabContent <- function(id, plotName) {
+    output[[id]] <- renderUI({
+      if (!plotRendered()) {
+        uiOutput(sprintf("placeholder_%s", plotName))
+      } else {
+        withSpinner(plotlyOutput(sprintf("plot_%s", plotName), height = "600px"))
+      }
+    })
+  }
+
+  lapply(seq_along(tabNames), function(i) {
+    renderTabContent(sprintf("tabContent%s", i), gsub(" ", "_", tolower(tabNames[i])))
   })
 
-  # Render the tabs in the UI
-  output$tabs <- renderUI({
-    tabset(
-      id = "tabset",
-      tabs = tabs()
-    )
+  output$render_plots <- renderUI({
+    lapply(seq_along(tabNames), function(i) {
+      conditionalPanel(
+        condition = sprintf("input.tabSelector === '%s'", tabNames[i]),
+        uiOutput(sprintf("tabContent%s", i))
+      )
+    })
   })
 
   observeEvent(input$calculate_lt, {
@@ -512,7 +498,7 @@ app_server <- function(input, output, session) {
         info = FALSE,
         searching = FALSE,
         columnDefs = list(
-          list(targets = c("Label"), render = JS(renderKaTeX))
+          list(targets = c("Label"), render = JS(RENDERKATEX))
         )
       )
     ) %>%
@@ -564,8 +550,23 @@ app_server <- function(input, output, session) {
   setupDownloadHandlers(output, lt_plots, data_out, input)
 
   output$download_button <- renderUI({
+    req(input$get_screen_width)
     if (plotRendered()) {
-      downloadButton("download_all", "Download All", class = "ui blue button")
+      sizes <- detect_font_size(input$get_screen_width)
+      print(sizes)
+      print(input$get_screen_width)
+
+      if (sizes$type == "mobile") {
+        div(
+          style = "width: 100%; display: grid;",
+          downloadButton("download_all", "Download All", class = "ui blue button")
+        )
+      } else {
+        div(
+          style = "margin-left: auto;",
+          downloadButton("download_all", "Download All", class = "ui blue button")
+        )
+      }
     }
   })
 
@@ -654,12 +655,13 @@ app_server <- function(input, output, session) {
     }
   )
 
+
   observeEvent(input$reset_lt, {
     # Update widgets to their default values
     updateSelectInput(session, "input_oanew", selected = 100)
     updateSelectInput(session, "input_age_out", selected = "single")
     updateSelectInput(session, "input_sex", selected = "Total")
-    updateSelectInput(session, "input_extrapLaw", selected = extrap_laws[1])
+    updateSelectInput(session, "input_extrapLaw", selected = EXTRAP_LAWS[1])
     updateSelectInput(session, "input_a0rule", selected = "Andreev-Kingkade")
     updateSelectInput(session, "input_axmethod", selected = "UN (Greville)")
 
