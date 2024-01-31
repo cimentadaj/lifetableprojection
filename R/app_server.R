@@ -638,6 +638,12 @@ app_server <- function(input, output, session) {
       )
 
       write.csv(
+        data_out()$lt$lt,
+        file = file.path(main_plot_path, "lifetable_results.csv"),
+        row.names = FALSE
+      )
+
+      write.csv(
         diagnostics_table(),
         file = file.path(main_plot_path, "diagnostics", "diagnostics_summary.csv"),
         row.names = FALSE
