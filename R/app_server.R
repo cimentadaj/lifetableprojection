@@ -58,7 +58,7 @@ displayValidationResults <- function(results) {
     wellPanel(
       class = "danger",
       HTML("Check Failures:<br>"),
-      HTML(paste("\u274C", toTitleCase(failed_checks$check), collapse = "<br>"))
+      HTML(paste("\u274C", toTitleCase(failed_checks$message), collapse = "<br>"))
     )
   }
 }
