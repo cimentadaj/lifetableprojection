@@ -12,6 +12,7 @@ input_page <- function() {
     create_field_set("", "Output Age Classes", "input_age_out", c("single", "abridged"), "single"),
     create_field_set("", "Sex", "input_sex", c("Total", "Female", "Male"), "Total"),
     uiOutput("ages_to_use"),
+    uiOutput("extrap_from_data"),
     br(),
     # Advanced Inputs - Initially Hidden
     div(
@@ -21,7 +22,6 @@ input_page <- function() {
         class = "ui two column grid",
         div(
           class = "column",
-          create_field_set("", "Extrap. Jump-off Age", "input_extrapFrom", input_selected = 80, numeric_input = TRUE),
           create_field_set("", "Extrapolation Law", "input_extrapLaw", EXTRAP_LAWS, EXTRAP_LAWS[1]),
           create_field_set("", "Lifetable Radix", "input_radix", input_selected = 100000, numeric_input = TRUE)
         ),

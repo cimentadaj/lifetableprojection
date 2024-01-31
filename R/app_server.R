@@ -405,6 +405,22 @@ app_server <- function(input, output, session) {
   # Define tab names and IDs
   tabNames <- names(lt_plots)
 
+  extrap_age <- reactive({
+    req(data_in)
+    num <- as.numeric(gsub("+", "", max(data_in()$Age)))
+    num - 20
+  })
+
+  output$extrap_from_data <- renderUI({
+    create_field_set(
+      "",
+      "Extrap. Jump-off Age",
+      "input_extrapFrom",
+      input_selected = extrap_age(),
+      numeric_input = TRUE
+    )
+  })
+
   output$select_plots <- renderUI({
     selectInput(inputId = "tabSelector", label = NULL, choices = tabNames)
   })
@@ -587,8 +603,6 @@ app_server <- function(input, output, session) {
     req(input$get_screen_width)
     if (plotRendered()) {
       sizes <- detect_font_size(input$get_screen_width)
-      print(sizes)
-      print(input$get_screen_width)
 
       if (sizes$type == "mobile") {
         div(
@@ -712,7 +726,7 @@ app_server <- function(input, output, session) {
     )
 
     # Update the numeric inputs
-    update_numeric_input(session, "input_extrapFrom", value = 80)
+    update_numeric_input(session, "input_extrapFrom", value = extrap_age())
     update_numeric_input(session, "input_radix", value = 100000)
     update_numeric_input(session, "input_srb", value = 1.05)
   })
