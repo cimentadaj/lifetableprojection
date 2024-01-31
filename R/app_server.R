@@ -398,7 +398,8 @@ app_server <- function(input, output, session) {
   lt_plots <- list(
     "Mortality Rate Comparison" = lt_nmx,
     "Survival Curve" = lt_lx,
-    "Death Distribution" = lt_ndx
+    "Death Distribution" = lt_ndx,
+    "Lifetable Results" = data_out
   )
 
   # Define tab names and IDs
@@ -444,18 +445,22 @@ app_server <- function(input, output, session) {
     )
   })
 
-  renderTabContent <- function(id, plotName) {
+  renderTabContent <- function(id, plotName, OutputFunction) {
     output[[id]] <- renderUI({
       if (!plotRendered()) {
         uiOutput(sprintf("placeholder_%s", plotName))
       } else {
-        withSpinner(plotlyOutput(sprintf("plot_%s", plotName), height = "600px"))
+        withSpinner(OutputFunction(sprintf("plot_%s", plotName), height = "600px"))
       }
     })
   }
 
   lapply(seq_along(tabNames), function(i) {
-    renderTabContent(sprintf("tabContent%s", i), gsub(" ", "_", tolower(tabNames[i])))
+    renderTabContent(
+      sprintf("tabContent%s", i),
+      gsub(" ", "_", tolower(tabNames[i])),
+      ifelse(grepl("Lifetable Results", tabNames[i]), DTOutput, plotlyOutput)
+    )
   })
 
   output$render_plots <- renderUI({
@@ -545,6 +550,35 @@ app_server <- function(input, output, session) {
   # Plot for Mortality Rate Comparison
   output$plot_survival_curve <- renderPlotly({
     lt_plots[["Survival Curve"]]()$plotly
+  })
+
+  # Placeholder for Life table results
+  output$placeholder_lifetable_results <- renderUI({
+    tags$img(
+      src = "www/placeholder_plot.png",
+      height = "600px",
+      width = "100%"
+    )
+  })
+
+  output$plot_lifetable_results <- renderDT({
+    dt <- lt_plots[["Lifetable Results"]]()$lt$lt
+    dt$AgeInt <- NULL
+    mask <- vapply(dt, is.numeric, FUN.VALUE = logical(1))
+    dt[mask] <- round(dt[mask], 2)
+
+    dt <- datatable(
+      dt,
+      options = list(
+        paging = TRUE,
+        searching = FALSE,
+        lengthChange = FALSE,
+        dom = "lfrtp"
+      ),
+      rownames = FALSE
+    )
+
+    dt
   })
 
   setupDownloadHandlers(output, lt_plots, data_out, input)
