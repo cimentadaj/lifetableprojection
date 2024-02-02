@@ -395,10 +395,21 @@ app_server <- function(input, output, session) {
     )
   })
 
+  lt_nqx <- reactive({
+    gg_plt <- data_out()$lt$plots$nqx$nqx_plot
+    list(
+      gg = gg_plt,
+      plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+      dt = data_out()$lt$plots$lx$nqx_plot_data
+    )
+  })
+
+
   lt_plots <- list(
     "Mortality Rate Comparison" = lt_nmx,
     "Survival Curve" = lt_lx,
     "Death Distribution" = lt_ndx,
+    "Conditional Death Probabilities" = lt_nqx,
     "Lifetable Results" = data_out
   )
 
@@ -540,8 +551,27 @@ app_server <- function(input, output, session) {
     lt_plots[["Mortality Rate Comparison"]]()$plotly
   })
 
+  # Plot for Mortality Rate Comparison
+  output$plot_survival_curve <- renderPlotly({
+    lt_plots[["Survival Curve"]]()$plotly
+  })
+
   # Placeholder for Survival Curve
   output$placeholder_survival_curve <- renderUI({
+    tags$img(
+      src = "www/placeholder_plot.png",
+      height = "600px",
+      width = "100%"
+    )
+  })
+
+  # Plot for Mortality Rate Comparison
+  output$plot_conditional_death_probabilities <- renderPlotly({
+    lt_plots[["Conditional Death Probabilities"]]()$plotly
+  })
+
+  # Placeholder for Survival Curve
+  output$placeholder_conditional_death_probabilities <- renderUI({
     tags$img(
       src = "www/placeholder_plot.png",
       height = "600px",
@@ -561,11 +591,6 @@ app_server <- function(input, output, session) {
       height = "600px",
       width = "100%"
     )
-  })
-
-  # Plot for Mortality Rate Comparison
-  output$plot_survival_curve <- renderPlotly({
-    lt_plots[["Survival Curve"]]()$plotly
   })
 
   # Placeholder for Life table results
