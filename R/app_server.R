@@ -83,13 +83,88 @@ app_server <- function(input, output, session) {
   data_in <- reactiveVal()
 
   # Update data_in when a file is uploaded
-  observe({
+  observeEvent(input$file1, {
     data_in(readData(input))
+
+    # Wait for check_results to be available
+    req(check_results())
+
+    if (all(check_results()$pass == "Pass")) {
+      print("File validation passed")
+
+      # Create the multi-select input for identifier columns
+      column_selector <- selectInput(
+        "id_columns",
+        label = "Select Identifier Columns",
+        choices = names(data_in()),
+        multiple = TRUE,
+        selectize = TRUE
+      )
+
+      # Create the content for shinyalert
+      alert_content <- div(
+        column_selector,
+        br(),
+        br(),
+        br(),
+        br(),
+        br(),
+        br()
+      )
+
+      column_selection_modal <- function(extra_content = "") {
+          shinyalert(
+            title = "Column Selection",
+            text = paste0(alert_content, "<br/>", "<br/>", extra_content),
+            html = TRUE,
+            closeOnEsc = FALSE,
+            closeOnClickOutside = FALSE,
+            showConfirmButton = TRUE,
+            confirmButtonText = "Confirm",
+        )
+      }
+
+
+      validate_groups <- function() {
+        selected_columns <- input$id_columns
+
+        if (length(selected_columns) > 0) {
+          # Mockup for group validation
+          valid_groups <-
+            ODAPbackend:::create_groupid(data_in(), selected_columns) %>%
+            ODAPbackend:::check_groupid()
+
+          valid_groups
+        } else {
+          FALSE
+        }
+      }
+
+
+      if (!validate_groups()) {
+        column_selection_modal()
+      }
+
+      observeEvent(input$shinyalert, {
+        if (!validate_groups()) {
+          column_selection_modal(
+            extra_content =  '<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;"> The specified columns do not identify each row uniquely </p>'
+          )
+        }
+      })
+
+      if (validate_groups()) {
+        data_in(ODAPbackend:::create_groupid(data_in(), selected_columns))
+      }
+
+    }
   })
 
   # Update data_in when the button is clicked
   observeEvent(input$continue_no_data, {
-    data_in(read.csv(dt_ex))
+    dt_read <- read.csv(dt_ex)
+    dt_read$`.id` <- 1
+    data_in(dt_read)
   })
 
   check_results <- reactive({
