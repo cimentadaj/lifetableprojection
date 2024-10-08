@@ -298,7 +298,7 @@ app_ui <- function(request) {
           div(
             class = "button-container-forecast",
             style = "display: flex; gap: 10px;",
-            action_button("back_to_landing", "Back", class = "ui grey button"),
+            action_button("back_to_adjustment", "Back", class = "ui grey button"),
             action_button("calculate_lt", "Calculate", class = "ui blue button"),
             action_button("reset_lt", "Reset Options", class = "ui blue button"),
             uiOutput("download_button")
@@ -320,6 +320,31 @@ app_ui <- function(request) {
             class = "ui container",
             style = "padding-top: 20px;",
             DTOutput("lt_summary_table")
+          )
+        )
+      ),
+      hidden(
+        div(
+          id = "step_adjustment",
+          div(
+            class = "button-container-adjustment",
+            style = "display: flex; gap: 10px; margin-bottom: 20px;",
+            action_button("back_to_diagnostics", "Back", class = "ui grey button"),
+            action_button("forward_to_lifetable", "Next", class = "ui blue button")
+          ),
+          tabset(
+            id = "adjustment_tabs",
+            list(
+              list(
+                menu = "Correct Abridged Ages",
+                content = create_adjustment_tab("correct_abridged", "correct_abridged_inputs", "correct_abridged_plot")
+              ),
+              list(
+                menu = "Add Smoothness",
+                content = create_adjustment_tab("add_smoothness", "add_smoothness_inputs", "add_smoothness_plot")
+              )
+              # Add more tabs here as needed
+            )
           )
         )
       ),
@@ -351,5 +376,24 @@ golem_add_external_resources <- function() {
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
+  )
+}
+
+create_adjustment_tab <- function(tab_name, input_id, plot_id) {
+  div(
+    div(style = "padding: 10px 0;"),
+    sidebar_layout_responsive(
+      list(
+        children = div(
+          uiOutput(input_id),
+          br(),
+          action_button(paste0("execute_", tab_name), "Execute", class = "ui blue button")
+        )
+      ),
+      div(
+        plotOutput(plot_id, height = "400px")
+      )
+    ),
+    div(style = "padding: 10px 0;")
   )
 }

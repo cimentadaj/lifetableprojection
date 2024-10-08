@@ -113,14 +113,14 @@ app_server <- function(input, output, session) {
       )
 
       column_selection_modal <- function(extra_content = "") {
-          shinyalert(
-            title = "Column Selection",
-            text = paste0(alert_content, "<br/>", "<br/>", extra_content),
-            html = TRUE,
-            closeOnEsc = FALSE,
-            closeOnClickOutside = FALSE,
-            showConfirmButton = TRUE,
-            confirmButtonText = "Confirm",
+        shinyalert(
+          title = "Column Selection",
+          text = paste0(alert_content, "<br/>", "<br/>", extra_content),
+          html = TRUE,
+          closeOnEsc = FALSE,
+          closeOnClickOutside = FALSE,
+          showConfirmButton = TRUE,
+          confirmButtonText = "Confirm",
         )
       }
 
@@ -129,7 +129,7 @@ app_server <- function(input, output, session) {
         selected_columns <- input$id_columns
 
         if (length(selected_columns) > 0) {
-          # Mockup for group validation
+          library(dplyr)
           valid_groups <-
             ODAPbackend:::create_groupid(data_in(), selected_columns) %>%
             ODAPbackend:::check_groupid()
@@ -148,7 +148,7 @@ app_server <- function(input, output, session) {
       observeEvent(input$shinyalert, {
         if (!validate_groups()) {
           column_selection_modal(
-            extra_content =  '<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;"> The specified columns do not identify each row uniquely </p>'
+            extra_content = '<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;"> The specified columns do not identify each row uniquely </p>'
           )
         }
       })
@@ -156,7 +156,6 @@ app_server <- function(input, output, session) {
       if (validate_groups()) {
         data_in(ODAPbackend:::create_groupid(data_in(), selected_columns))
       }
-
     }
   })
 
@@ -334,14 +333,60 @@ app_server <- function(input, output, session) {
     shinyalert(title = "&#x1F50D Data Diagnostics", html = TRUE, size = "l", text = myContent)
   })
 
+  # observeEvent(input$forward_step, {
+  #   hide("landing_page")
+  #   show("step_input")
+  # })
+
   observeEvent(input$forward_step, {
     hide("landing_page")
+    show("step_adjustment")
+  })
+
+  observeEvent(input$back_to_diagnostics, {
+    hide("step_adjustment")
+    show("landing_page")
+  })
+
+  observeEvent(input$forward_to_lifetable, {
+    hide("step_adjustment")
     show("step_input")
   })
 
-  observeEvent(input$back_to_landing, {
+  observeEvent(input$back_to_adjustment, {
     hide("step_input")
-    show("landing_page")
+    show("step_adjustment")
+  })
+
+  output$correct_abridged_inputs <- renderUI({
+    div(
+      numericInput("abridged_start", "Start Age", value = 0),
+      numericInput("abridged_end", "End Age", value = 100)
+    )
+  })
+
+  output$add_smoothness_inputs <- renderUI({
+    div(
+      sliderInput("smoothness_factor", "Smoothness Factor", min = 0, max = 1, value = 0.5)
+    )
+  })
+
+  observeEvent(input$execute_correct_abridged, {
+    # Perform the correction for abridged ages
+    # Update the data_in() reactive value with the adjusted data
+    # Generate and render the plot
+    output$correct_abridged_plot <- renderPlot({
+      # Generate plot based on the adjusted data
+    })
+  })
+
+  observeEvent(input$execute_add_smoothness, {
+    # Apply smoothness to the data
+    # Update the data_in() reactive value with the smoothed data
+    # Generate and render the plot
+    output$add_smoothness_plot <- renderPlot({
+      # Generate plot based on the smoothed data
+    })
   })
 
   data_out <- eventReactive(input$calculate_lt, calculateLifeTable(data_in(), input))

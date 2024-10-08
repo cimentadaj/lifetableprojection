@@ -5,7 +5,7 @@
 #' @param data_in Data frame containing mortality data.
 #' @param input List of parameters from Shiny input.
 #' @return List containing life table calculation results.
-#' @importFrom ODAPbackend lt_flexible
+#' @importFrom ODAPbackend lt_flexible lt_plot
 #' @export
 calculateLifeTable <- function(data_in, input) {
   req(input$calculate_lt)
@@ -31,5 +31,7 @@ calculateLifeTable <- function(data_in, input) {
     Sex = input$input_sex
   )
 
-  list(lt = lt_res, extrapfrom = input_extrapfrom)
+  final_lt_res <- list(lt = lt_res, plots = lt_plot(data_in, lt_res, input_extrapfrom))
+
+  list(lt = final_lt_res, extrapfrom = input_extrapfrom)
 }
