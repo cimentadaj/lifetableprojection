@@ -39,6 +39,7 @@ validateData <- function(data) {
 #' @importFrom stats setNames
 #' @export
 renderDataTable <- function(data) {
+  data <- data[!names(data) %in% c(".id", ".id_label")]
   sample_df <- head(data)
   etc_df <- setNames(replicate(ncol(sample_df), "   ...", simplify = FALSE), names(sample_df))
   rhandsontable(rbind(sample_df, as.data.frame(etc_df)), readOnly = TRUE)

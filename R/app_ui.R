@@ -50,7 +50,7 @@ input_page <- function() {
 #' @importFrom shiny div HTML h1 p uiOutput br plotOutput strong h3
 #' @importFrom shinyjs useShinyjs hidden
 #' @importFrom plotly plotlyOutput
-#' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout_responsive sidebar_panel tabset
+#' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_panel tabset
 #' @importFrom untheme fluidUnTheme sidebar_layout_responsive
 #' @importFrom DT DTOutput formatRound JS
 #' @importFrom shinycssloaders withSpinner
