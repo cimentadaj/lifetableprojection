@@ -8,6 +8,7 @@
 #' @importFrom ODAPbackend lt_flexible lt_plot
 #' @export
 calculateLifeTable <- function(data_in, input) {
+  print("Went into calculate lifetable")
   req(input$calculate_lt)
   input_extrapfrom <- as.numeric(input$input_extrapFrom)
 
@@ -16,6 +17,9 @@ calculateLifeTable <- function(data_in, input) {
   ages_to_use <- data_in$Age[begin_age:end_age]
 
   library(ggplot2)
+  print(begin_age)
+  print(end_age)
+  print(ages_to_use)
 
   lt_res <- lt_flexible(
     data_in = data_in,
@@ -29,9 +33,8 @@ calculateLifeTable <- function(data_in, input) {
     a0rule = input$input_a0rule,
     axmethod = input$input_axmethod,
     Sex = input$input_sex
-  )
+  ) %>%
+    mutate(.id = as.numeric(.id))
 
-  final_lt_res <- list(lt = lt_res, plots = lt_plot(data_in, lt_res, input_extrapfrom))
-
-  list(lt = final_lt_res, extrapfrom = input_extrapfrom)
+  return(lt_res)
 }

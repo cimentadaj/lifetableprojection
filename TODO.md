@@ -60,3 +60,22 @@ Version 2.0:
 - [ ] Add log label on Empirical Mx diagnostics plot. Update: Currently not possible, see commented code inside nmx plot in diagnostics.
 - [ ] When user provides sex in the excel file, the input widget for gender should take the values from there.
 - [ ] Remove sex argument if sex is not provided
+
+
+- TODO (2nd September)
+
+- [X] Adapt UI to choose columns to identify unique groups
+
+- [ ] Add tabs for the plots of separate groups
+
+- [ ] Accumulate all steps of the different steps saving the arguments for reproducibility in a nested data frame.
+
+- [ ] Build logic so that if a reproducible CSV file is uploaded, all parameters would be taken from there
+
+- [ ] Switch: 📈 Transform your data into insightful forecasts. -> Transform your demographic data into insights.
+
+- [X] -> Begin by uploading a CSV file
+
+- [X] Tim to provide verify_subset (data, columns), return TRUE for correct keys and FALSE for incorrect keys
+
+- [X] If verify_subset is TRUE, I create a .id column that groups everything

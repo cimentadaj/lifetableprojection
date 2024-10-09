@@ -28,7 +28,7 @@ setupDownloadHandlers <- function(output, plots, data, input) {
       "lifetable_data.csv"
     },
     content = function(file) {
-      write.csv(data()$lt$lt, file, row.names = FALSE)
+      write.csv(data, file, row.names = FALSE)
     }
   )
 }
@@ -67,7 +67,7 @@ generatePlot <- function(data, results) {
 #' @importFrom stats reshape quantile
 #' @importFrom DT datatable renderDT dataTableOutput
 #' @importFrom untheme detect_font_size
-#' @importFrom ODAPbackend plot_initial_data check_heaping_general lt_summary
+#' @importFrom ODAPbackend plot_initial_data check_heaping_general lt_summary smooth_flexible
 #' @importFrom utils zip
 #' @export
 app_server <- function(input, output, session) {
@@ -124,7 +124,6 @@ app_server <- function(input, output, session) {
         )
       }
 
-
       validate_groups <- function() {
         selected_columns <- input$id_columns
 
@@ -140,7 +139,6 @@ app_server <- function(input, output, session) {
         }
       }
 
-
       if (!validate_groups()) {
         column_selection_modal()
       }
@@ -153,9 +151,12 @@ app_server <- function(input, output, session) {
         }
       })
 
-      if (validate_groups()) {
-        data_in(ODAPbackend:::create_groupid(data_in(), selected_columns))
-      }
+      observeEvent(input$shinyalert, {
+        if (validate_groups()) {
+          data_in(ODAPbackend:::create_groupid(data_in(), input$id_columns))
+          print(data_in())
+        }
+      })
     }
   })
 
@@ -163,6 +164,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$continue_no_data, {
     dt_read <- read.csv(dt_ex)
     dt_read$`.id` <- 1
+    dt_read$`.id_label` <- "All"
     data_in(dt_read)
   })
 
@@ -171,6 +173,8 @@ app_server <- function(input, output, session) {
     # has been clicked, we need to wait.
     req(data_in())
     validateData(data_in())
+    # TODO: REMOVE
+    list(pass = "Pass")
   })
 
   output$data_table <- renderRHandsontable(renderDataTable(read.csv(dt_ex)))
@@ -365,79 +369,88 @@ app_server <- function(input, output, session) {
     )
   })
 
-  output$add_smoothness_inputs <- renderUI({
+  output$smoothing_inputs <- renderUI({
     div(
-      sliderInput("smoothness_factor", "Smoothness Factor", min = 0, max = 1, value = 0.5)
+      selectInput("smoothing_variable", "Variable", choices = c("Exposures", "Deaths")),
+      selectInput(
+        "smoothing_rough_method",
+        "Rough Method",
+        choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
+        selected = "auto"
+      ),
+      selectInput(
+        "smoothing_fine_method",
+        "Fine Method",
+        choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+        selected = "none"
+      ),
+      selectInput(
+        "smoothing_age_out",
+        "Age Output",
+        choices = c("single", "abridged", "5-year"),
+        selected = "abridged"
+      ),
+      numericInput("smoothing_u5m", "Under-5 Mortality (optional)", value = NULL),
+      ## checkboxInput("smoothing_constrain_infants", "Constraint Infants", value = TRUE),
+      shiny.semantic::checkbox_input("smoothing_constrain_infants", "Constraint Infants", is_marked = TRUE)
     )
   })
 
-  observeEvent(input$execute_correct_abridged, {
-    # Perform the correction for abridged ages
-    # Update the data_in() reactive value with the adjusted data
-    # Generate and render the plot
-    output$correct_abridged_plot <- renderPlot({
-      # Generate plot based on the adjusted data
+  # Create a reactive value to store the group plots and labels
+  smoothing_data <- reactiveVal(NULL)
+
+  observeEvent(input$execute_smoothing, {
+    print("Smoothing button clicked")
+    add_adjustment_pill("Smoothing")
+
+    # Perform smoothing
+    smooth_result <- smooth_flexible(
+      data_in(),
+      variable = input$smoothing_variable,
+      rough_method = input$smoothing_rough_method,
+      fine_method = input$smoothing_fine_method,
+      constrain_infants = input$smoothing_constrain_infants,
+      age_out = input$smoothing_age_out,
+      u5m = input$smoothing_u5m
+    )
+
+    distinct_labs <- data_in() %>% distinct(`.id`, `.id_label`)
+
+    labels <- distinct_labs$`.id_label`
+
+    # Create a list of plots for each group
+    group_plots <- lapply(distinct_labs$`.id`, function(group_id) {
+      group_label <- distinct_labs$.id_label[distinct_labs$.id == as.numeric(group_id)]
+      plot <- smooth_result$figures[[group_id]]$figure
+
+      return(list(id = group_id, label = group_label, plot = plot))
+    })
+
+    # Store the group plots and labels in a reactive value
+    smoothing_data(list(plots = group_plots, labels = distinct_labs))
+  })
+
+  # Render the group selection dropdown UI
+  output$smoothing_group_select_ui <- renderUI({
+    req(smoothing_data())
+    group_labels <- smoothing_data()$labels
+
+    selectInput("smoothing_group_select",
+      "Select Group",
+      choices = setNames(group_labels$.id, group_labels$.id_label),
+      selected = group_labels$.id[1]
+    )
+  })
+
+  # Observer for group selection change
+  observeEvent(input$smoothing_group_select, {
+    req(smoothing_data())
+    selected_plot <- smoothing_data()$plots[[which(sapply(smoothing_data()$plots, function(x) x$id == input$smoothing_group_select))]]$plot
+
+    output$smoothing_plot <- renderPlotly({
+      ggplotly(selected_plot)
     })
   })
-
-  observeEvent(input$execute_add_smoothness, {
-    # Apply smoothness to the data
-    # Update the data_in() reactive value with the smoothed data
-    # Generate and render the plot
-    output$add_smoothness_plot <- renderPlot({
-      # Generate plot based on the smoothed data
-    })
-  })
-
-  data_out <- eventReactive(input$calculate_lt, calculateLifeTable(data_in(), input))
-
-  lt_nmx <- reactive({
-    gg_plt <- data_out()$lt$plots$nMx$nMx_plot
-    list(
-      gg = gg_plt,
-      plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-      dt = data_out()$lt$plots$nMx$nMx_plot_data
-    )
-  })
-
-  lt_ndx <- reactive({
-    gg_plt <- data_out()$lt$plots$ndx$ndx_plot
-    list(
-      gg = gg_plt,
-      plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-      dt = data_out()$lt$plots$ndx$ndx_plot_data
-    )
-  })
-
-  lt_lx <- reactive({
-    gg_plt <- data_out()$lt$plots$lx$lx_plot
-    list(
-      gg = gg_plt,
-      plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-      dt = data_out()$lt$plots$lx$lx_plot_data
-    )
-  })
-
-  lt_nqx <- reactive({
-    gg_plt <- data_out()$lt$plots$nqx$nqx_plot
-    list(
-      gg = gg_plt,
-      plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-      dt = data_out()$lt$plots$lx$nqx_plot_data
-    )
-  })
-
-
-  lt_plots <- list(
-    "Mortality Rate Comparison" = lt_nmx,
-    "Survival Curve" = lt_lx,
-    "Death Distribution" = lt_ndx,
-    "Conditional Death Probabilities" = lt_nqx,
-    "Lifetable Results" = data_out
-  )
-
-  # Define tab names and IDs
-  tabNames <- names(lt_plots)
 
   extrap_age <- reactive({
     req(data_in)
@@ -453,16 +466,6 @@ app_server <- function(input, output, session) {
       input_selected = extrap_age(),
       numeric_input = TRUE
     )
-  })
-
-  output$select_plots <- renderUI({
-    selectInput(inputId = "tabSelector", label = NULL, choices = tabNames)
-  })
-
-  plotRendered <- reactiveVal(FALSE)
-
-  observeEvent(input$calculate_lt, {
-    plotRendered(TRUE)
   })
 
   ages_data <- reactive({
@@ -495,6 +498,216 @@ app_server <- function(input, output, session) {
     )
   })
 
+  # Create a reactive value to store the life table data and plots
+  lt_data <- reactiveVal(NULL)
+
+  # Function to calculate life table and generate plots
+  calculate_lt_and_plots <- function(data, input) {
+    current_pills <- executed_adjustments()
+
+    if ("Smoothing" %in% names(current_pills)) {
+      print("Running smoothing")
+      ex1 <- smooth_flexible(
+        data,
+        variable = "Exposures",
+        rough_method = input$smoothing_rough_method,
+        fine_method = input$smoothing_fine_method,
+        constrain_infants = input$smoothing_constrain_infants,
+        age_out = input$smoothing_age_out,
+        u5m = input$smoothing_u5m
+      )
+
+      ex2 <- smooth_flexible(
+        data,
+        variable = "Deaths",
+        rough_method = input$smoothing_rough_method,
+        fine_method = input$smoothing_fine_method,
+        constrain_infants = input$smoothing_constrain_infants,
+        age_out = input$smoothing_age_out,
+        u5m = input$smoothing_u5m
+      )
+
+      data <-
+        ex1$data %>%
+        full_join(ex2$data) %>%
+        mutate(.id = as.numeric(.id), sex = .id)
+
+    print("Smoothing applied")
+    } else {
+      print("No smoothing applied")
+    }
+
+    print(data)
+    lt_res <- calculateLifeTable(data, input)
+    lt_res <- lt_res %>% mutate(.id = as.numeric(.id))
+    print(lt_res)
+    print("LT calculated")
+
+    group_labels <-
+      data_in() %>%
+      distinct(.id, .id_label) %>%
+      mutate(.id = as.numeric(.id))
+    group_names <- group_labels$.id
+    print("grabbed groups")
+
+    print("data")
+    print(data)
+    print("data end")
+
+    plots <- lt_plot(data, lt_res, input$input_extrapFrom)
+
+    print("semi-finished")
+    lt_res_summary <- lt_summary(lt_res)
+    print("finished")
+
+    list(
+      plots = plots,
+      labels = group_labels,
+      summary = lt_res_summary,
+      lt = lt_res
+    )
+  }
+
+  labels_df <- reactive({
+    data_in() %>%
+      distinct(.id, .id_label)
+  })
+
+  plotRendered <- reactiveVal(FALSE)
+
+
+  # Event to trigger life table calculation and plot generation
+  observeEvent(input$calculate_lt, {
+    req(data_in())
+    lt_data(calculate_lt_and_plots(data_in(), input))
+    plotRendered(TRUE)
+  })
+
+
+  # Render the group selection dropdown UI
+  output$lt_group_select_ui <- renderUI({
+    req(lt_data())
+    group_labels <- labels_df()
+
+    selectInput("lt_group_select",
+      "Select Group",
+      choices = setNames(group_labels$.id, group_labels$.id_label),
+      selected = group_labels$.id[1]
+    )
+  })
+
+
+  output$select_plots <- renderUI({
+    selectInput(inputId = "tabSelector", label = NULL, choices = tabNames)
+  })
+
+
+  # Observer for group selection change
+  observeEvent(input$lt_group_select, {
+    req(lt_data())
+    id_col <- labels_df()$`.id`[labels_df()$`.id` == as.numeric(input$lt_group_select)]
+    plot_slot <- which(names(lt_data()$plots) == as.character(id_col))
+    print("Test")
+    print(id_col)
+    print(labels_df())
+    print(input$lt_group_select)
+    selected_plots <- lt_data()$plots[[plot_slot]]
+
+    print("selected pltos")
+    print(names(selected_plots))
+
+    # Update all plot outputs
+    output$plot_mortality_rate_comparison <- renderPlotly({
+      ggplotly(selected_plots$nMx$nMx_plot)
+    })
+
+    output$plot_survival_curve <- renderPlotly({
+      ggplotly(selected_plots$lx$lx_plot)
+    })
+
+    output$plot_conditional_death_probabilities <- renderPlotly({
+      ggplotly(selected_plots$nqx$nqx_plot)
+    })
+
+    output$plot_death_distribution <- renderPlotly({
+      ggplotly(selected_plots$ndx$ndx_plot)
+    })
+
+    lt_nmx <- reactive({
+      gg_plt <- selected_plot$nMx$nMx_plot
+      list(
+        gg = gg_plt,
+        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+        dt = selected_plot$nMx$nMx_plot_data
+      )
+    })
+
+    lt_ndx <- reactive({
+      gg_plt <- selected_plot$ndx$ndx_plot
+      list(
+        gg = gg_plt,
+        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+        dt = selected_plot$ndx$ndx_plot_data
+      )
+    })
+
+    lt_lx <- reactive({
+      gg_plt <- selected_plot$lx$lx_plot
+      list(
+        gg = gg_plt,
+        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+        dt = selected_plot$lx$lx_plot_data
+      )
+    })
+
+    lt_nqx <- reactive({
+      gg_plt <- selected_plot$nqx$nqx_plot
+      list(
+        gg = gg_plt,
+        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+        dt = selected_plot$nqx$nqx_plot_data
+      )
+    })
+
+
+    lt_plots <- list(
+      "Mortality Rate Comparison" = lt_nmx,
+      "Survival Curve" = lt_lx,
+      "Death Distribution" = lt_ndx,
+      "Conditional Death Probabilities" = lt_nqx,
+      "Lifetable Results" = data_out
+    )
+
+  })
+
+  tabNames <- c(
+    "Mortality Rate Comparison",
+    "Survival Curve",
+    "Death Distribution",
+    "Conditional Death Probabilities",
+    "Lifetable Results"
+  )
+
+
+  # Render the life table summary table
+  output$lt_summary_table <- renderDT({
+    req(lt_data())
+    print("names lt")
+    print(names(lt_data()$summary))
+    datatable(
+      lt_data()$summary,
+      options = list(
+        dom = "t",
+        paging = FALSE,
+        info = FALSE,
+        searching = FALSE,
+        columnDefs = list(
+          list(targets = c("label"), render = JS(RENDERKATEX))
+        )
+      )
+    )
+  })
+
   renderTabContent <- function(id, plotName, OutputFunction) {
     output[[id]] <- renderUI({
       if (!plotRendered()) {
@@ -520,44 +733,6 @@ app_server <- function(input, output, session) {
         uiOutput(sprintf("tabContent%s", i))
       )
     })
-  })
-
-  observeEvent(input$calculate_lt, {
-    output$lt_summary_indication <- renderUI({
-      div(
-        div(
-          class = "below-main-panel fade-in-icon", # Add the class here
-          shiny.semantic::icon("arrow down circle", style = "font-size: 3rem;")
-        ), div(
-          class = "below-main-panel",
-          h1("Life Table Summary Statistics"),
-        )
-      )
-    })
-  })
-
-  lifetable_summary_table <- reactive({
-    lt_res <- lt_summary(data_out()$lt$lt)
-    lt_res$message <- tools::toTitleCase(lt_res$message)
-    names(lt_res) <- tools::toTitleCase(names(lt_res))
-    lt_res
-  })
-
-  # Render the table
-  output$lt_summary_table <- renderDT({
-    datatable(
-      lifetable_summary_table()[c("Label", "Message", "Value")],
-      options = list(
-        dom = "t",
-        paging = FALSE,
-        info = FALSE,
-        searching = FALSE,
-        columnDefs = list(
-          list(targets = c("Label"), render = JS(RENDERKATEX))
-        )
-      )
-    ) %>%
-      formatRound("Value", 8)
   })
 
   # Placeholder for Mortality Rate Comparison
@@ -625,27 +800,162 @@ app_server <- function(input, output, session) {
     )
   })
 
-  output$plot_lifetable_results <- renderDT({
-    dt <- lt_plots[["Lifetable Results"]]()$lt$lt
-    dt$AgeInt <- NULL
-    mask <- vapply(dt, is.numeric, FUN.VALUE = logical(1))
-    dt[mask] <- round(dt[mask], 2)
+  # Setup download handlers
+  setupDownloadHandlers(
+    output,
+    function() lt_data()$plots,
+    function() lt_data()$lt,
+    input
+  )
 
-    dt <- datatable(
-      dt,
-      options = list(
-        paging = TRUE,
-        searching = FALSE,
-        lengthChange = FALSE,
-        dom = "lfrtp"
-      ),
-      rownames = FALSE
+  observeEvent(input$reset_lt, {
+    # Update widgets to their default values
+    updateSelectInput(session, "input_oanew", selected = 100)
+    updateSelectInput(session, "input_age_out", selected = "single")
+    updateSelectInput(session, "input_sex", selected = "Total")
+    updateSelectInput(session, "input_extrapLaw", selected = EXTRAP_LAWS[1])
+    updateSelectInput(session, "input_a0rule", selected = "Andreev-Kingkade")
+    updateSelectInput(session, "input_axmethod", selected = "UN (Greville)")
+
+    updateSliderInput(
+      session,
+      "slider_ages_to_use",
+      value = c(ages_data()$min_age_fit, max(ages_data()$all_ages))
     )
 
-    dt
+    # Update the numeric inputs
+    update_numeric_input(session, "input_extrapFrom", value = extrap_age())
+    update_numeric_input(session, "input_radix", value = 100000)
+    update_numeric_input(session, "input_srb", value = 1.05)
   })
 
-  setupDownloadHandlers(output, lt_plots, data_out, input)
+  # Create a reactive value to store the list of executed adjustments
+  executed_adjustments <- reactiveVal(list())
+
+  # Function to add a pill
+  add_adjustment_pill <- function(adjustment_name) {
+    current_adjustments <- executed_adjustments()
+    if (!(adjustment_name %in% names(current_adjustments))) {
+      current_adjustments[[adjustment_name]] <- TRUE
+      executed_adjustments(current_adjustments)
+      print(paste("Added pill:", adjustment_name))
+      print("Current adjustments:")
+      print(executed_adjustments())
+    }
+  }
+
+  # Function to remove a pill
+  remove_adjustment_pill <- function(adjustment_name) {
+    current_adjustments <- executed_adjustments()
+    current_adjustments[[adjustment_name]] <- NULL
+    executed_adjustments(current_adjustments)
+  }
+
+  # Observer for the "Add Smoothness" execute button
+  observeEvent(input$execute_add_smoothness, {
+    print("Add Smoothness button clicked")
+    add_adjustment_pill("Add Smoothness")
+    # Add your existing logic for executing the adjustment here
+  })
+
+  # Render the pills UI
+  output$adjustment_pills <- renderUI({
+    pills <- executed_adjustments()
+
+    pill_tags <- lapply(names(pills), function(adjustment_name) {
+      tags$span(
+        class = "ui label",
+        adjustment_name,
+        tags$i(class = "delete icon", onclick = sprintf("Shiny.setInputValue('remove_pill', '%s')", adjustment_name))
+      )
+    })
+
+    do.call(tags$div, c(list(id = "adjustment_pills", class = "ui labels"), pill_tags))
+  })
+
+  # Observer to handle pill removal
+  observeEvent(input$remove_pill, {
+    remove_adjustment_pill(input$remove_pill)
+    # Add logic here to undo the adjustment if necessary
+  })
+
+  ## # Create a reactive value to store the group plots and labels
+  ## lt_data <- reactiveVal(NULL)
+
+  ## observeEvent(input$calculate_lt, {
+  ##   req(data_in())
+
+  ##   lt_res <- calculateLifeTable(data_in(), input)
+
+  ##   group_labels <- data_in %>% distinct(.id, .id_label)
+
+  ##   # Get group names from lt_res$lt
+  ##   group_names <- group_labels$.id
+
+  ##   # Create a list of plots for each group
+  ##   group_plots <- lapply(group_names, function(group_id) {
+  ##     group_data <- lt_res$lt[lt_res$lt$.id == group_id, ]
+  ##     group_label <- group_labels$.id_label[group_labels$.id == as.numeric(group_id)]
+  ##     plots <- lt_plot(data_in()[data_in()$.id == group_id, ], group_data, input$input_extrapFrom)
+
+  ##     return(list(id = group_id, label = group_label, plots = plots))
+  ##   })
+
+  ##   # Store the group plots and labels in a reactive value
+  ##   lt_data(list(plots = group_plots, labels = group_labels, summary = lt_summary(lt_res$lt)))
+  ## })
+
+  ## # Render the group selection dropdown UI
+  ## output$lt_group_select_ui <- renderUI({
+  ##   req(lt_data())
+  ##   group_labels <- lt_data()$labels
+
+  ##   selectInput("lt_group_select",
+  ##               "Select Group",
+  ##               choices = setNames(group_labels$.id, group_labels$.id_label),
+  ##               selected = group_labels$.id[1])
+  ## })
+
+  # Observer for group selection change
+  ## observeEvent(input$lt_group_select, {
+  ##   req(lt_data())
+  ##   selected_plots <- lt_data()$plots[[which(sapply(lt_data()$plots, function(x) x$id == input$lt_group_select))]]$plots
+
+  ##   # Update all plot outputs
+  ##   output$plot_mortality_rate_comparison <- renderPlotly({
+  ##     ggplotly(selected_plots$nMx)
+  ##   })
+
+  ##   output$plot_survival_curve <- renderPlotly({
+  ##     ggplotly(selected_plots$lx)
+  ##   })
+
+  ##   output$plot_conditional_death_probabilities <- renderPlotly({
+  ##     ggplotly(selected_plots$nqx)
+  ##   })
+
+  ##   output$plot_death_distribution <- renderPlotly({
+  ##     ggplotly(selected_plots$ndx)
+  ##   })
+  ## })
+
+  ## # Render the table
+  ## output$lt_summary_table <- renderDT({
+  ##   req(lt_data())
+  ##   datatable(
+  ##     lt_data()$summary,
+  ##     options = list(
+  ##       dom = "t",
+  ##       paging = FALSE,
+  ##       info = FALSE,
+  ##       searching = FALSE,
+  ##       columnDefs = list(
+  ##         list(targets = c("Label"), render = JS(RENDERKATEX))
+  ##       )
+  ##     )
+  ##   ) %>%
+  ##     formatRound("Value", 8)
+  ## })
 
   output$download_button <- renderUI({
     req(input$get_screen_width)
@@ -756,26 +1066,4 @@ app_server <- function(input, output, session) {
       setwd(tempdir()) # Reset working directory to tempdir()
     }
   )
-
-
-  observeEvent(input$reset_lt, {
-    # Update widgets to their default values
-    updateSelectInput(session, "input_oanew", selected = 100)
-    updateSelectInput(session, "input_age_out", selected = "single")
-    updateSelectInput(session, "input_sex", selected = "Total")
-    updateSelectInput(session, "input_extrapLaw", selected = EXTRAP_LAWS[1])
-    updateSelectInput(session, "input_a0rule", selected = "Andreev-Kingkade")
-    updateSelectInput(session, "input_axmethod", selected = "UN (Greville)")
-
-    updateSliderInput(
-      session,
-      "slider_ages_to_use",
-      value = c(ages_data()$min_age_fit, max(ages_data()$all_ages))
-    )
-
-    # Update the numeric inputs
-    update_numeric_input(session, "input_extrapFrom", value = extrap_age())
-    update_numeric_input(session, "input_radix", value = 100000)
-    update_numeric_input(session, "input_srb", value = 1.05)
-  })
 }

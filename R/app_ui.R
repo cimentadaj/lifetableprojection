@@ -50,7 +50,7 @@ input_page <- function() {
 #' @importFrom shiny div HTML h1 p uiOutput br plotOutput strong h3
 #' @importFrom shinyjs useShinyjs hidden
 #' @importFrom plotly plotlyOutput
-#' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout sidebar_panel tabset
+#' @importFrom shiny.semantic main_panel action_button selectInput file_input sidebar_layout_responsive sidebar_panel tabset
 #' @importFrom untheme fluidUnTheme sidebar_layout_responsive
 #' @importFrom DT DTOutput formatRound JS
 #' @importFrom shinycssloaders withSpinner
@@ -210,7 +210,22 @@ app_ui <- function(request) {
                 flex-wrap: wrap;
                 align-items: center;
               }
-          }"))
+          }
+
+          #adjustment_pills {
+            margin-bottom: 15px;
+          }
+
+          #adjustment_pills .ui.label {
+            margin-right: 5px;
+            margin-bottom: 5px;
+            cursor: default;
+          }
+
+          #adjustment_pills .ui.label i.delete.icon {
+            cursor: pointer;
+          }
+        "))
       ),
       div(
         class = "main-content",
@@ -230,7 +245,7 @@ app_ui <- function(request) {
               ),
               div(
                 TooltipHost(
-                  content = "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refers to a single year, then sometimes mid-year population can be used to approximate Exposures.",
+                  content = "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.",
                   delay = 0,
                   Image(
                     src = "www/info.png",
@@ -309,6 +324,7 @@ app_ui <- function(request) {
               list(children = div(input_page())),
               div(
                 id = "tabContent",
+                uiOutput("lt_group_select_ui"),
                 uiOutput("select_plots"),
                 br(),
                 uiOutput("render_plots")
@@ -328,22 +344,20 @@ app_ui <- function(request) {
           id = "step_adjustment",
           div(
             class = "button-container-adjustment",
-            style = "display: flex; gap: 10px; margin-bottom: 20px;",
-            action_button("back_to_diagnostics", "Back", class = "ui grey button"),
-            action_button("forward_to_lifetable", "Next", class = "ui blue button")
+            div(
+              class = "button-group",
+              create_pills_ui(),
+              action_button("back_to_diagnostics", "Back", class = "ui grey button"),
+              action_button("forward_to_lifetable", "Next", class = "ui blue button")
+            )
           ),
           tabset(
             id = "adjustment_tabs",
             list(
               list(
-                menu = "Correct Abridged Ages",
-                content = create_adjustment_tab("correct_abridged", "correct_abridged_inputs", "correct_abridged_plot")
-              ),
-              list(
-                menu = "Add Smoothness",
-                content = create_adjustment_tab("add_smoothness", "add_smoothness_inputs", "add_smoothness_plot")
+                menu = "Smoothing",
+                content = create_adjustment_tab("smoothing", "smoothing_inputs", "smoothing_plot")
               )
-              # Add more tabs here as needed
             )
           )
         )
@@ -391,9 +405,69 @@ create_adjustment_tab <- function(tab_name, input_id, plot_id) {
         )
       ),
       div(
-        plotOutput(plot_id, height = "400px")
+        # Add the group selection dropdown here
+        uiOutput("smoothing_group_select_ui"),
+        # Add the plot output here
+        plotlyOutput(plot_id, height = "400px")
       )
     ),
     div(style = "padding: 10px 0;")
   )
 }
+
+# Add this new function to create the pills UI
+create_pills_ui <- function() {
+  uiOutput("adjustment_pills")
+}
+
+# Update the CSS
+tags$style(HTML("
+  .button-container-adjustment {
+    margin-bottom: 20px;
+  }
+
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .button-group .ui.button,
+  #adjustment_pills .ui.label {
+    height: 36px;
+    line-height: 34px;
+    padding: 0 15px;
+    font-size: 14px;
+    border-radius: 4px;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  #adjustment_pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  #adjustment_pills .ui.label {
+    background-color: #e0e1e2;
+    color: rgba(0,0,0,.6);
+    font-weight: 700;
+    border: 1px solid #d4d4d5;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  #adjustment_pills .ui.label i.delete.icon {
+    cursor: pointer;
+    margin-left: 8px;
+    font-size: 12px;
+  }
+
+  /* Ensure consistent sizing for buttons and labels */
+  .ui.button,
+  .ui.label {
+    box-sizing: border-box;
+  }
+"))
