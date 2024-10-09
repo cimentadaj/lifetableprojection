@@ -446,7 +446,7 @@ app_server <- function(input, output, session) {
       "Survival Curve" = lt_lx,
       "Death Distribution" = lt_ndx,
       "Conditional Death Probabilities" = lt_nqx,
-      "Lifetable Results" = data_out
+      "Lifetable Results" = lt_data()()$lt
     )
 
     # Plot for Mortality Rate Comparison
