@@ -92,24 +92,32 @@ app_server <- function(input, output, session) {
     data_in(uploaded_data())
   })
 
-  # Validate data
-  check_results <- validate_data(data_in)
-
   # Display table as example..
   output$data_table <- renderRHandsontable(renderDataTable(sample_data()))
-  output$validation_results <- renderUI(displayValidationResults(check_results()))
 
   # Handle column selection
-  handle_group_selection_modal(input, output, session, data_in, check_results)
+  handle_group_selection_modal(input, output, session, data_in)
 
-  output$forward_step2 <- renderUI({
-    if (all(check_results()$pass == "Pass")) {
-      div(
-        action_button("diagnostics", "Diagnostics", class = "ui blue button"),
-        action_button("forward_step", "Continue", class = "ui blue button")
-      )
+  # Validate data only after group seleciton has been made
+  observe({
+    if (all(c(".id", ".id_label") %in% names(data_in()))) {
+      print("printt")
+      print(names(data_in()))
+      check_results <- validate_data(data_in)
+      output$validation_results <- renderUI(displayValidationResults(check_results()))
+
+      output$forward_step2 <- renderUI({
+        if (all(check_results()$pass == "Pass")) {
+          div(
+            action_button("diagnostics", "Diagnostics", class = "ui blue button"),
+            action_button("forward_step", "Continue", class = "ui blue button")
+          )
+        }
+      })
+
     }
   })
+
 
   # Generate diagnostic plots
   diagnostic_plots <- generate_diagnostic_plots(data_in)
