@@ -65,3 +65,33 @@ displayValidationResults <- function(results) {
     )
   }
 }
+
+
+#' Validate Data After Group Selection
+#'
+#' Validates data and updates UI elements after group selection.
+#'
+#' @param input Shiny input object
+#' @param output Shiny output object
+#' @param data_in Reactive value containing input data
+#' @param group_selection_passed Reactive value indicating if group selection is complete
+#' @importFrom shiny observe renderUI div
+#' @importFrom shiny.semantic action_button
+#' @export
+validate_data_after_group_selection <- function(input, output, data_in, group_selection_passed) {
+  observe({
+    if (group_selection_passed()) {
+      check_results <- validate_data(data_in)
+      output$validation_results <- renderUI(displayValidationResults(check_results()))
+
+      output$forward_step2 <- renderUI({
+        if (all(check_results()$pass == "Pass")) {
+          div(
+            action_button("diagnostics", "Diagnostics", class = "ui blue button"),
+            action_button("forward_step", "Continue", class = "ui blue button")
+          )
+        }
+      })
+    }
+  })
+}

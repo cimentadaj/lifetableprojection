@@ -97,45 +97,24 @@ app_server <- function(input, output, session) {
 
   # General variable to indicate
   group_selection_passed <- reactiveVal(FALSE)
+  selected_grouping_vars <- reactiveVal(NULL)
 
-  # Handle column selection
-  handle_group_selection_modal(input, output, session, data_in, group_selection_passed)
+    # Handle column selection
+  handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars)
 
-  # Validate data only after group seleciton has been made
-  observe({
-    if (group_selection_passed()) {
-      print("printt")
-      print(names(data_in()))
-      check_results <- validate_data(data_in)
-      output$validation_results <- renderUI(displayValidationResults(check_results()))
+  # Setup group selection dropdowns
+  grouping_dropdowns <- setup_grouping_dropdowns(selected_grouping_vars, data_in)
 
-      output$forward_step2 <- renderUI({
-        if (all(check_results()$pass == "Pass")) {
-          div(
-            action_button("diagnostics", "Diagnostics", class = "ui blue button"),
-            action_button("forward_step", "Continue", class = "ui blue button")
-          )
-        }
-      })
+  # Validate data after group selection
+  validate_data_after_group_selection(input, output, data_in, group_selection_passed)
 
-    }
-  })
+  # Setup observers for grouping dropdown changes
+  setup_grouping_dropdown_observers(input, selected_grouping_vars)
 
+  # Generate and manage diagnostic data
+  diagnostic_data <- setup_diagnostic_data(input, output, session, data_in, selected_grouping_vars, grouping_dropdowns)
 
-  # Generate diagnostic plots
-  diagnostic_plots <- generate_diagnostic_plots(data_in)
-
-  # Generate diagnostics text
-  diagnostics_text <- generate_diagnostics_text(data_in)
-
-  # Generate diagnostics table
-  diagnostics_table <- generate_diagnostics_table(data_in)
-
-  # Show diagnostics modal when the diagnostics button is clicked
-  observeEvent(input$diagnostics, {
-    show_diagnostics_modal(input, output, session, diagnostic_plots, diagnostics_table, diagnostics_text)
-  })
-
+  # Handle transitions
   handle_transitions(input)
 
   ## INTERMEDIATE STEPS
@@ -721,4 +700,5 @@ app_server <- function(input, output, session) {
       setwd(tempdir()) # Reset working directory to tempdir()
     }
   )
+
 }

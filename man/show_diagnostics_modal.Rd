@@ -10,7 +10,8 @@ show_diagnostics_modal(
   session,
   diagnostic_plots,
   diagnostics_table,
-  diagnostics_text
+  diagnostics_text,
+  grouping_dropdowns
 )
 }
 \arguments{

@@ -4,7 +4,14 @@
 \alias{handle_group_selection_modal}
 \title{Handle Column Selection}
 \usage{
-handle_group_selection_modal(input, output, session, data, check_results)
+handle_group_selection_modal(
+  input,
+  output,
+  session,
+  data,
+  group_selection_passed,
+  selected_grouping_vars
+)
 }
 \arguments{
 \item{input}{Shiny input object}
@@ -14,8 +21,6 @@ handle_group_selection_modal(input, output, session, data, check_results)
 \item{session}{Shiny session object}
 
 \item{data}{Reactive expression containing the data}
-
-\item{check_results}{Reactive expression containing validation results}
 }
 \description{
 Handle Column Selection
