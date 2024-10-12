@@ -46,7 +46,7 @@ validate_data <- function(data) {
 #' @param data Reactive expression containing the data
 #' @importFrom shiny observeEvent req
 #' @importFrom shinyalert shinyalert
-handle_group_selection_modal <- function(input, output, session, data) {
+handle_group_selection_modal <- function(input, output, session, data, group_selection_passed) {
   observeEvent(input$file1, {
     # Create the multi-select input for identifier columns
     column_selector <- selectInput(
@@ -104,7 +104,11 @@ handle_group_selection_modal <- function(input, output, session, data) {
     }
 
     observeEvent(input$shinyalert, {
-      if (!validate_groups()) {
+      if (length(input$id_columns) > 3) {
+        column_selection_modal(
+          extra_content = '<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;"> A maximum of 3 grouping variables are allowed </p>'
+        )
+      } else if (!validate_groups()) {
         column_selection_modal(
           extra_content = '<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;"> The specified columns do not identify each row uniquely </p>'
         )
@@ -112,8 +116,9 @@ handle_group_selection_modal <- function(input, output, session, data) {
     })
 
     observeEvent(input$shinyalert, {
-      if (validate_groups()) {
+      if (validate_groups() & length(input$id_columns) < 4) {
         data(ODAPbackend:::create_groupid(data(), input$id_columns))
+        group_selection_passed(TRUE)
       }
     })
   })

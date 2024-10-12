@@ -95,12 +95,15 @@ app_server <- function(input, output, session) {
   # Display table as example..
   output$data_table <- renderRHandsontable(renderDataTable(sample_data()))
 
+  # General variable to indicate
+  group_selection_passed <- reactiveVal(FALSE)
+
   # Handle column selection
-  handle_group_selection_modal(input, output, session, data_in)
+  handle_group_selection_modal(input, output, session, data_in, group_selection_passed)
 
   # Validate data only after group seleciton has been made
   observe({
-    if (all(c(".id", ".id_label") %in% names(data_in()))) {
+    if (group_selection_passed()) {
       print("printt")
       print(names(data_in()))
       check_results <- validate_data(data_in)
