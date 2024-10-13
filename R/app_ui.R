@@ -397,28 +397,6 @@ golem_add_external_resources <- function() {
   )
 }
 
-# create_adjustment_tab <- function(tab_name, input_id, plot_id) {
-#   div(
-#     div(style = "padding: 10px 0;"),
-#     sidebar_layout_responsive(
-#       list(
-#         children = div(
-#           uiOutput(input_id),
-#           br(),
-#           action_button(paste0("execute_", tab_name), "Execute", class = "ui blue button")
-#         )
-#       ),
-#       div(
-#         # Add the group selection dropdown here
-#         uiOutput("smoothing_group_select_ui"),
-#         # Add the plot output here
-#         withSpinner(plotlyOutput(plot_id, height = "400px"))
-#       )
-#     ),
-#     div(style = "padding: 10px 0;")
-#   )
-# }
-
 create_adjustment_tab <- function(tab_name, input_id, plot_id) {
   div(
     div(style = "padding: 10px 0;"),

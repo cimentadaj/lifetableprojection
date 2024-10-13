@@ -162,6 +162,8 @@ app_server <- function(input, output, session) {
     data_in(uploaded_data())
   })
 
+
+
   # Display table as example..
   output$data_table <- renderRHandsontable(renderDataTable(sample_data()))
 
@@ -171,6 +173,12 @@ app_server <- function(input, output, session) {
 
   # Handle column selection
   handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars)
+
+  # DF containing the id and labels
+  labels_df <- reactive({
+    data_in() %>%
+      distinct(.id, .id_label)
+  })
 
   # Setup group selection dropdowns
   grouping_dropdowns <- setup_grouping_dropdowns(selected_grouping_vars, data_in)
@@ -269,52 +277,10 @@ app_server <- function(input, output, session) {
 
   ## END INTERMEDIATTE STEPS
 
-  ## cALculate LIFETABLE
-  extrap_age <- reactive({
-    req(data_in)
-    num <- as.numeric(gsub("+", "", max(data_in()$Age)))
-    num - 20
-  })
+  ## CALCULATE LIFETABLE
 
-  output$extrap_from_data <- renderUI({
-    create_field_set(
-      "",
-      "Extrap. Jump-off Age",
-      "input_extrapFrom",
-      input_selected = extrap_age(),
-      numeric_input = TRUE
-    )
-  })
-
-  ages_data <- reactive({
-    all_ages <- unique(data_in()$Age)
-    min_age <- if (60 %in% all_ages) 60 else round(quantile(all_ages, .60))
-    step_ages <- diff(all_ages)
-    step_repeat <- which.max(table(step_ages))
-    step_ages <- as.numeric(names(table(step_ages))[step_repeat])
-    list(all_ages = all_ages, min_age_fit = min_age, step_ages = step_ages)
-  })
-
-  output$ages_to_use <- renderUI({
-    slider_widget <-
-      sliderInput(
-        "slider_ages_to_use",
-        label = NULL,
-        min = min(ages_data()$all_ages),
-        max = max(ages_data()$all_ages),
-        value = c(ages_data()$min_age_fit, max(ages_data()$all_ages)),
-        step = ages_data()$step_ages
-      )
-
-    div(
-      class = "field",
-      shiny.semantic::label(
-        class = "main label",
-        "Ages to fit extrapolation model"
-      ),
-      slider_widget
-    )
-  })
+  # Create life table input UI and reactive values
+  lt_input <- create_life_table_input_ui(data_in, output)
 
   # Create a reactive value to store the life table data and plots
   lt_data <- reactiveVal(NULL)
@@ -335,11 +301,6 @@ app_server <- function(input, output, session) {
       )
     })
   }
-
-  labels_df <- reactive({
-    data_in() %>%
-      distinct(.id, .id_label)
-  })
 
   plotRendered <- reactiveVal(FALSE)
 
@@ -366,8 +327,19 @@ app_server <- function(input, output, session) {
   })
 
 
-  output$select_plots <- renderUI({
-    selectInput(inputId = "tabSelector", label = NULL, choices = tabNames)
+  output$lt_group_select_ui <- renderUI({
+    div(
+      class = "grouping-dropdowns-container",
+      style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
+      lapply(grouping_dropdowns(), function(dropdown) {
+        div(style = "min-width: 150px", dropdown)
+      }),
+      div(
+        class = "grouping-dropdowns-container",
+        style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center;",
+        selectInput(inputId = "tabSelector", label = NULL, choices = tabNames)
+      )
+    )
   })
 
 
@@ -589,11 +561,11 @@ app_server <- function(input, output, session) {
     updateSliderInput(
       session,
       "slider_ages_to_use",
-      value = c(ages_data()$min_age_fit, max(ages_data()$all_ages))
+      value = c(lt_input$ages_data()$min_age_fit, max(lt_input$ages_data()$all_ages))
     )
 
     # Update the numeric inputs
-    update_numeric_input(session, "input_extrapFrom", value = extrap_age())
+    update_numeric_input(session, "input_extrapFrom", value = lt_input$extrap_age())
     update_numeric_input(session, "input_radix", value = 100000)
     update_numeric_input(session, "input_srb", value = 1.05)
   })
