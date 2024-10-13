@@ -26,6 +26,8 @@ show_diagnostics_modal(
 \item{diagnostics_table}{Reactive expression containing diagnostics table}
 
 \item{diagnostics_text}{Reactive expression containing diagnostics text}
+
+\item{grouping_dropdowns}{Reactive expression containing the drop down menus for the selected group keys}
 }
 \description{
 Show Diagnostics Modal

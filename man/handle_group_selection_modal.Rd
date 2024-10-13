@@ -21,6 +21,10 @@ handle_group_selection_modal(
 \item{session}{Shiny session object}
 
 \item{data}{Reactive expression containing the data}
+
+\item{group_selection_passed}{Reactive value to flag whether the group selection stage has been passed0}
+
+\item{selected_grouping_vars}{Reactive value to store the variables selected as grouping vars}
 }
 \description{
 Handle Column Selection

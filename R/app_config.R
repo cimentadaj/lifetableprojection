@@ -85,3 +85,7 @@ get_golem_config <- function(
     use_parent = use_parent
   )
 }
+
+#' @importFrom shiny numericInput textOutput renderText
+#' @importFrom dplyr mutate group_split
+utils::globalVariables(c(".id", ".id_label"))

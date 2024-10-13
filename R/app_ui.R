@@ -408,7 +408,7 @@ create_adjustment_tab <- function(tab_name, input_id, plot_id) {
         # Add the group selection dropdown here
         uiOutput("smoothing_group_select_ui"),
         # Add the plot output here
-        plotlyOutput(plot_id, height = "400px")
+        withSpinner(plotlyOutput(plot_id, height = "400px"))
       )
     ),
     div(style = "padding: 10px 0;")

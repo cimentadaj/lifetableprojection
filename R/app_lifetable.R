@@ -6,8 +6,10 @@
 #' @param input List of parameters from Shiny input.
 #' @return List containing life table calculation results.
 #' @importFrom ODAPbackend lt_flexible lt_plot
+#' @importFrom dplyr mutate
 #' @export
 calculateLifeTable <- function(data_in, input) {
+  `.id` <- NULL
   print("Went into calculate lifetable")
   req(input$calculate_lt)
   input_extrapfrom <- as.numeric(input$input_extrapFrom)

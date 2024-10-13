@@ -2,7 +2,8 @@
 #'
 #' @param data_in Reactive expression containing the input data
 #' @return Reactive expression containing diagnostic plots
-#' @importFrom dplyr %>%
+#' @importFrom dplyr %>% group_split
+#' @importFrom ODAPbackend plot_initial_data check_heaping_general
 #' @importFrom plotly config
 generate_diagnostic_plots <- function(data_in) {
   reactive({
@@ -53,7 +54,7 @@ generate_diagnostics_text <- function(data_in) {
 #'
 #' @param data_in Reactive expression containing the input data
 #' @return Reactive expression containing diagnostics table
-#' @importFrom dplyr %>%
+#' @importFrom dplyr %>% group_split
 generate_diagnostics_table <- function(data_in) {
   reactive({
     req(data_in())
@@ -128,6 +129,7 @@ render_diagnostics_table <- function(diagnostics_table) {
 #' @param diagnostic_plots Reactive expression containing diagnostic plots
 #' @param diagnostics_table Reactive expression containing diagnostics table
 #' @param diagnostics_text Reactive expression containing diagnostics text
+#' @param grouping_dropdowns Reactive expression containing the drop down menus for the selected group keys
 #' @importFrom shiny div br
 #' @importFrom DT dataTableOutput
 #' @importFrom shinyalert shinyalert

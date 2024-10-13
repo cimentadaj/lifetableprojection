@@ -44,6 +44,8 @@ validate_data <- function(data) {
 #' @param output Shiny output object
 #' @param session Shiny session object
 #' @param data Reactive expression containing the data
+#' @param group_selection_passed Reactive value to flag whether the group selection stage has been passed0
+#' @param selected_grouping_vars Reactive value to store the variables selected as grouping vars
 #' @importFrom shiny observeEvent req
 #' @importFrom shinyalert shinyalert
 handle_group_selection_modal <- function(input, output, session, data, group_selection_passed, selected_grouping_vars) {
