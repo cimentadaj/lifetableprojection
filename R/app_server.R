@@ -162,8 +162,6 @@ app_server <- function(input, output, session) {
     data_in(uploaded_data())
   })
 
-
-
   # Display table as example..
   output$data_table <- renderRHandsontable(renderDataTable(sample_data()))
 
@@ -224,7 +222,7 @@ app_server <- function(input, output, session) {
         result <- step$execute(data_in(), input)
 
         # Process and store results
-        processed_result <- process_adjustment_result(result, labels_df(), selected_grouping_vars)
+        processed_result <- process_adjustment_result(result, labels_df())
         store_adjustment_result(step_name, processed_result)
       })
 
@@ -239,7 +237,7 @@ app_server <- function(input, output, session) {
   }
 
   # Helper functions
-  process_adjustment_result <- function(result, labels_df, selected_grouping_vars) {
+  process_adjustment_result <- function(result, labels_df) {
     group_plots <- lapply(labels_df()$`.id`, function(group_id) {
       group_label <- labels_df()$.id_label[labels_df()$.id == as.numeric(group_id)]
       plot <- result$figures[[group_id]]$figure
@@ -280,181 +278,105 @@ app_server <- function(input, output, session) {
   ## CALCULATE LIFETABLE
 
   # Create life table input UI and reactive values
-  lt_input <- create_life_table_input_ui(data_in, output)
+  lt_input <- create_life_table_input_ui(data_in, grouping_dropdowns, tabNames, input, output)
 
   # Create a reactive value to store the life table data and plots
   lt_data <- reactiveVal(NULL)
 
-  # Function to calculate life table and generate plots
-  calculate_lt_and_plots <- function(data, input) {
-    reactive({
-      print("Starting life table calculations")
-      lt_res <- calculateLifeTable(data, input)
-      plots <- lt_plot(data, lt_res, input$input_extrapFrom)
-      lt_res_summary <- lt_summary(lt_res)
-      print("Life table calculations complete")
-
-      list(
-        plots = plots,
-        summary = lt_res_summary,
-        lt = lt_res
-      )
-    })
-  }
-
-  plotRendered <- reactiveVal(FALSE)
+  # Create a reactive value to track if plots are ready to be rendered
+  plots_ready <- reactiveVal(FALSE)
 
   # Event to trigger life table calculation and plot generation
   observeEvent(input$calculate_lt, {
     print("Calculate LT button clicked")
     req(data_in())
-    plotRendered(TRUE)
+    plots_ready(FALSE)
     lt_data(calculate_lt_and_plots(data_in(), input))
+    plots_ready(TRUE)
   })
 
-
-  # Render the group selection dropdown UI
-  output$lt_group_select_ui <- renderUI({
+  # Create a reactive expression for the selected plots
+  selected_plots <- reactive({
     req(lt_data())
-    group_labels <- labels_df()
-
-    selectInput(
-      "lt_group_select",
-      "Select Group",
-      choices = setNames(group_labels$.id, group_labels$.id_label),
-      selected = group_labels$.id[1]
-    )
+    current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+    plot_slot <- which(names(lt_data()()$plots) == as.character(current_id))
+    lt_data()()$plots[[plot_slot]]
   })
 
-
-  output$lt_group_select_ui <- renderUI({
-    div(
-      class = "grouping-dropdowns-container",
-      style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
-      lapply(grouping_dropdowns(), function(dropdown) {
-        div(style = "min-width: 150px", dropdown)
+  # Create reactive expressions for each plot type
+  lt_plots <- reactive({
+    req(selected_plots())
+    list(
+      "Mortality Rate Comparison" = reactive({
+        gg_plt <- selected_plots()$nMx$nMx_plot
+        list(
+          gg = gg_plt,
+          plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+          dt = selected_plots()$nMx$nMx_plot_data
+        )
       }),
-      div(
-        class = "grouping-dropdowns-container",
-        style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center;",
-        selectInput(inputId = "tabSelector", label = NULL, choices = tabNames)
-      )
+      "Survival Curve" = reactive({
+        gg_plt <- selected_plots()$lx$lx_plot
+        list(
+          gg = gg_plt,
+          plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+          dt = selected_plots()$lx$lx_plot_data
+        )
+      }),
+      "Death Distribution" = reactive({
+        gg_plt <- selected_plots()$ndx$ndx_plot
+        list(
+          gg = gg_plt,
+          plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+          dt = selected_plots()$ndx$ndx_plot_data
+        )
+      }),
+      "Conditional Death Probabilities" = reactive({
+        gg_plt <- selected_plots()$nqx$nqx_plot
+        list(
+          gg = gg_plt,
+          plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+          dt = selected_plots()$nqx$nqx_plot_data
+        )
+      }),
+      "Lifetable Results" = reactive({
+        lt_data()$lt
+      })
     )
   })
 
+  # Render plots
+  observe({
+    req(plots_ready())
 
-  # Observer for group selection change
-  observeEvent(input$lt_group_select, {
-    req(lt_data())
-    id_col <- labels_df()$`.id`[labels_df()$`.id` == as.numeric(input$lt_group_select)]
-    plot_slot <- which(names(lt_data()()$plots) == as.character(id_col))
-    print("Test")
-    print(id_col)
-    print(labels_df())
-    print(input$lt_group_select)
-    selected_plots <- lt_data()()$plots[[plot_slot]]
-
-    print("selected pltos")
-    print(names(selected_plots))
-
-    # Update all plot outputs
     output$plot_mortality_rate_comparison <- renderPlotly({
-      ggplotly(selected_plots$nMx$nMx_plot)
+      lt_plots()[["Mortality Rate Comparison"]]()$plotly
     })
 
     output$plot_survival_curve <- renderPlotly({
-      ggplotly(selected_plots$lx$lx_plot)
+      lt_plots()[["Survival Curve"]]()$plotly
     })
 
     output$plot_conditional_death_probabilities <- renderPlotly({
-      ggplotly(selected_plots$nqx$nqx_plot)
+      lt_plots()[["Conditional Death Probabilities"]]()$plotly
     })
 
     output$plot_death_distribution <- renderPlotly({
-      ggplotly(selected_plots$ndx$ndx_plot)
-    })
-
-    lt_nmx <- reactive({
-      gg_plt <- selected_plots$nMx$nMx_plot
-      list(
-        gg = gg_plt,
-        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-        dt = selected_plots$nMx$nMx_plot_data
-      )
-    })
-
-    lt_ndx <- reactive({
-      gg_plt <- selected_plots$ndx$ndx_plot
-      list(
-        gg = gg_plt,
-        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-        dt = selected_plots$ndx$ndx_plot_data
-      )
-    })
-
-    lt_lx <- reactive({
-      gg_plt <- selected_plots$lx$lx_plot
-      list(
-        gg = gg_plt,
-        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-        dt = selected_plots$lx$lx_plot_data
-      )
-    })
-
-    lt_nqx <- reactive({
-      gg_plt <- selected_plots$nqx$nqx_plot
-      list(
-        gg = gg_plt,
-        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-        dt = selected_plots$nqx$nqx_plot_data
-      )
-    })
-
-
-    lt_plots <- list(
-      "Mortality Rate Comparison" = lt_nmx,
-      "Survival Curve" = lt_lx,
-      "Death Distribution" = lt_ndx,
-      "Conditional Death Probabilities" = lt_nqx,
-      "Lifetable Results" = lt_data()()$lt
-    )
-
-    # Plot for Mortality Rate Comparison
-    output$plot_mortality_rate_comparison <- renderPlotly({
-      lt_plots[["Mortality Rate Comparison"]]()$plotly
-    })
-
-    # Plot for Mortality Rate Comparison
-    output$plot_survival_curve <- renderPlotly({
-      lt_plots[["Survival Curve"]]()$plotly
-    })
-
-
-    # Plot for Mortality Rate Comparison
-    output$plot_conditional_death_probabilities <- renderPlotly({
-      lt_plots[["Conditional Death Probabilities"]]()$plotly
-    })
-
-    # Plot for Survival Curve
-    output$plot_death_distribution <- renderPlotly({
-      lt_plots[["Death Distribution"]]()$plotly
+      lt_plots()[["Death Distribution"]]()$plotly
     })
   })
 
-  tabNames <- c(
-    "Mortality Rate Comparison",
-    "Survival Curve",
-    "Death Distribution",
-    "Conditional Death Probabilities",
-    "Lifetable Results"
-  )
-
+ tabNames <- c(
+   "Mortality Rate Comparison",
+   "Survival Curve",
+   "Death Distribution",
+   "Conditional Death Probabilities",
+   "Lifetable Results"
+ )
 
   # Render the life table summary table
   output$lt_summary_table <- renderDT({
     req(lt_data())
-    print("names lt")
-    print(names(lt_data()()$summary))
     datatable(
       lt_data()()$summary,
       options = list(
@@ -471,7 +393,7 @@ app_server <- function(input, output, session) {
 
   renderTabContent <- function(id, plotName, OutputFunction) {
     output[[id]] <- renderUI({
-      if (!plotRendered()) {
+      if (!plots_ready()) {
         uiOutput(sprintf("placeholder_%s", plotName))
       } else {
         withSpinner(OutputFunction(sprintf("plot_%s", plotName), height = "600px"))
@@ -544,8 +466,8 @@ app_server <- function(input, output, session) {
   # Setup download handlers
   setupDownloadHandlers(
     output,
-    function() lt_data()()$plots,
-    function() lt_data()()$lt,
+    function() lt_data()$plots,
+    function() lt_data()$lt,
     input
   )
 
@@ -573,7 +495,7 @@ app_server <- function(input, output, session) {
 
   output$download_button <- renderUI({
     req(input$get_screen_width)
-    if (plotRendered()) {
+    if (plots_ready()) {
       sizes <- detect_font_size(input$get_screen_width)
 
       if (sizes$type == "mobile") {
@@ -681,4 +603,3 @@ app_server <- function(input, output, session) {
     }
   )
 }
-
