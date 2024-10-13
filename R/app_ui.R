@@ -309,6 +309,33 @@ app_ui <- function(request) {
       ),
       hidden(
         div(
+          id = "step_adjustment",
+          div(
+            class = "button-container-adjustment",
+            div(
+              class = "button-group",
+              create_pills_ui(),
+              action_button("back_to_diagnostics", "Back", class = "ui grey button"),
+              action_button("forward_to_lifetable", "Next", class = "ui blue button")
+            )
+          ),
+          tabset(
+            id = "adjustment_tabs",
+            list(
+              list(
+                menu = "Smoothing",
+                content = create_adjustment_tab("smoothing", "smoothing_inputs", "smoothing_plot")
+              ),
+              list(
+                menu = "Smoothing Two",
+                content = create_adjustment_tab("smoothing_second", "smoothing_second_inputs", "smoothing_second_plot")
+              )
+            )
+          )
+        )
+      ),
+      hidden(
+        div(
           id = "step_input",
           div(
             class = "button-container-forecast",
@@ -336,29 +363,6 @@ app_ui <- function(request) {
             class = "ui container",
             style = "padding-top: 20px;",
             DTOutput("lt_summary_table")
-          )
-        )
-      ),
-      hidden(
-        div(
-          id = "step_adjustment",
-          div(
-            class = "button-container-adjustment",
-            div(
-              class = "button-group",
-              create_pills_ui(),
-              action_button("back_to_diagnostics", "Back", class = "ui grey button"),
-              action_button("forward_to_lifetable", "Next", class = "ui blue button")
-            )
-          ),
-          tabset(
-            id = "adjustment_tabs",
-            list(
-              list(
-                menu = "Smoothing",
-                content = create_adjustment_tab("smoothing", "smoothing_inputs", "smoothing_plot")
-              )
-            )
           )
         )
       ),
@@ -393,6 +397,28 @@ golem_add_external_resources <- function() {
   )
 }
 
+# create_adjustment_tab <- function(tab_name, input_id, plot_id) {
+#   div(
+#     div(style = "padding: 10px 0;"),
+#     sidebar_layout_responsive(
+#       list(
+#         children = div(
+#           uiOutput(input_id),
+#           br(),
+#           action_button(paste0("execute_", tab_name), "Execute", class = "ui blue button")
+#         )
+#       ),
+#       div(
+#         # Add the group selection dropdown here
+#         uiOutput("smoothing_group_select_ui"),
+#         # Add the plot output here
+#         withSpinner(plotlyOutput(plot_id, height = "400px"))
+#       )
+#     ),
+#     div(style = "padding: 10px 0;")
+#   )
+# }
+
 create_adjustment_tab <- function(tab_name, input_id, plot_id) {
   div(
     div(style = "padding: 10px 0;"),
@@ -405,9 +431,7 @@ create_adjustment_tab <- function(tab_name, input_id, plot_id) {
         )
       ),
       div(
-        # Add the group selection dropdown here
-        uiOutput("smoothing_group_select_ui"),
-        # Add the plot output here
+        uiOutput(paste0("adjustment_group_select_ui_", tab_name)),
         withSpinner(plotlyOutput(plot_id, height = "400px"))
       )
     ),

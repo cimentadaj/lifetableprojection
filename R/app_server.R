@@ -33,19 +33,89 @@ setupDownloadHandlers <- function(output, plots, data, input) {
   )
 }
 
-#' Generate Plotly Plot
-#'
-#' Creates a Plotly plot based on the life table calculation results.
-#'
-#' @param data Data frame of original data.
-#' @param results Results from the life table calculation.
-#' @return Plotly plot object.
-#' @importFrom plotly renderPlotly
-#' @export
-generatePlot <- function(data, results) {
-  req(results)
-  plot_compare_rates_interactive(data, results)
-}
+# Define adjustment steps list (this remains inside app_server)
+adjustment_steps <- list(
+  smoothing = list(
+    name = "Smoothing",
+    input_ui = function() {
+      div(
+        selectInput("smoothing_variable", "Variable", choices = c("Exposures", "Deaths")),
+        selectInput(
+          "smoothing_rough_method",
+          "Rough Method",
+          choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
+          selected = "auto"
+        ),
+        selectInput(
+          "smoothing_fine_method",
+          "Fine Method",
+          choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+          selected = "auto"
+        ),
+        selectInput(
+          "smoothing_age_out",
+          "Age Output",
+          choices = c("single", "abridged", "5-year"),
+          selected = "abridged"
+        ),
+        numericInput("smoothing_u5m", "Under-5 Mortality (optional)", value = NULL),
+        shiny.semantic::checkbox_input("smoothing_constrain_infants", "Constraint Infants", is_marked = TRUE)
+      )
+    },
+    execute = function(data, input) {
+      smooth_flexible(
+        data,
+        variable = input$smoothing_variable,
+        rough_method = input$smoothing_rough_method,
+        fine_method = input$smoothing_fine_method,
+        constrain_infants = input$smoothing_constrain_infants,
+        age_out = input$smoothing_age_out,
+        u5m = input$smoothing_u5m
+      )
+    }
+  ),
+  smoothing_second = list(
+    name = "Smoothing Second",
+    input_ui = function() {
+      div(
+        selectInput("smoothing2_variable", "Variable", choices = c("Exposures", "Deaths")),
+        selectInput(
+          "smoothing2_rough_method",
+          "Rough Method",
+          choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
+          selected = "auto"
+        ),
+        selectInput(
+          "smoothing2_fine_method",
+          "Fine Method",
+          choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+          selected = "auto"
+        ),
+        selectInput(
+          "smoothing2_age_out",
+          "Age Output",
+          choices = c("single", "abridged", "5-year"),
+          selected = "abridged"
+        ),
+        numericInput("smoothing2_u5m", "Under-5 Mortality (optional)", value = NULL),
+        shiny.semantic::checkbox_input("smoothing2_constrain_infants", "Constraint Infants", is_marked = TRUE)
+      )
+    },
+    execute = function(data, input) {
+      smooth_flexible(
+        data,
+        variable = input$smoothing2_variable,
+        rough_method = input$smoothing2_rough_method,
+        fine_method = input$smoothing2_fine_method,
+        constrain_infants = input$smoothing2_constrain_infants,
+        age_out = input$smoothing2_age_out,
+        u5m = input$smoothing2_u5m
+      )
+    }
+  )
+  # Add more adjustment steps here as needed
+)
+
 
 #' Shiny Server Function
 #'
@@ -99,7 +169,7 @@ app_server <- function(input, output, session) {
   group_selection_passed <- reactiveVal(FALSE)
   selected_grouping_vars <- reactiveVal(NULL)
 
-    # Handle column selection
+  # Handle column selection
   handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars)
 
   # Setup group selection dropdowns
@@ -117,127 +187,84 @@ app_server <- function(input, output, session) {
   # Handle transitions
   handle_transitions(input)
 
-  ## INTERMEDIATE STEPS
   # Create a reactive value to store the list of executed adjustments
   executed_adjustments <- reactiveVal(list())
+
+  # Function to set up adjustment steps
+  setup_adjustment_steps <- function(input, output, session, data_in, selected_grouping_vars, grouping_dropdowns) {
+    lapply(names(adjustment_steps), function(step_name) {
+      step <- adjustment_steps[[step_name]]
+
+      # Render group selection dropdown UI
+      output[[paste0("adjustment_group_select_ui_", step_name)]] <- renderUI({
+        div(
+          class = "grouping-dropdowns-container",
+          style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
+          lapply(grouping_dropdowns(), function(dropdown) {
+            div(style = "min-width: 150px", dropdown)
+          })
+        )
+      })
+
+      # Render input UI
+      output[[paste0(step_name, "_inputs")]] <- renderUI(step$input_ui())
+
+      # Set up execution observer
+      observeEvent(input[[paste0("execute_", step_name)]], {
+        add_adjustment_pill(step$name, executed_adjustments)
+
+        result <- step$execute(data_in(), input)
+
+        # Process and store results
+        processed_result <- process_adjustment_result(result, labels_df(), selected_grouping_vars)
+        store_adjustment_result(step_name, processed_result)
+      })
+
+      # Render plot
+      output[[paste0(step_name, "_plot")]] <- renderPlotly({
+        req(input[[paste0("execute_", step_name)]] > 0)
+        plot_data <- get_adjustment_result(step_name)
+        current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+        ggplotly(plot_data$plots[[current_id]]$plot)
+      })
+    })
+  }
+
+  # Helper functions
+  process_adjustment_result <- function(result, labels_df, selected_grouping_vars) {
+    group_plots <- lapply(labels_df()$`.id`, function(group_id) {
+      group_label <- labels_df()$.id_label[labels_df()$.id == as.numeric(group_id)]
+      plot <- result$figures[[group_id]]$figure
+      list(id = group_id, label = group_label, plot = plot)
+    })
+    names(group_plots) <- labels_df()$`.id`
+    list(plots = group_plots, labels = labels_df())
+  }
+
+  store_adjustment_result <- function(step_name, result) {
+    current_results <- adjustment_results()
+    current_results[[step_name]] <- result
+    adjustment_results(current_results)
+  }
+
+  get_adjustment_result <- function(step_name) {
+    adjustment_results()[[step_name]]
+  }
+
+  adjustment_results <- reactiveVal(list())
+
+  # Set up adjustment steps
+  setup_adjustment_steps(input, output, session, data_in, selected_grouping_vars, grouping_dropdowns)
 
   # Render the pills UI
   output$adjustment_pills <- renderUI({
     pills <- executed_adjustments()
-
-    pill_tags <- lapply(names(pills), function(adjustment_name) {
-      tags$span(
-        class = "ui label",
-        adjustment_name,
-        tags$i(class = "delete icon", onclick = sprintf("
-          Shiny.setInputValue('remove_pill', '%s');
-          setTimeout(function() { Shiny.setInputValue('remove_pill', null); }, 0);
-        ", adjustment_name))
-      )
-    })
-
-    do.call(tags$div, c(list(id = "adjustment_pills", class = "ui labels"), pill_tags))
+    render_adjustment_pills(pills)
   })
 
   # Observer to handle pill removal
   observeEvent(input$remove_pill, {
     remove_adjustment_pill(input$remove_pill, executed_adjustments)
-  })
-
-  output$smoothing_inputs <- renderUI({
-    div(
-      selectInput("smoothing_variable", "Variable", choices = c("Exposures", "Deaths")),
-      selectInput(
-        "smoothing_rough_method",
-        "Rough Method",
-        choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
-        selected = "auto"
-      ),
-      selectInput(
-        "smoothing_fine_method",
-        "Fine Method",
-        choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
-        selected = "auto"
-      ),
-      selectInput(
-        "smoothing_age_out",
-        "Age Output",
-        choices = c("single", "abridged", "5-year"),
-        selected = "abridged"
-      ),
-      numericInput("smoothing_u5m", "Under-5 Mortality (optional)", value = NULL),
-      shiny.semantic::checkbox_input("smoothing_constrain_infants", "Constraint Infants", is_marked = TRUE)
-    )
-  })
-
-  output$correct_abridged_inputs <- renderUI({
-    div(
-      numericInput("abridged_start", "Start Age", value = 0),
-      numericInput("abridged_end", "End Age", value = 100)
-    )
-  })
-
-  # Render the group selection dropdown UI
-  output$smoothing_group_select_ui <- renderUI({
-    div(
-      class = "grouping-dropdowns-container",
-      style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
-      lapply(grouping_dropdowns(), function(dropdown) {
-        div(
-          style = "min-width: 150px",
-          dropdown
-        )
-      })
-    )
-  })
-
-  observeEvent(input$execute_smoothing, {
-      add_adjustment_pill("Smoothing", executed_adjustments)
-    },
-    ignoreInit = TRUE,
-    ignoreNULL = FALSE
-  )
-
-  smoothing_res <- reactive({
-    req(input$execute_smoothing > 0)
-
-    # Perform smoothing
-    smooth_result <- smooth_flexible(
-      data_in(),
-      variable = isolate(input$smoothing_variable),
-      rough_method = isolate(input$smoothing_rough_method),
-      fine_method = isolate(input$smoothing_fine_method),
-      constrain_infants = isolate(input$smoothing_constrain_infants),
-      age_out = isolate(input$smoothing_age_out),
-      u5m = isolate(input$smoothing_u5m)
-    )
-
-    labels <- labels_df()$`.id_label`
-
-    # Create a list of plots for each group
-    group_plots <- lapply(labels_df()$`.id`, function(group_id) {
-      group_label <- labels_df()$.id_label[labels_df()$.id == as.numeric(group_id)]
-      plot <- smooth_result$figures[[group_id]]$figure
-
-      return(list(id = group_id, label = group_label, plot = plot))
-    })
-
-    names(group_plots) <- labels_df()$`.id`
-
-    # Store the group plots and labels in a reactive value
-    list(plots = group_plots, labels = labels_df())
-  })
-
-  selected_plot_smoothing <- reactive({
-      req(selected_grouping_vars())
-      smoothing_data <- smoothing_res()
-      current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
-      smoothing_data$plots[[current_id]]$plot
-  })
-
-  # Observer for group selection change
-    output$smoothing_plot <- renderPlotly({
-      ggplotly(selected_plot_smoothing())
   })
 
   ## END INTERMEDIATTE STEPS
@@ -681,5 +708,5 @@ app_server <- function(input, output, session) {
       setwd(tempdir()) # Reset working directory to tempdir()
     }
   )
-
 }
+
