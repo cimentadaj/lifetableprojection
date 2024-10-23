@@ -92,3 +92,6 @@ get_current_group_id <- function(selected_grouping_vars, data_in, input) {
   labels_df <- data_in() %>% distinct(`.id`, `.id_label`)
   as.character(labels_df$`.id`[labels_df$`.id_label` == current_id_label])
 }
+
+
+

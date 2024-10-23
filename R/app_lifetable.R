@@ -64,6 +64,7 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
     num - 20
   })
 
+
   ages_data <- reactive({
     req(data_in())
     all_ages <- unique(data_in()$Age)
@@ -73,6 +74,7 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
     step_ages <- as.numeric(names(table(step_ages))[step_repeat])
     list(all_ages = all_ages, min_age_fit = min_age, step_ages = step_ages)
   })
+
 
   output$lt_group_select_ui <- renderUI({
     req(input$calculate_lt)

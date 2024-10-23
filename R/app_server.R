@@ -62,15 +62,17 @@ adjustment_steps <- list(
         shiny.semantic::checkbox_input("smoothing_constrain_infants", "Constraint Infants", is_marked = TRUE)
       )
     },
-    execute = function(data, input) {
-      smooth_flexible(
-        data,
-        variable = input$smoothing_variable,
-        rough_method = input$smoothing_rough_method,
-        fine_method = input$smoothing_fine_method,
-        constrain_infants = input$smoothing_constrain_infants,
-        age_out = input$smoothing_age_out,
-        u5m = input$smoothing_u5m
+    execute = function(input) {
+      rlang::expr(
+        smooth_flexible(
+          .data,
+          variable = !!input$smoothing_variable,
+          rough_method = !!input$smoothing_rough_method,
+          fine_method = !!input$smoothing_fine_method,
+          constrain_infants = !!input$smoothing_constrain_infants,
+          age_out = !!input$smoothing_age_out,
+          u5m = !!input$smoothing_u5m
+        )
       )
     }
   ),
@@ -101,15 +103,17 @@ adjustment_steps <- list(
         shiny.semantic::checkbox_input("smoothing2_constrain_infants", "Constraint Infants", is_marked = TRUE)
       )
     },
-    execute = function(data, input) {
-      smooth_flexible(
-        data,
-        variable = input$smoothing2_variable,
-        rough_method = input$smoothing2_rough_method,
-        fine_method = input$smoothing2_fine_method,
-        constrain_infants = input$smoothing2_constrain_infants,
-        age_out = input$smoothing2_age_out,
-        u5m = input$smoothing2_u5m
+    execute = function(input) {
+      rlang::expr(
+        smooth_flexible(
+          .data,
+          variable = !!input$smoothing2_variable,
+          rough_method = !!input$smoothing2_rough_method,
+          fine_method = !!input$smoothing2_fine_method,
+          constrain_infants = !!input$smoothing2_constrain_infants,
+          age_out = !!input$smoothing2_age_out,
+          u5m = !!input$smoothing2_u5m
+        )
       )
     }
   )
@@ -174,6 +178,7 @@ app_server <- function(input, output, session) {
 
   # DF containing the id and labels
   labels_df <- reactive({
+    req(data_in())
     data_in() %>%
       distinct(.id, .id_label)
   })
@@ -193,13 +198,28 @@ app_server <- function(input, output, session) {
   # Handle transitions
   handle_transitions(input)
 
-  # Create a reactive value to store the list of executed adjustments
-  executed_adjustments <- reactiveVal(list())
+  # Create a reactive value to store the list of executed adjustments (step names)
+  executed_adjustments <- reactiveVal(character(0))
+
+  # Create preprocessing_execution object
+  preprocess_exec <- reactiveVal(NULL)
+
+  # Update preprocess_exec whenever data_in changes
+  observeEvent(data_in(), {
+    req(data_in())
+    preprocess_exec(preprocessing_execution(data_in()))
+  })
+
+  # List to store reactive expressions for function calls
+  step_func_calls <- reactiveValues()
+
+  force_update <- reactiveVal(FALSE)
 
   # Function to set up adjustment steps
   setup_adjustment_steps <- function(input, output, session, data_in, selected_grouping_vars, grouping_dropdowns) {
     lapply(names(adjustment_steps), function(step_name) {
       step <- adjustment_steps[[step_name]]
+      step_clean_name <- step$name
 
       # Render group selection dropdown UI
       output[[paste0("adjustment_group_select_ui_", step_name)]] <- renderUI({
@@ -215,49 +235,73 @@ app_server <- function(input, output, session) {
       # Render input UI
       output[[paste0(step_name, "_inputs")]] <- renderUI(step$input_ui())
 
+      # Create reactive expression for the function call
+      step_func_calls[[step_name]] <- reactive({
+        # Build the function call using the current inputs
+        step$execute(input)
+      })
+
       # Set up execution observer
       observeEvent(input[[paste0("execute_", step_name)]], {
-        add_adjustment_pill(step$name, executed_adjustments)
+        current_steps <- executed_adjustments()
+        if (!(step_name %in% current_steps)) {
+          current_steps <- c(current_steps, setNames(step_name, step_clean_name))
+          executed_adjustments(current_steps)
+        } else {
+          executed_adjustments(current_steps)
+        }
 
-        result <- step$execute(data_in(), input)
-
-        # Process and store results
-        processed_result <- process_adjustment_result(result, labels_df())
-        store_adjustment_result(step_name, processed_result)
+        force_update(!force_update())
       })
 
       # Render plot
       output[[paste0(step_name, "_plot")]] <- renderPlotly({
-        req(input[[paste0("execute_", step_name)]] > 0)
-        plot_data <- get_adjustment_result(step_name)
-        current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
-        ggplotly(plot_data$plots[[current_id]]$plot)
+        plot_data <- get_adjustment_plot(step_name)
+        req(plot_data)
+        plot_data
       })
     })
   }
 
   # Helper functions
-  process_adjustment_result <- function(result, labels_df) {
-    group_plots <- lapply(labels_df()$`.id`, function(group_id) {
-      group_label <- labels_df()$.id_label[labels_df()$.id == as.numeric(group_id)]
-      plot <- result$figures[[group_id]]$figure
-      list(id = group_id, label = group_label, plot = plot)
-    })
-    names(group_plots) <- labels_df()$`.id`
-    list(plots = group_plots, labels = labels_df())
-  }
-
-  store_adjustment_result <- function(step_name, result) {
-    current_results <- adjustment_results()
-    current_results[[step_name]] <- result
-    adjustment_results(current_results)
-  }
-
   get_adjustment_result <- function(step_name) {
-    adjustment_results()[[step_name]]
+    results <- preprocessing_results()
+    if (!is.null(results) && step_name %in% names(results)) {
+      return(results[[step_name]])
+    } else {
+      return(NULL)
+    }
   }
 
-  adjustment_results <- reactiveVal(list())
+  get_adjustment_plot <- function(step_name) {
+    plot_data <- get_adjustment_result(step_name)
+    req(plot_data)
+    current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+    plot_list <- plot_data$plot_result
+
+    # Ensure plot_list is named by group IDs
+    plot_ids <- names(plot_list)
+    if (is.null(plot_ids)) {
+      stop(paste("Plot result for step", step_name, "does not have named group IDs"))
+    }
+
+    # Find matching group ID
+    group_id_str <- as.character(current_id)
+    if (!group_id_str %in% plot_ids) {
+      stop(paste("No plot for group ID", group_id_str, "in step", step_name))
+    }
+    plot_item <- plot_list[[group_id_str]]
+    # Depending on the structure, extract the plot
+    if ("figure" %in% names(plot_item)) {
+      plot <- plot_item$figure
+    } else if (inherits(plot_item, "ggplot")) {
+      plot <- plot_item
+    } else {
+      stop(paste("Cannot find plot in plot_item for group ID", group_id_str))
+    }
+    req(plot)
+    ggplotly(plot)
+  }
 
   # Set up adjustment steps
   setup_adjustment_steps(input, output, session, data_in, selected_grouping_vars, grouping_dropdowns)
@@ -268,12 +312,49 @@ app_server <- function(input, output, session) {
     render_adjustment_pills(pills)
   })
 
-  # Observer to handle pill removal
-  observeEvent(input$remove_pill, {
-    remove_adjustment_pill(input$remove_pill, executed_adjustments)
+  # Reactive expression to execute preprocessing steps
+  preprocessing_results <- reactive({
+    ## req(preprocess_exec())
+    force_update() # Include the force_update trigger here
+    steps <- executed_adjustments()
+
+    if (length(steps) == 0) {
+      return(NULL)
+    }
+
+    # Collect function calls
+    func_calls <- lapply(steps, function(step_name) step_func_calls[[step_name]]())
+
+    # Check if any function calls are NULL
+    if (any(sapply(func_calls, is.null))) {
+      return(NULL)
+    }
+
+    # Add steps to preprocess_exec
+    for (i in seq_along(steps)) {
+      step_name <- steps[i]
+      func_call <- func_calls[[i]]
+      preprocess_exec()$add(step_name, func_call)
+    }
+
+    print(lapply(preprocess_exec()$get_result(), function(x) x[c("data_input", "data_output")]))
+
+    # Execute steps
+    preprocess_exec()$execute(steps)
+
+    # Return the results
+    preprocess_exec()$results
   })
 
-  ## END INTERMEDIATTE STEPS
+  # Observer to handle pill removal
+  observeEvent(input$remove_pill, {
+    current_steps <- executed_adjustments()
+    current_steps <- current_steps[names(current_steps) != input$remove_pill]
+    executed_adjustments(current_steps)
+  })
+
+
+  ## END INTERMEDIATE STEPS
 
   ## CALCULATE LIFETABLE
 
@@ -289,17 +370,41 @@ app_server <- function(input, output, session) {
   # Event to trigger life table calculation and plot generation
   observeEvent(input$calculate_lt, {
     print("Calculate LT button clicked")
-    req(data_in())
+    # Use the final result from preprocessing or data_in if no steps
+    final_data <- if (!is.null(preprocessing_results())) {
+      preprocess_exec()$final_result()
+    } else {
+      data_in()
+    }
+    req(final_data)
     plots_ready(FALSE)
-    lt_data(calculate_lt_and_plots(data_in(), input))
+    lt_data(calculate_lt_and_plots(final_data, input))
     plots_ready(TRUE)
+  })
+
+  observeEvent(input$calculate_lt, {
+    output$lt_summary_indication <- renderUI({
+      div(
+        div(
+          class = "below-main-panel fade-in-icon",
+          shiny.semantic::icon("arrow down circle", style = "font-size: 3rem;")
+        ), div(
+          class = "below-main-panel",
+          h1("Life Table Summary Statistics"),
+        )
+      )
+    })
+  })
+
+  current_id <- reactive({
+    current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+    current_id
   })
 
   # Create a reactive expression for the selected plots
   selected_plots <- reactive({
     req(lt_data())
-    current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
-    plot_slot <- which(names(lt_data()()$plots) == as.character(current_id))
+    plot_slot <- which(names(lt_data()()$plots) == as.character(current_id()))
     lt_data()()$plots[[plot_slot]]
   })
 
@@ -307,7 +412,7 @@ app_server <- function(input, output, session) {
   lt_plots <- reactive({
     req(selected_plots())
     list(
-      "Mortality Rate Comparison" = reactive({
+      "Mortality Rate" = reactive({
         gg_plt <- selected_plots()$nMx$nMx_plot
         list(
           gg = gg_plt,
@@ -340,7 +445,7 @@ app_server <- function(input, output, session) {
         )
       }),
       "Lifetable Results" = reactive({
-        lt_data()$lt
+        lt_data()()$lt
       })
     )
   })
@@ -349,8 +454,8 @@ app_server <- function(input, output, session) {
   observe({
     req(plots_ready())
 
-    output$plot_mortality_rate_comparison <- renderPlotly({
-      lt_plots()[["Mortality Rate Comparison"]]()$plotly
+    output$plot_mortality_rate <- renderPlotly({
+      lt_plots()[["Mortality Rate"]]()$plotly
     })
 
     output$plot_survival_curve <- renderPlotly({
@@ -364,21 +469,54 @@ app_server <- function(input, output, session) {
     output$plot_death_distribution <- renderPlotly({
       lt_plots()[["Death Distribution"]]()$plotly
     })
+
+    output$plot_lifetable_results <- renderDT({
+      dt <- lt_plots()[["Lifetable Results"]]()
+      dt$AgeInt <- NULL
+      mask <- vapply(dt, is.numeric, FUN.VALUE = logical(1))
+      dt[mask] <- round(dt[mask], 2)
+
+      plot_slot <- which(names(lt_data()()$plots) == as.character(current_id()))
+      dt <-
+        dt %>%
+        filter(.id == plot_slot) %>%
+        select(-`.id`)
+
+      to_subset <- setdiff(names(dt), selected_grouping_vars())
+
+      dt <- datatable(
+        dt[to_subset],
+        options = list(
+          paging = TRUE,
+          searching = FALSE,
+          lengthChange = FALSE,
+          dom = "lfrtp"
+        ),
+        rownames = FALSE
+      )
+
+      dt
+    })
   })
 
- tabNames <- c(
-   "Mortality Rate Comparison",
-   "Survival Curve",
-   "Death Distribution",
-   "Conditional Death Probabilities",
-   "Lifetable Results"
- )
+  tabNames <- c(
+    "Mortality Rate",
+    "Survival Curve",
+    "Death Distribution",
+    "Conditional Death Probabilities",
+    "Lifetable Results"
+  )
 
   # Render the life table summary table
   output$lt_summary_table <- renderDT({
     req(lt_data())
+
+    plot_slot <- which(names(lt_data()()$plots) == as.character(current_id()))
+    tbl <- lt_data()()$summary %>% dplyr::filter(.id == plot_slot)
+    tbl$value <- round(tbl$value, 2)
+
     datatable(
-      lt_data()()$summary,
+      tbl,
       options = list(
         dom = "t",
         paging = FALSE,
@@ -391,82 +529,29 @@ app_server <- function(input, output, session) {
     )
   })
 
-  renderTabContent <- function(id, plotName, OutputFunction) {
-    output[[id]] <- renderUI({
-      if (!plots_ready()) {
-        uiOutput(sprintf("placeholder_%s", plotName))
-      } else {
-        withSpinner(OutputFunction(sprintf("plot_%s", plotName), height = "600px"))
-      }
-    })
-  }
-
-  lapply(seq_along(tabNames), function(i) {
-    renderTabContent(
-      sprintf("tabContent%s", i),
-      gsub(" ", "_", tolower(tabNames[i])),
-      ifelse(grepl("Lifetable Results", tabNames[i]), DTOutput, plotlyOutput)
-    )
-  })
-
   output$render_plots <- renderUI({
     lapply(seq_along(tabNames), function(i) {
+      id <- sprintf("tabContent%s", i)
+      plotName <- gsub(" ", "_", tolower(tabNames[i]))
+      OutputFunction <- ifelse(grepl("Lifetable Results", tabNames[i]), DTOutput, plotlyOutput)
+
+      # Define UI rendering for each tab
+      output[[id]] <- renderUI({
+        withSpinner(OutputFunction(sprintf("plot_%s", plotName), height = "600px"))
+      })
+
+      # Render conditional panel with the appropriate content
       conditionalPanel(
         condition = sprintf("input.tabSelector === '%s'", tabNames[i]),
-        uiOutput(sprintf("tabContent%s", i))
+        uiOutput(id)
       )
     })
-  })
-
-  # Placeholder for Mortality Rate Comparison
-  output$placeholder_mortality_rate_comparison <- renderUI({
-    tags$img(
-      src = "www/placeholder_plot.png",
-      height = "600px",
-      width = "100%"
-    )
-  })
-
-  # Placeholder for Survival Curve
-  output$placeholder_survival_curve <- renderUI({
-    tags$img(
-      src = "www/placeholder_plot.png",
-      height = "600px",
-      width = "100%"
-    )
-  })
-
-  # Placeholder for Survival Curve
-  output$placeholder_conditional_death_probabilities <- renderUI({
-    tags$img(
-      src = "www/placeholder_plot.png",
-      height = "600px",
-      width = "100%"
-    )
-  })
-
-  # Placeholder for Mortality Rate Comparison
-  output$placeholder_death_distribution <- renderUI({
-    tags$img(
-      src = "www/placeholder_plot.png",
-      height = "600px",
-      width = "100%"
-    )
-  })
-
-  # Placeholder for Life table results
-  output$placeholder_lifetable_results <- renderUI({
-    tags$img(
-      src = "www/placeholder_plot.png",
-      height = "600px",
-      width = "100%"
-    )
   })
 
   # Setup download handlers
   setupDownloadHandlers(
     output,
-    function() lt_data()$plots,
+    lt_plots,
     function() lt_data()$lt,
     input
   )
@@ -491,7 +576,6 @@ app_server <- function(input, output, session) {
     update_numeric_input(session, "input_radix", value = 100000)
     update_numeric_input(session, "input_srb", value = 1.05)
   })
-
 
   output$download_button <- renderUI({
     req(input$get_screen_width)
@@ -548,8 +632,8 @@ app_server <- function(input, output, session) {
         )
       })
 
-      # Assuming 'lt_plots' is your list of ggplot objects
-      diagnostic_analysis <- diagnostic_plt()
+      # Assuming 'diagnostic_data' contains your diagnostic plots and data
+      diagnostic_analysis <- diagnostic_data()
       names(diagnostic_analysis) <- to_snake(names(diagnostic_analysis))
       diagnostic_analysis_plots <- lapply(diagnostic_analysis, function(x) x$figure)
       diagnostic_analysis_dt <- lapply(diagnostic_analysis, function(x) x$data)
@@ -574,25 +658,26 @@ app_server <- function(input, output, session) {
       })
 
       write.csv(
-        lifetable_summary_table()[c("Measure", "Message", "Value")],
+        lt_data()$summary[c("Measure", "Message", "Value")],
         file = file.path(main_plot_path, "analysis", "lifetable_summary.csv"),
         row.names = FALSE
       )
 
       write.csv(
-        data_out()$lt$lt,
+        lt_data()$lt$lt,
         file = file.path(main_plot_path, "lifetable_results.csv"),
         row.names = FALSE
       )
 
+      # Assuming you have a diagnostics table and text
       write.csv(
-        diagnostics_table(),
+        diagnostic_data()$diagnostics_table,
         file = file.path(main_plot_path, "diagnostics", "diagnostics_summary.csv"),
         row.names = FALSE
       )
 
       writeLines(
-        text = diagnostics_text(),
+        text = diagnostic_data()$diagnostics_text,
         con = file.path(main_plot_path, "diagnostics", "diagnostics_text.txt"),
       )
 

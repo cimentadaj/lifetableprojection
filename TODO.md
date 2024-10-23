@@ -79,3 +79,10 @@ Version 2.0:
 - [X] Tim to provide verify_subset (data, columns), return TRUE for correct keys and FALSE for incorrect keys
 
 - [X] If verify_subset is TRUE, I create a .id column that groups everything
+
+- [ ] Change Mortality Rate Comparison to Mortality Rate
+- [ ] What do we download when download all?
+- [ ] Do we add a download button to each separate pre-process?
+- [ ] How do we download all diagnostics?
+- [ ] How do we 
+- [ ] Round numbers of the table
