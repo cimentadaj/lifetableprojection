@@ -140,6 +140,8 @@ calculate_lt_and_plots <- function(data, input) {
     print("Starting life table calculations")
     lt_res <- calculateLifeTable(data, input)
     plots <- lt_plot(data, lt_res, input$input_extrapFrom)
+    plt_names <- unname(unlist(lapply(plots, function(x) unique(x$nMx$nMx_plot_data$.id))))
+    names(plots) <- plt_names
     lt_res_summary <- lt_summary(lt_res)
     print("Life table calculations complete")
 

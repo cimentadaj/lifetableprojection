@@ -33,45 +33,150 @@ setupDownloadHandlers <- function(output, plots, data, input) {
   )
 }
 
+smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp, rough_deaths, fine_deaths, constraint_deaths, u5m_deaths, age_out) {
+  expo <- smooth_flexible(
+    data_in,
+    variable = "Exposures",
+    rough_method = rough_exp,
+    fine_method = fine_exp,
+    constrain_infants = constraint_exp,
+    age_out = age_out,
+    u5m = u5m_exp
+  )
+
+  deaths <- smooth_flexible(
+    data_in,
+    variable = "Deaths",
+    rough_method = rough_deaths,
+    fine_method = fine_deaths,
+    constrain_infants = constraint_deaths,
+    age_out = age_out,
+    u5m = u5m_deaths
+  )
+
+  # Combine the data
+  combined_data <-
+    expo$data %>%
+    left_join(deaths$data, by = c(".id", "Age")) %>%
+    mutate(Rates = Deaths / Exposures)
+
+  # Split by id
+  id_list <-
+    combined_data %>%
+    group_split(.id)
+
+  # Create a list to hold the results by group ID
+  rates_tmp <- list()
+  rates <- list()
+
+  # Iterate over each group
+  for (group_data in id_list) {
+    group_id <- unique(group_data$.id)
+
+    # Create the plot
+    figure <-
+      group_data %>%
+      ggplot(aes(Age, Rates)) +
+      geom_line() +
+      theme_minimal()
+
+    # Store original data (without mutations) and adjusted data (e.g., `plot_y`)
+    data_original <- group_data
+    data_adjusted <- group_data
+
+    # Nest figure, original, and adjusted data under the corresponding group ID
+    rates_tmp[[as.character(group_id)]] <- list(
+      figure = figure,
+      data_original = data_original,
+      data_adjusted = data_adjusted
+    )
+  }
+
+  rates$figures <- rates_tmp
+
+  lst_dt <- list()
+  lst_dt$data <- combined_data
+  lst_dt$figures$exposures <- expo$figures
+  lst_dt$figures$deaths <- deaths$figures
+  lst_dt$figures$rates <- rates$figures
+
+  lst_dt
+}
+
+
 # Define adjustment steps list (this remains inside app_server)
+# Define the UI and execution for smoothing exposures and deaths
 adjustment_steps <- list(
   smoothing = list(
     name = "Smoothing",
     input_ui = function() {
       div(
-        selectInput("smoothing_variable", "Variable", choices = c("Exposures", "Deaths")),
-        selectInput(
-          "smoothing_rough_method",
-          "Rough Method",
-          choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
-          selected = "auto"
+        fluidRow(
+          # Left column for Exposures
+          column(
+            6,
+            h4("Exposures Parameters"),
+            selectInput(
+              "smoothing_rough_exp",
+              "Rough Method (Exposures)",
+              choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
+              selected = "auto"
+            ),
+            selectInput(
+              "smoothing_fine_exp",
+              "Fine Method (Exposures)",
+              choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+              selected = "auto"
+            ),
+            numericInput("smoothing_u5m_exp", "Under-5 Mortality (optional, Exposures)", value = NULL),
+            shiny.semantic::checkbox_input("smoothing_constrain_infants_exp", "Constrain Infants (Exposures)", is_marked = TRUE)
+          ),
+
+          # Right column for Deaths
+          column(
+            6,
+            h4("Deaths Parameters"),
+            selectInput(
+              "smoothing_rough_deaths",
+              "Rough Method (Deaths)",
+              choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
+              selected = "auto"
+            ),
+            selectInput(
+              "smoothing_fine_deaths",
+              "Fine Method (Deaths)",
+              choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+              selected = "auto"
+            ),
+            numericInput("smoothing_u5m_deaths", "Under-5 Mortality (optional, Deaths)", value = NULL),
+            shiny.semantic::checkbox_input("smoothing_constrain_infants_deaths", "Constrain Infants (Deaths)", is_marked = TRUE)
+          )
         ),
-        selectInput(
-          "smoothing_fine_method",
-          "Fine Method",
-          choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
-          selected = "auto"
-        ),
+
+        # Shared Age Output
+        h4("Shared Parameters"),
         selectInput(
           "smoothing_age_out",
           "Age Output",
           choices = c("single", "abridged", "5-year"),
           selected = "abridged"
-        ),
-        numericInput("smoothing_u5m", "Under-5 Mortality (optional)", value = NULL),
-        shiny.semantic::checkbox_input("smoothing_constrain_infants", "Constraint Infants", is_marked = TRUE)
+        )
       )
     },
     execute = function(input) {
+      # Call smooth_overall with the arguments from the UI
       rlang::expr(
-        smooth_flexible(
+        smooth_overall(
           .data,
-          variable = !!input$smoothing_variable,
-          rough_method = !!input$smoothing_rough_method,
-          fine_method = !!input$smoothing_fine_method,
-          constrain_infants = !!input$smoothing_constrain_infants,
-          age_out = !!input$smoothing_age_out,
-          u5m = !!input$smoothing_u5m
+          rough_exp = !!input$smoothing_rough_exp,
+          fine_exp = !!input$smoothing_fine_exp,
+          constraint_exp = !!input$smoothing_constrain_infants_exp,
+          u5m_exp = !!input$smoothing_u5m_exp,
+          rough_deaths = !!input$smoothing_rough_deaths,
+          fine_deaths = !!input$smoothing_fine_deaths,
+          constraint_deaths = !!input$smoothing_constrain_infants_deaths,
+          u5m_deaths = !!input$smoothing_u5m_deaths,
+          age_out = !!input$smoothing_age_out
         )
       )
     }
@@ -117,7 +222,6 @@ adjustment_steps <- list(
       )
     }
   )
-  # Add more adjustment steps here as needed
 )
 
 
@@ -221,14 +325,34 @@ app_server <- function(input, output, session) {
       step <- adjustment_steps[[step_name]]
       step_clean_name <- step$name
 
+      if (step_name %in% c("smoothing")) {
+        extra_dropdowns <- div(
+          selectInput(
+            inputId = "group_select_smoothing_var",
+            label = "Variable",
+            choices = c("Exposures" = "exposures", "Deaths" = "deaths", "Rates" = "rates"),
+            selected = "exposures"
+          )
+        )
+      } else {
+        extra_dropdowns <- div()
+      }
+
       # Render group selection dropdown UI
       output[[paste0("adjustment_group_select_ui_", step_name)]] <- renderUI({
         div(
-          class = "grouping-dropdowns-container",
-          style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
-          lapply(grouping_dropdowns(), function(dropdown) {
-            div(style = "min-width: 150px", dropdown)
-          })
+          div(
+            class = "grouping-dropdowns-container",
+            style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
+            lapply(grouping_dropdowns(), function(dropdown) {
+              div(style = "min-width: 150px", dropdown)
+            })
+          ),
+          div(
+            class = "grouping-dropdowns-container",
+            style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
+            extra_dropdowns
+          )
         )
       })
 
@@ -278,6 +402,11 @@ app_server <- function(input, output, session) {
     req(plot_data)
     current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
     plot_list <- plot_data$plot_result
+
+
+    if (step_name %in% c("smoothing")) {
+      plot_list <- plot_list[[input$group_select_smoothing_var]]
+    }
 
     # Ensure plot_list is named by group IDs
     plot_ids <- names(plot_list)
@@ -337,10 +466,12 @@ app_server <- function(input, output, session) {
       preprocess_exec()$add(step_name, func_call)
     }
 
-    print(lapply(preprocess_exec()$get_result(), function(x) x[c("data_input", "data_output")]))
+    ## print(lapply(preprocess_exec()$get_result(), function(x) x[c("data_input", "data_output")]))
 
     # Execute steps
     preprocess_exec()$execute(steps)
+
+    print(preprocess_exec()$get_result("smoothing"))
 
     # Return the results
     preprocess_exec()$results
@@ -376,6 +507,7 @@ app_server <- function(input, output, session) {
     } else {
       data_in()
     }
+
     req(final_data)
     plots_ready(FALSE)
     lt_data(calculate_lt_and_plots(final_data, input))
@@ -585,106 +717,256 @@ app_server <- function(input, output, session) {
       if (sizes$type == "mobile") {
         div(
           style = "width: 100%; display: grid;",
-          downloadButton("download_all", "Download All", class = "ui blue button")
+          actionButton("download_all", "Download", class = "ui blue button")
         )
       } else {
         div(
           style = "margin-left: auto;",
-          downloadButton("download_all", "Download All", class = "ui blue button")
+          actionButton("download_all", "Download", class = "ui blue button")
         )
       }
     }
   })
 
-  output$download_all <- downloadHandler(
+  output$download_modal <- renderUI({
+    shiny.semantic::modal(
+      id = "download-modal",
+      header = "Download Options",
+      shiny.semantic::multiple_radio(
+        "download_option",
+        "Select an option:",
+        choices = c(
+          "Download all (diagnostics, preprocessing steps and lifetable results)" = "all",
+          "Download life table results" = "lifetable",
+          "Download preprocessing results" = "preprocessing",
+          "Download diagnostic results" = "diagnostics"
+        )
+      ),
+      footer = tagList(
+        shiny.semantic::button("cancel_download", "Cancel"),
+        downloadButton("confirm_download", "Download")
+      )
+    )
+  })
+
+  # Observe the download button click to show modal dialog
+  observeEvent(input$cancel_download, {
+    shiny.semantic::hide_modal("download-modal")
+  })
+
+  # Observe the download button click to show modal dialog
+  observeEvent(input$download_all, {
+    # Show the modal dialog
+    shiny.semantic::show_modal("download-modal")
+  })
+
+  # Define the download handler based on selected option
+  output$confirm_download <- downloadHandler(
     filename = function() {
-      paste("lifetable_analysis_", Sys.Date(), ".zip", sep = "")
+      paste0("lifetable_analysis_", input$download_option, "_", Sys.Date(), ".zip")
     },
     content = function(file) {
-      # Main directory to store the plot folders
-      main_plot_path <- file.path(tempdir(), "lifetable_analysis")
-      unlink(main_plot_path, recursive = TRUE, force = TRUE)
-      dir.create(main_plot_path, recursive = TRUE)
+      # Create a temporary directory to store the files
+      temp_dir <- tempfile()
+      dir.create(temp_dir)
 
-      # Assuming 'lt_plots' is your list of ggplot objects
-      lt_analysis <- lt_plots
-      names(lt_analysis) <- to_snake(names(lt_analysis))
-      lt_analysis_plots <- lapply(lt_analysis, function(x) x()$gg)
-      lt_analysis_dt <- lapply(lt_analysis, function(x) x()$dt)
+      # Function to save plots and data
+      save_plots_and_data <- function(plot_list, data_list, base_path, folder_name) {
+        lapply(names(plot_list), function(plot_name) {
+          plot_folder_path <- file.path(base_path, folder_name, plot_name)
+          dir.create(plot_folder_path, recursive = TRUE)
 
-      # Save each plot and its corresponding DataTable in its own folder
-      lapply(names(lt_analysis_plots), function(plot_name) {
-        plot_folder_path <- file.path(main_plot_path, "analysis", plot_name)
-        dir.create(plot_folder_path, recursive = TRUE)
+          # Save the plot
+          ggsave(
+            filename = file.path(plot_folder_path, paste0(plot_name, ".png")),
+            plot = plot_list[[plot_name]],
+            device = "png"
+          )
 
-        # Save the plot
-        ggsave(
-          filename = file.path(plot_folder_path, paste0(plot_name, ".png")),
-          plot = lt_analysis_plots[[plot_name]],
-          device = "png"
-        )
+          # Save the DataTable as a CSV
+          write.csv(
+            data_list[[plot_name]],
+            file = file.path(plot_folder_path, paste0(plot_name, ".csv")),
+            row.names = FALSE
+          )
+        })
+      }
 
-        # Save the DataTable as a CSV
+      # Function to save diagnostic results
+      save_diagnostic_results <- function(base_path) {
+        diagnostic_analysis <- diagnostic_data
+
+        # Prepare diagnostics path
+        diagnostics_path <- file.path(base_path, "diagnostics")
+        dir.create(diagnostics_path, recursive = TRUE, showWarnings = FALSE)
+
+        # Initialize an empty list to store tables from each group
+        all_tables <- list()
+
+        # Process diagnostic tables by group
+        for (group_id in names(diagnostic_analysis$all_tables())) {
+          # Add the group ID to each row in the table and store in the list
+          group_table <-
+            diagnostic_analysis$all_tables()[[group_id]] %>%
+            mutate(.id = group_id)
+
+          all_tables[[group_id]] <- group_table
+        }
+
+        # Combine all tables into a single data frame
+        combined_table <- dplyr::bind_rows(all_tables)
+
+        # Save the combined diagnostic table with .id column
         write.csv(
-          lt_analysis_dt[[plot_name]],
-          file = file.path(plot_folder_path, paste0(plot_name, ".csv")),
+          combined_table,
+          file = file.path(diagnostics_path, "table_diagnostics.csv"),
           row.names = FALSE
         )
-      })
 
-      # Assuming 'diagnostic_data' contains your diagnostic plots and data
-      diagnostic_analysis <- diagnostic_data()
-      names(diagnostic_analysis) <- to_snake(names(diagnostic_analysis))
-      diagnostic_analysis_plots <- lapply(diagnostic_analysis, function(x) x$figure)
-      diagnostic_analysis_dt <- lapply(diagnostic_analysis, function(x) x$data)
+        # Process diagnostic plots by group and type
+        for (group_id in names(diagnostic_analysis$all_plots()$ggplot)) {
+          group_plots <- diagnostic_analysis$all_plots()$ggplot[[group_id]]
 
-      lapply(names(diagnostic_analysis_plots), function(plot_name) {
-        plot_folder_path <- file.path(main_plot_path, "diagnostics", plot_name)
-        dir.create(plot_folder_path, recursive = TRUE)
+          # Save each plot type for the group
+          for (plot_type in names(group_plots)) {
+            # Define the filename based on the plot type and group ID
+            plot_filename <- paste0(plot_type, "_group_", group_id, ".png")
 
-        # Save the plot
-        ggsave(
-          filename = file.path(plot_folder_path, paste0(plot_name, ".png")),
-          plot = diagnostic_analysis_plots[[plot_name]],
-          device = "png"
-        )
+            # Save the plot to the diagnostics folder
+            ggsave(
+              filename = file.path(diagnostics_path, plot_filename),
+              plot = group_plots[[plot_type]]$figure,
+              device = "png"
+            )
+          }
+        }
+      }
 
-        # Save the DataTable as a CSV
+      # Function to save lifetable results
+      save_lifetable_results <- function(base_path) {
+        lt_analysis <- lt_data()()
+
+        # Extract group IDs from lt_data
+        group_ids <- unique(lt_analysis$lt$.id)
+
+        path_folder <- file.path(base_path, "lifetable")
+
+        # Define the directory for the current group
+        dir.create(path_folder, recursive = TRUE, showWarnings = FALSE)
+
         write.csv(
-          diagnostic_analysis_dt[[plot_name]],
-          file = file.path(plot_folder_path, paste0(plot_name, ".csv")),
+          lt_analysis$summary,
+          file = file.path(path_folder, "lifetable_summary.csv"),
           row.names = FALSE
         )
-      })
 
-      write.csv(
-        lt_data()$summary[c("Measure", "Message", "Value")],
-        file = file.path(main_plot_path, "analysis", "lifetable_summary.csv"),
-        row.names = FALSE
+        write.csv(
+          lt_analysis$lt,
+          file = file.path(path_folder, "lifetable_results.csv"),
+          row.names = FALSE
+        )
+
+        # Iterate over each group ID
+        for (group_id in group_ids) {
+          # Check if plots exist for the current group ID
+          if (as.character(group_id) %in% names(lt_analysis$plots)) {
+            group_plots <- lt_analysis$plots[[as.character(group_id)]]
+
+            # Define which plot types to save for each group
+            plot_types <- names(group_plots)
+
+            # Iterate over each plot type and save if it exists
+            for (plot_type in plot_types) {
+              if (!is.null(group_plots[[plot_type]])) {
+                # Save the plot as PNG
+                ggsave(
+                  filename = file.path(
+                    path_folder,
+                    paste0(plot_type, "_group_", group_id, "_plot.png")
+                  ),
+                  plot = group_plots[[plot_type]][[paste0(plot_type, "_plot")]],
+                  device = "png"
+                )
+              }
+            }
+          }
+        }
+      }
+
+      # Function to save preprocessing results
+      save_preprocessing_results <- function(base_path) {
+        results <- preprocess_exec()$results
+        lapply(names(results), function(step_name) {
+          step_result <- results[[step_name]]
+          # Assuming step_result contains plots and data
+
+          # For each variable (e.g., exposures, deaths, rates)
+          plot_list <- step_result$plot_result
+          data_output <- step_result$data_output
+          plot_folder_path <- file.path(
+            base_path,
+            "preprocessing",
+            step_name
+          )
+
+          dir.create(plot_folder_path, recursive = TRUE)
+
+          if (is.list(plot_list) && step_name == "smoothing") {
+            lapply(names(plot_list), function(var_name) {
+              var_plots <- plot_list[[var_name]]
+              lapply(names(var_plots), function(group_label) {
+                # Save the plot
+                plot_item <- var_plots[[group_label]]$figure
+                plot_name <- paste0(var_name, "_group_", group_label, ".png")
+
+                ggsave(
+                  filename = file.path(plot_folder_path, plot_name),
+                  plot = plot_item,
+                  device = "png"
+                )
+              })
+            })
+          } else {
+            lapply(names(plot_list), function(group_label) {
+              # Save the plot
+              plot_item <- var_plots[[group_label]]$figure
+              plot_name <- paste0("group_", group_label, ".png")
+
+              ggsave(
+                filename = file.path(plot_folder_path, plot_name),
+                plot = plot_item,
+                device = "png"
+              )
+            })
+          }
+
+          # Save the data
+          write.csv(
+            data_output,
+            file = file.path(plot_folder_path, "output_data.csv"),
+            row.names = FALSE
+          )
+        })
+      }
+
+      # Depending on the selected option, call the appropriate save functions
+      if (input$download_option == "all") {
+        save_diagnostic_results(temp_dir)
+        save_preprocessing_results(temp_dir)
+        save_lifetable_results(temp_dir)
+      } else if (input$download_option == "lifetable") {
+        save_lifetable_results(temp_dir)
+      } else if (input$download_option == "preprocessing") {
+        save_preprocessing_results(temp_dir)
+      } else if (input$download_option == "diagnostics") {
+        save_diagnostic_results(temp_dir)
+      }
+
+      # Zip the files
+      zip::zipr(
+        zipfile = file,
+        files = list.dirs(temp_dir, recursive = FALSE)
       )
-
-      write.csv(
-        lt_data()$lt$lt,
-        file = file.path(main_plot_path, "lifetable_results.csv"),
-        row.names = FALSE
-      )
-
-      # Assuming you have a diagnostics table and text
-      write.csv(
-        diagnostic_data()$diagnostics_table,
-        file = file.path(main_plot_path, "diagnostics", "diagnostics_summary.csv"),
-        row.names = FALSE
-      )
-
-      writeLines(
-        text = diagnostic_data()$diagnostics_text,
-        con = file.path(main_plot_path, "diagnostics", "diagnostics_text.txt"),
-      )
-
-      # Zip only the "lifetable_analysis" folder
-      setwd(main_plot_path)
-      zip(file, files = list.files(".", full.names = TRUE, recursive = TRUE))
-      setwd(tempdir()) # Reset working directory to tempdir()
     }
   )
 }

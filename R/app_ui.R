@@ -346,6 +346,7 @@ app_ui <- function(request) {
             uiOutput("download_button")
           ),
           br(),
+          uiOutput("download_modal"),
           div(
             sidebar_layout_responsive(
               list(children = div(input_page())),

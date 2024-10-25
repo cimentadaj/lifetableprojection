@@ -39,20 +39,3 @@ is provided. Each result contains the input data, output data, and any plot resu
 - `final_result()`: Retrieves the output data from the final executed step. If no steps have been executed,
 `NULL` is returned.
 }
-\examples{
-# Initialize the preprocessing pipeline
-pipeline <- preprocessing_execution(data_in)
-
-# Add a step to the pipeline
-pipeline$add("step1", quote(your_function(.data)))
-
-# Execute the pipeline
-pipeline$execute(c("step1"))
-
-# Get the results of a specific step
-result <- pipeline$get_result("step1")
-
-# Get the final result
-final_output <- pipeline$final_result()
-
-}

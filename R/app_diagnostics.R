@@ -12,25 +12,30 @@ generate_diagnostic_plots <- function(data_in) {
     groups <- group_split(data_in(), .id)
 
     # Initialize an empty list to store plots for each group
-    group_plots <- list()
+    group_plots_plotly <- list()
+    group_plots_ggplot <- list()
 
     # Loop over each group and apply plot_initial_data
     for (i in seq_along(groups)) {
-      plts <- groups[[i]] %>% plot_initial_data()
-      names(plts) <- to_snake(names(plts))
+      plts_original <- groups[[i]] %>% plot_initial_data()
+      names(plts_original) <- to_snake(names(plts_original))
 
       # Convert each plot to ggplotly and configure displayModeBar
-      plts <- lapply(plts, function(plt) {
+      plts <- lapply(plts_original, function(plt) {
         ggplt <- ggplotly(plt$figure, tooltip = c("y", "text"))
         config(ggplt, displayModeBar = FALSE)
       })
 
       # Store plots for this group in the list with the .id as the name
-      group_plots[[as.character(groups[[i]]$.id[1])]] <- plts
+      group_plots_plotly[[as.character(groups[[i]]$.id[1])]] <- plts
+      group_plots_ggplot[[as.character(groups[[i]]$.id[1])]] <- plts_original
     }
 
     # Return the list of plots for each group with .id as names
-    group_plots
+    list(
+      plotly = group_plots_plotly,
+      ggplot = group_plots_ggplot
+    )
   })
 }
 
@@ -215,7 +220,7 @@ setup_diagnostic_data <- function(input, output, session, data_in, selected_grou
   diagnostic_plots <- generate_diagnostic_plots(data_in)
 
   # Create reactive for current diagnostic plots
-  current_diagnostic_plots <- create_current_diagnostic_plots(diagnostic_plots, selected_grouping_vars, data_in, input)
+  current_diagnostic_plots <- create_current_diagnostic_plots(diagnostic_plots()$plotly, selected_grouping_vars, data_in, input)
 
   # Generate diagnostics text
   diagnostics_text <- generate_diagnostics_text(data_in)
@@ -234,7 +239,9 @@ setup_diagnostic_data <- function(input, output, session, data_in, selected_grou
   list(
     plots = current_diagnostic_plots,
     table = current_diagnostics_table,
-    text = diagnostics_text
+    text = diagnostics_text,
+    all_plots = diagnostic_plots,
+    all_tables = diagnostics_table
   )
 }
 
@@ -251,9 +258,9 @@ setup_diagnostic_data <- function(input, output, session, data_in, selected_grou
 #' @export
 create_current_diagnostic_plots <- function(diagnostic_plots, selected_grouping_vars, data_in, input) {
   reactive({
-    req(diagnostic_plots(), selected_grouping_vars(), data_in())
+    req(diagnostic_plots, selected_grouping_vars(), data_in())
     current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
-    diagnostic_plots()[[current_id]]
+    diagnostic_plots[[current_id]]
   })
 }
 
