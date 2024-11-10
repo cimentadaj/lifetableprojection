@@ -33,6 +33,15 @@ setupDownloadHandlers <- function(output, plots, data, input) {
   )
 }
 
+#' Run smoohthing for exposures/deaths together
+#'
+#'
+#' @param output Shiny output object.
+#' @param plots List of reactive expressions for plots.
+#' @param data data to be saved in the download button
+#' @param input Shiny input object.
+#' @importFrom ggplot2 aes
+#' @export
 smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp, rough_deaths, fine_deaths, constraint_deaths, u5m_deaths, age_out) {
   expo <- smooth_flexible(
     data_in,
@@ -252,6 +261,40 @@ app_server <- function(input, output, session) {
     app_sys("app/www")
   )
 
+  # Add this after setup_adjustment_steps function
+  update_step_tooltips <- function(executed_steps) {
+    lapply(names(adjustment_steps), function(step_name) {
+      # Find the index of the current step in executed steps
+      step_index <- match(step_name, executed_steps)
+
+      if (is.na(step_index)) {
+        tooltip_text <- "This step will use the initial uploaded data"
+      } else {
+        if (step_index == 1) {
+          tooltip_text <- "This step uses the initial uploaded data"
+        } else {
+          prev_step <- executed_steps[step_index - 1]
+          prev_step_name <- names(adjustment_steps)[match(prev_step, names(adjustment_steps))]
+          tooltip_text <- sprintf(
+            "This step uses the output data from the '%s' step",
+            adjustment_steps[[prev_step_name]]$name
+          )
+        }
+      }
+
+      # Update the tooltip content using Shiny
+      output[[paste0("tooltip_text_", step_name)]] <- renderText({
+        tooltip_text
+      })
+    })
+  }
+
+  # Add this observer after the existing executed_adjustments observer
+  observeEvent(executed_adjustments(), {
+    update_step_tooltips(executed_adjustments())
+  })
+
+
   # Initialize reactive values
   data_in <- reactiveVal()
 
@@ -341,12 +384,27 @@ app_server <- function(input, output, session) {
       # Render group selection dropdown UI
       output[[paste0("adjustment_group_select_ui_", step_name)]] <- renderUI({
         div(
+          class = "outer-container",
+          style = "width: 100%; position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
           div(
             class = "grouping-dropdowns-container",
             style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;",
             lapply(grouping_dropdowns(), function(dropdown) {
               div(style = "min-width: 150px", dropdown)
             })
+          ),
+          div(
+            class = "tooltip-wrapper",
+            style = "position: absolute; right: 0; top: 0;",
+            TooltipHost(
+              content = textOutput(paste0("tooltip_text_", step_name)),
+              delay = 0,
+              Image(
+                src = "www/info.png",
+                width = "20px",
+                shouldStartVisible = TRUE
+              )
+            )
           ),
           div(
             class = "grouping-dropdowns-container",
@@ -466,12 +524,8 @@ app_server <- function(input, output, session) {
       preprocess_exec()$add(step_name, func_call)
     }
 
-    ## print(lapply(preprocess_exec()$get_result(), function(x) x[c("data_input", "data_output")]))
-
     # Execute steps
     preprocess_exec()$execute(steps)
-
-    print(preprocess_exec()$get_result("smoothing"))
 
     # Return the results
     preprocess_exec()$results

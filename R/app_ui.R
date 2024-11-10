@@ -400,7 +400,7 @@ golem_add_external_resources <- function() {
 
 create_adjustment_tab <- function(tab_name, input_id, plot_id) {
   div(
-    div(style = "padding: 10px 0;"),
+    br(),
     sidebar_layout_responsive(
       list(
         children = div(
