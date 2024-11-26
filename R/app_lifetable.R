@@ -35,7 +35,10 @@ calculateLifeTable <- function(data_in, input) {
     a0rule = isolate(input$input_a0rule),
     axmethod = isolate(input$input_axmethod),
     Sex = isolate(input$input_sex)
-  ) %>%
+  )$data_out
+
+  lt_res <-
+    lt_res %>%
     mutate(.id = as.numeric(.id))
 
   return(lt_res)

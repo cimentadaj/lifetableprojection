@@ -67,7 +67,9 @@ smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp
   combined_data <-
     expo$data %>%
     left_join(deaths$data, by = c(".id", "Age")) %>%
-    mutate(Rates = Deaths / Exposures)
+    mutate(Rates = Deaths / Exposures) %>%
+    select(-contains(".y")) %>%
+    rename_with(~ gsub("\\.x", "", .x))
 
   # Split by id
   id_list <-
