@@ -49,38 +49,45 @@ validate_data <- function(data) {
 #' @importFrom shiny observeEvent req
 #' @importFrom shinyalert shinyalert
 handle_group_selection_modal <- function(input, output, session, data, group_selection_passed, selected_grouping_vars) {
-  observeEvent(input$file1, {
-    # Create the multi-select input for identifier columns
-    column_selector <- selectInput(
-      "id_columns",
-      label = "Select Identifier Columns",
-      choices = names(data()),
-      multiple = TRUE,
-      ## selectize = TRUE
-    )
-
-    # Create the content for shinyalert
-    alert_content <- div(
-      column_selector,
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
-      br()
-    )
-
-    column_selection_modal <- function(extra_content = "") {
-      shinyalert(
-        title = "Column Selection",
-        text = paste0(alert_content, "<br/>", "<br/>", extra_content),
-        html = TRUE,
-        closeOnEsc = FALSE,
-        closeOnClickOutside = FALSE,
-        showConfirmButton = TRUE,
-        confirmButtonText = "Confirm",
-      )
+  # Reactive expression for choices with safe defaults
+  choices <- reactive({
+    x <- names(data())
+    if (is.null(x)) {
+      return(character(0))  # Return empty character vector if data is NULL
+    } else {
+      return(x)
     }
+  })
+
+  # Observe when data is updated
+  observeEvent(data(), {
+    # Render the modal UI
+    output$modal_ui <- renderUI({
+      modal(
+        id = "column_selection_modal",
+        header = "Column Selection",
+        content = div(
+          shiny.semantic::selectInput(
+            "id_columns",
+            label = "Select Identifier Columns",
+            choices = choices(),
+            multiple = TRUE
+          ),
+          br(),
+          uiOutput("modal_error_message")  # Placeholder for error messages
+        ),
+        footer = tagList(
+          actionButton("confirm_column_selection", "Confirm", class = "ui button primary"),
+          actionButton("cancel_column_selection", "Cancel", class = "ui button")
+        )
+      )
+    })
+
+    # Use session$onFlushed to ensure the UI is updated before showing the modal
+    session$onFlushed(function() {
+      show_modal("column_selection_modal")
+    }, once = TRUE)  # Ensure it's called only once per data update
+  })
 
     validate_groups <- function() {
       selected_columns <- input$id_columns
@@ -97,34 +104,29 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
       }
     }
 
-    print("valid groups")
-    print(validate_groups())
-
-    if (!validate_groups()) {
-      print("passed here")
-      column_selection_modal()
+  # Observe the confirm button click
+  observeEvent(input$confirm_column_selection, {
+    if (length(input$id_columns) > 3) {
+      output$modal_error_message <- renderUI({
+        HTML('<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;">A maximum of 3 grouping variables are allowed.</p>')
+      })
+    } else if (!validate_groups()) {
+      output$modal_error_message <- renderUI({
+        HTML('<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;">The specified columns do not identify each row uniquely.</p>')
+      })
+    } else {
+      # Success: process the data and close the modal
+      # data(ODAPbackend:::create_groupid(data(), input$id_columns))  # Replace with actual processing
+      data(data())  # Placeholder: no actual processing
+      group_selection_passed(TRUE)
+      selected_grouping_vars(input$id_columns)  # Store the selected grouping variables
+      hide_modal("column_selection_modal")  # Close the modal after success
     }
+  })
 
-    observeEvent(input$shinyalert, {
-      if (length(input$id_columns) > 3) {
-        column_selection_modal(
-          extra_content = '<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;"> A maximum of 3 grouping variables are allowed </p>'
-        )
-      } else if (!validate_groups()) {
-        column_selection_modal(
-          extra_content = '<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;"> The specified columns do not identify each row uniquely </p>'
-        )
-      }
-    })
-
-    observeEvent(input$shinyalert, {
-      if (validate_groups() & length(input$id_columns) < 4) {
-        data(ODAPbackend:::create_groupid(data(), input$id_columns))
-        group_selection_passed(TRUE)
-        selected_grouping_vars(input$id_columns)  # Store the selected grouping variables
-      }
-    })
-
+  # Close the modal when the "Cancel" button is clicked
+  observeEvent(input$cancel_column_selection, {
+    hide_modal("column_selection_modal")
   })
 }
 
@@ -188,3 +190,34 @@ validate_groups <- function(input, data) {
     FALSE
   }
 }
+
+
+
+library(shiny)
+library(shinyalert)  # For modal dialogs
+library(shiny.semantic)  # For Semantic UI components
+
+# Define UI
+ui <- semanticPage(
+  actionButton("open_modal", "Open Modal")
+)
+
+# Define Server
+server <- function(input, output, session) {
+
+  # Observe button click to open modal
+  observeEvent(input$open_modal, {
+    shinyalert(
+      title = "Semantic Checkbox",
+      html = TRUE,
+      text = div(
+        shiny.semantic::checkbox_input("checkbox", "Tick this box", is_marked = FALSE)  # Semantic styled checkbox
+      ),
+      closeOnEsc = TRUE,
+      closeOnClickOutside = TRUE
+    )
+  })
+}
+
+# Run the app
+shinyApp(ui, server)

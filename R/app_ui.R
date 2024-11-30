@@ -269,6 +269,7 @@ app_ui <- function(request) {
               class = "button-container-file",
               style = "display: flex; gap: 10px;",
               file_input("file1", "", type = "flex-override"),
+              uiOutput("modal_ui"),
               action_button(
                 "continue_no_data",
                 "Use sample data",
