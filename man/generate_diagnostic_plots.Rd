@@ -4,7 +4,7 @@
 \alias{generate_diagnostic_plots}
 \title{Generate Diagnostic Plots}
 \usage{
-generate_diagnostic_plots(data_in)
+generate_diagnostic_plots(data_in, group_selection_passed)
 }
 \arguments{
 \item{data_in}{Reactive expression containing the input data}

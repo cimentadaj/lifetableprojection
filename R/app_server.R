@@ -311,12 +311,11 @@ app_server <- function(input, output, session) {
     # Reset variables after new file upload
     group_selection_passed(FALSE)
     selected_grouping_vars(NULL)
-    output$modal_error_message <- NULL
+    executed_adjustments(character(0))
 
     # Process the uploaded file
     handle_file_upload(input)
   })
-
 
   # Handle sample data
   sample_data <- handle_sample_data()
@@ -352,8 +351,28 @@ app_server <- function(input, output, session) {
   # Setup observers for grouping dropdown changes
   setup_grouping_dropdown_observers(input, selected_grouping_vars)
 
-  # Generate and manage diagnostic data
-  diagnostic_data <- setup_diagnostic_data(input, output, session, data_in, selected_grouping_vars, grouping_dropdowns)
+
+  # Initialize diagnostic_data as a reactiveVal
+  diagnostic_data <- reactiveVal(NULL)
+
+  # Trigger setup_diagnostic_data when the Diagnostics button is clicked
+  observeEvent(input$diagnostics, {
+    req(group_selection_passed() == TRUE) # Ensure the condition is met
+    print("Diagnostics button clicked")
+
+    # Update diagnostic_data reactively
+    diagnostic_data(
+      setup_diagnostic_data(
+        input,
+        output,
+        session,
+        data_in,
+        group_selection_passed,
+        selected_grouping_vars,
+        grouping_dropdowns
+      )
+    )
+  })
 
   # Handle transitions
   handle_transitions(input)
@@ -861,7 +880,7 @@ app_server <- function(input, output, session) {
 
       # Function to save diagnostic results
       save_diagnostic_results <- function(base_path) {
-        diagnostic_analysis <- diagnostic_data
+        diagnostic_analysis <- diagnostic_data()
 
         # Prepare diagnostics path
         diagnostics_path <- file.path(base_path, "diagnostics")

@@ -5,37 +5,39 @@
 #' @importFrom dplyr %>% group_split
 #' @importFrom ODAPbackend plot_initial_data check_heaping_general
 #' @importFrom plotly config
-generate_diagnostic_plots <- function(data_in) {
+generate_diagnostic_plots <- function(data_in, group_selection_passed) {
   reactive({
-    req(data_in())
-    # Split data by .id into groups
-    groups <- group_split(data_in(), .id)
+    if (group_selection_passed()) {
 
-    # Initialize an empty list to store plots for each group
-    group_plots_plotly <- list()
-    group_plots_ggplot <- list()
+      # Split data by .id into groups
+      groups <- group_split(data_in(), .id)
 
-    # Loop over each group and apply plot_initial_data
-    for (i in seq_along(groups)) {
-      plts_original <- groups[[i]] %>% plot_initial_data()
-      names(plts_original) <- to_snake(names(plts_original))
+      # Initialize an empty list to store plots for each group
+      group_plots_plotly <- list()
+      group_plots_ggplot <- list()
 
-      # Convert each plot to ggplotly and configure displayModeBar
-      plts <- lapply(plts_original, function(plt) {
-        ggplt <- ggplotly(plt$figure, tooltip = c("y", "text"))
-        config(ggplt, displayModeBar = FALSE)
-      })
+      # Loop over each group and apply plot_initial_data
+      for (i in seq_along(groups)) {
+        plts_original <- groups[[i]] %>% plot_initial_data()
+        names(plts_original) <- to_snake(names(plts_original))
 
-      # Store plots for this group in the list with the .id as the name
-      group_plots_plotly[[as.character(groups[[i]]$.id[1])]] <- plts
-      group_plots_ggplot[[as.character(groups[[i]]$.id[1])]] <- plts_original
+        # Convert each plot to ggplotly and configure displayModeBar
+        plts <- lapply(plts_original, function(plt) {
+          ggplt <- ggplotly(plt$figure, tooltip = c("y", "text"))
+          config(ggplt, displayModeBar = FALSE)
+        })
+
+        # Store plots for this group in the list with the .id as the name
+        group_plots_plotly[[as.character(groups[[i]]$.id[1])]] <- plts
+        group_plots_ggplot[[as.character(groups[[i]]$.id[1])]] <- plts_original
+      }
+
+      # Return the list of plots for each group with .id as names
+      list(
+        plotly = group_plots_plotly,
+        ggplot = group_plots_ggplot
+      )
     }
-
-    # Return the list of plots for each group with .id as names
-    list(
-      plotly = group_plots_plotly,
-      ggplot = group_plots_ggplot
-    )
   })
 }
 
@@ -60,40 +62,40 @@ generate_diagnostics_text <- function(data_in) {
 #' @param data_in Reactive expression containing the input data
 #' @return Reactive expression containing diagnostics table
 #' @importFrom dplyr %>% group_split
-generate_diagnostics_table <- function(data_in) {
+generate_diagnostics_table <- function(data_in, group_selection_passed) {
   reactive({
-    req(data_in())
+    if (group_selection_passed()) {
+      # Split data by .id into groups
+      groups <- group_split(data_in(), .id)
 
-    # Split data by .id into groups
-    groups <- group_split(data_in(), .id)
+      # Initialize an empty list to store tables for each group
+      group_tables <- list()
 
-    # Initialize an empty list to store tables for each group
-    group_tables <- list()
+      # Loop over each group and generate the diagnostics table
+      for (i in seq_along(groups)) {
+        group_data <- groups[[i]]
 
-    # Loop over each group and generate the diagnostics table
-    for (i in seq_along(groups)) {
-      group_data <- groups[[i]]
+        heaping_exposure <- check_heaping_general(group_data, "Exposures")
+        heaping_deaths <- check_heaping_general(group_data, "Deaths")
 
-      heaping_exposure <- check_heaping_general(group_data, "Exposures")
-      heaping_deaths <- check_heaping_general(group_data, "Deaths")
+        heaping_exposure$Type <- "Exposures"
+        heaping_deaths$Type <- "Deaths"
 
-      heaping_exposure$Type <- "Exposures"
-      heaping_deaths$Type <- "Deaths"
+        heaping_res <- rbind(heaping_exposure, heaping_deaths)
+        heaping_res$result <- round(heaping_res$result, 2)
 
-      heaping_res <- rbind(heaping_exposure, heaping_deaths)
-      heaping_res$result <- round(heaping_res$result, 2)
+        heaping_res$method <- toTitleCase(heaping_res$method)
+        df <- heaping_res[c("Type", "age scale", "method", "result", "level", "color")]
+        df <- df[order(df$method), ]
+        names(df) <- toTitleCase(names(df))
 
-      heaping_res$method <- toTitleCase(heaping_res$method)
-      df <- heaping_res[c("Type", "age scale", "method", "result", "level", "color")]
-      df <- df[order(df$method), ]
-      names(df) <- toTitleCase(names(df))
+        # Store table for this group in the list with the .id as the name
+        group_tables[[as.character(group_data$.id[1])]] <- df
+      }
 
-      # Store table for this group in the list with the .id as the name
-      group_tables[[as.character(group_data$.id[1])]] <- df
+      # Return the list of tables for each group with .id as names
+      group_tables
     }
-
-    # Return the list of tables for each group with .id as names
-    group_tables
   })
 }
 
@@ -139,7 +141,6 @@ render_diagnostics_table <- function(diagnostics_table) {
 #' @importFrom DT dataTableOutput
 #' @importFrom shinyalert shinyalert
 show_diagnostics_modal <- function(input, output, session, diagnostic_plots, diagnostics_table, diagnostics_text, grouping_dropdowns) {
-
   myContent <- div(
     id = "content-wrapper",
     style = "display: flex; flex-direction: column; align-items: center; width: 100%;",
@@ -195,15 +196,23 @@ show_diagnostics_modal <- function(input, output, session, diagnostic_plots, dia
   shinyalert(title = "&#x1F50D Data Diagnostics", html = TRUE, size = "l", text = myContent)
 
   # Render diagnostic plots
-  output$diag_exposures <- renderPlotly({ diagnostic_plots()$exposures })
-  output$diag_deaths <- renderPlotly({ diagnostic_plots()$deaths })
-  output$diag_empirical_mx <- renderPlotly({ diagnostic_plots()$empiricalmx })
+  output$diag_exposures <- renderPlotly({
+    diagnostic_plots()$exposures
+  })
+  output$diag_deaths <- renderPlotly({
+    diagnostic_plots()$deaths
+  })
+  output$diag_empirical_mx <- renderPlotly({
+    diagnostic_plots()$empiricalmx
+  })
 
   # Render diagnostics table
   output$diagnostics_table <- render_diagnostics_table(diagnostics_table)
 
   # Render diagnostics text
-  output$diagnostics_text <- renderText({ diagnostics_text() })
+  output$diagnostics_text <- renderText({
+    diagnostics_text()
+  })
 }
 
 #' Setup Diagnostic Data
@@ -219,9 +228,10 @@ show_diagnostics_modal <- function(input, output, session, diagnostic_plots, dia
 #' @return List of reactive expressions for plots, table, and text
 #' @importFrom shiny observeEvent
 #' @export
-setup_diagnostic_data <- function(input, output, session, data_in, selected_grouping_vars, grouping_dropdowns) {
+setup_diagnostic_data <- function(input, output, session, data_in, group_selection_passed, selected_grouping_vars, grouping_dropdowns) {
+
   # Generate diagnostic plots
-  diagnostic_plots <- generate_diagnostic_plots(data_in)
+  diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed)
 
   # Create reactive for current diagnostic plots
   current_diagnostic_plots <- create_current_diagnostic_plots(diagnostic_plots()$plotly, selected_grouping_vars, data_in, input)
@@ -230,15 +240,13 @@ setup_diagnostic_data <- function(input, output, session, data_in, selected_grou
   diagnostics_text <- generate_diagnostics_text(data_in)
 
   # Generate diagnostics table
-  diagnostics_table <- generate_diagnostics_table(data_in)
+  diagnostics_table <- generate_diagnostics_table(data_in, group_selection_passed)
 
   # Create reactive for current diagnostics table
   current_diagnostics_table <- create_current_diagnostics_table(diagnostics_table, selected_grouping_vars, data_in, input)
 
   # Show diagnostics modal when the diagnostics button is clicked
-  observeEvent(input$diagnostics, {
-    show_diagnostics_modal(input, output, session, current_diagnostic_plots, current_diagnostics_table, diagnostics_text, grouping_dropdowns)
-  })
+  show_diagnostics_modal(input, output, session, current_diagnostic_plots, current_diagnostics_table, diagnostics_text, grouping_dropdowns)
 
   list(
     plots = current_diagnostic_plots,

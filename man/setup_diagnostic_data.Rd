@@ -9,6 +9,7 @@ setup_diagnostic_data(
   output,
   session,
   data_in,
+  group_selection_passed,
   selected_grouping_vars,
   grouping_dropdowns
 )

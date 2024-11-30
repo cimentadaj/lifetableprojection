@@ -4,7 +4,7 @@
 \alias{generate_diagnostics_table}
 \title{Generate Diagnostics Table}
 \usage{
-generate_diagnostics_table(data_in)
+generate_diagnostics_table(data_in, group_selection_passed)
 }
 \arguments{
 \item{data_in}{Reactive expression containing the input data}
