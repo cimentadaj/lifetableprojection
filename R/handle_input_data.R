@@ -4,10 +4,7 @@
 #' @return Reactive expression containing the uploaded data
 #' @importFrom shiny reactive
 handle_file_upload <- function(input) {
-  reactive({
-    req(input$file1)
-    readData(input)
-  })
+  readData(input)
 }
 
 #' Handle Sample Data
@@ -53,56 +50,65 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
   choices <- reactive({
     x <- names(data())
     if (is.null(x)) {
-      return(character(0))  # Return empty character vector if data is NULL
+      return(character(0))
     } else {
       return(x)
     }
   })
 
-  # Observe when data is updated
+  # Observe when data is updated AND group selection hasn't passed yet
   observeEvent(data(), {
-    # Render the modal UI
-    output$modal_ui <- renderUI({
-      modal(
-        id = "column_selection_modal",
-        header = "Column Selection",
-        content = div(
-          shiny.semantic::selectInput(
-            "id_columns",
-            label = "Select Identifier Columns",
-            choices = choices(),
-            multiple = TRUE
+    # Only show modal if group selection hasn't passed
+    if (!group_selection_passed()) {
+      # Render the modal UI
+      output$modal_ui <- renderUI({
+        modal(
+          id = "column_selection_modal",
+          header = "Column Selection",
+          content = div(
+            shiny.semantic::selectInput(
+              "id_columns",
+              label = "Select Identifier Columns",
+              choices = choices(),
+              multiple = TRUE
+            ),
+            br(),
+            shiny.semantic::checkbox_input(
+              "skip_grouping",
+              "No grouping needed for this analysis",
+              is_marked = FALSE
+            ),
+            br(),
+            br(),
+            br(),
+            uiOutput("modal_error_message")
           ),
-          br(),
-          uiOutput("modal_error_message")  # Placeholder for error messages
-        ),
-        footer = tagList(
-          actionButton("confirm_column_selection", "Confirm", class = "ui button primary"),
-          actionButton("cancel_column_selection", "Cancel", class = "ui button")
+          footer = tagList(
+            actionButton("confirm_column_selection", "Confirm", class = "ui button primary"),
+            actionButton("cancel_column_selection", "Cancel", class = "ui button")
+          )
         )
-      )
-    })
+      })
 
-    # Use session$onFlushed to ensure the UI is updated before showing the modal
-    session$onFlushed(function() {
-      show_modal("column_selection_modal")
-    }, once = TRUE)  # Ensure it's called only once per data update
+      # Use session$onFlushed to ensure the UI is updated before showing the modal
+      session$onFlushed(function() {
+        show_modal("column_selection_modal")
+      }, once = TRUE)
+    }
   })
 
-    validate_groups <- function() {
-      selected_columns <- input$id_columns
-
-      if (length(selected_columns) > 0) {
-        library(dplyr)
-        valid_groups <-
-          ODAPbackend:::create_groupid(data(), selected_columns) %>%
-          ODAPbackend:::check_groupid()
-
-        valid_groups
-      } else {
-        FALSE
-      }
+  validate_groups <- function() {
+    selected_columns <- input$id_columns
+    if (length(selected_columns) >= 0) {
+      library(dplyr)
+      valid_groups <-
+        ODAPbackend:::create_groupid(data(), selected_columns) %>%
+        ODAPbackend:::check_groupid()
+      valid_groups
+    } else {
+      FALSE
     }
+  }
 
   # Observe the confirm button click
   observeEvent(input$confirm_column_selection, {
@@ -112,15 +118,13 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
       })
     } else if (!validate_groups()) {
       output$modal_error_message <- renderUI({
-        HTML('<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;">The specified columns do not identify each row uniquely.</p>')
+        HTML('<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;">The specified columns do not identify each row uniquely or we\'ve identified there are grouping columns not specified.</p>')
       })
     } else {
-      # Success: process the data and close the modal
-      # data(ODAPbackend:::create_groupid(data(), input$id_columns))  # Replace with actual processing
-      data(data())  # Placeholder: no actual processing
+      data(ODAPbackend:::create_groupid(data(), input$id_columns))
       group_selection_passed(TRUE)
-      selected_grouping_vars(input$id_columns)  # Store the selected grouping variables
-      hide_modal("column_selection_modal")  # Close the modal after success
+      selected_grouping_vars(input$id_columns)
+      hide_modal("column_selection_modal")
     }
   })
 

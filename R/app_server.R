@@ -300,8 +300,23 @@ app_server <- function(input, output, session) {
   # Initialize reactive values
   data_in <- reactiveVal()
 
+  # General variable to indicate
+  group_selection_passed <- reactiveVal(FALSE)
+  selected_grouping_vars <- reactiveVal(NULL)
+
   # Handle file upload
-  uploaded_data <- handle_file_upload(input)
+  uploaded_data <- reactive({
+    req(input$file1) # Replace 'file_upload' with your actual file input ID
+
+    # Reset variables after new file upload
+    group_selection_passed(FALSE)
+    selected_grouping_vars(NULL)
+    output$modal_error_message <- NULL
+
+    # Process the uploaded file
+    handle_file_upload(input)
+  })
+
 
   # Handle sample data
   sample_data <- handle_sample_data()
@@ -317,10 +332,6 @@ app_server <- function(input, output, session) {
 
   # Display table as example..
   output$data_table <- renderRHandsontable(renderDataTable(sample_data()))
-
-  # General variable to indicate
-  group_selection_passed <- reactiveVal(FALSE)
-  selected_grouping_vars <- reactiveVal(NULL)
 
   # Handle column selection
   handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars)

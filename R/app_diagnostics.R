@@ -139,19 +139,23 @@ render_diagnostics_table <- function(diagnostics_table) {
 #' @importFrom DT dataTableOutput
 #' @importFrom shinyalert shinyalert
 show_diagnostics_modal <- function(input, output, session, diagnostic_plots, diagnostics_table, diagnostics_text, grouping_dropdowns) {
+
   myContent <- div(
     id = "content-wrapper",
     style = "display: flex; flex-direction: column; align-items: center; width: 100%;",
-    div(
-      class = "grouping-dropdowns-container",
-      style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px;",
-      lapply(grouping_dropdowns(), function(dropdown) {
-        div(
-          style = "flex: 0 1 auto; min-width: 150px; max-width: 200px;",
-          dropdown
-        )
-      })
-    ),
+    ## Only show grouping dropdowns if grouping vars are selected
+    if (!is.null(grouping_dropdowns())) {
+      div(
+        class = "grouping-dropdowns-container",
+        style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px;",
+        lapply(grouping_dropdowns(), function(dropdown) {
+          div(
+            style = "flex: 0 1 auto; min-width: 150px; max-width: 200px;",
+            dropdown
+          )
+        })
+      )
+    },
     div(
       style = "display: flex; flex-direction: row; align-items: flex-start; width: 100%; justify-content: center;",
       div(
@@ -258,8 +262,13 @@ setup_diagnostic_data <- function(input, output, session, data_in, selected_grou
 #' @export
 create_current_diagnostic_plots <- function(diagnostic_plots, selected_grouping_vars, data_in, input) {
   reactive({
-    req(diagnostic_plots, selected_grouping_vars(), data_in())
-    current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+    req(diagnostic_plots, data_in())
+    # If no grouping vars selected, use default group "1"
+    if (is.null(selected_grouping_vars())) {
+      current_id <- "1"
+    } else {
+      current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+    }
     diagnostic_plots[[current_id]]
   })
 }
@@ -277,8 +286,13 @@ create_current_diagnostic_plots <- function(diagnostic_plots, selected_grouping_
 #' @export
 create_current_diagnostics_table <- function(diagnostics_table, selected_grouping_vars, data_in, input) {
   reactive({
-    req(diagnostics_table(), selected_grouping_vars(), data_in())
-    current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+    req(diagnostics_table(), data_in())
+    # If no grouping vars selected, use default group "1"
+    if (is.null(selected_grouping_vars())) {
+      current_id <- "1"
+    } else {
+      current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+    }
     diagnostics_table()[[current_id]]
   })
 }

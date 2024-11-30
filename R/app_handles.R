@@ -40,8 +40,9 @@ handle_transitions <- function(input) {
 #' @export
 setup_grouping_dropdowns <- function(selected_grouping_vars, data_in) {
   reactive({
-    req(selected_grouping_vars())
     req(data_in())
+
+    if (length(selected_grouping_vars()) == 0) return()
 
     lapply(selected_grouping_vars(), function(var) {
       unique_values <- unique(data_in()[[var]])
