@@ -127,11 +127,21 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
         ),
         slider_widget
       )
+    }),
+    sex_to_use = renderUI({
+      sex_widget <- create_field_set("", "Sex", "input_sex", c("Total", "Female", "Male"), "Total")
+      if ("sex" %in% tolower(names(data_in()))) {
+        sex_widget <- div()
+      }
+
+      sex_widget
     })
   )
 
+
   output$extrap_from_data <- lt_input$extrap_from
   output$ages_to_use <- lt_input$ages_to_use
+  output$sex_to_use <- lt_input$sex_to_use
 
   lt_input
 }

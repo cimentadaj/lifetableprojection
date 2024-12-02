@@ -10,7 +10,7 @@ input_page <- function() {
     # Basic Inputs as in initial setup
     create_field_set("", "Desired Open Age Group", "input_oanew", seq(70, 100, by = 5), 100),
     create_field_set("", "Output Age Classes", "input_age_out", c("single", "abridged"), "single"),
-    create_field_set("", "Sex", "input_sex", c("Total", "Female", "Male"), "Total"),
+    uiOutput("sex_to_use"),
     uiOutput("ages_to_use"),
     uiOutput("extrap_from_data"),
     br(),
