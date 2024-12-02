@@ -1,5 +1,6 @@
 to_snake <- function(x) tolower(gsub(" ", "", x))
 
+
 #' Setup Download Handlers
 #'
 #' Sets up download handlers for plots and data in Shiny.
@@ -588,10 +589,10 @@ app_server <- function(input, output, session) {
   observeEvent(input$calculate_lt, {
     print("Calculate LT button clicked")
     # Use the final result from preprocessing or data_in if no steps
-    final_data <- if (!is.null(preprocessing_results())) {
-      preprocess_exec()$final_result()
+    if (!is.null(preprocessing_results())) {
+      final_data <- preprocess_exec()$final_result()
     } else {
-      data_in()
+      final_data <- data_in()
     }
 
     req(final_data)
@@ -814,6 +815,13 @@ app_server <- function(input, output, session) {
     }
   })
 
+  download_choices <- c(
+    "all" = "Download all (diagnostics, preprocessing steps and lifetable results)",
+    "lifetable" = "Download life table results",
+    "preprocessing" = "Download preprocessing results",
+    "diagnostics" = "Download diagnostic results"
+  )
+
   output$download_modal <- renderUI({
     shiny.semantic::modal(
       id = "download-modal",
@@ -821,12 +829,8 @@ app_server <- function(input, output, session) {
       shiny.semantic::multiple_radio(
         "download_option",
         "Select an option:",
-        choices = c(
-          "Download all (diagnostics, preprocessing steps and lifetable results)" = "all",
-          "Download life table results" = "lifetable",
-          "Download preprocessing results" = "preprocessing",
-          "Download diagnostic results" = "diagnostics"
-        )
+        choices = download_choices,
+        choices_value = names(download_choices)
       ),
       footer = tagList(
         shiny.semantic::button("cancel_download", "Cancel"),
@@ -881,6 +885,23 @@ app_server <- function(input, output, session) {
       # Function to save diagnostic results
       save_diagnostic_results <- function(base_path) {
         diagnostic_analysis <- diagnostic_data()
+
+        if (is.null(diagnostic_analysis)) {
+          diagnostic_data(
+            setup_diagnostic_data(
+              input,
+              output,
+              session,
+              data_in,
+              group_selection_passed,
+              selected_grouping_vars,
+              grouping_dropdowns,
+              show_modal = FALSE
+            )
+          )
+
+          diagnostic_analysis <- diagnostic_data()
+        }
 
         # Prepare diagnostics path
         diagnostics_path <- file.path(base_path, "diagnostics")

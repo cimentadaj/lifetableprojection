@@ -225,17 +225,154 @@ app_ui <- function(request) {
           #adjustment_pills .ui.label i.delete.icon {
             cursor: pointer;
           }
-        "))
+
+      .hero-section {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        border-radius: 10px;
+        margin-bottom: 2rem;
+      }
+
+      .hero-title {
+        font-size: 2.5rem;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.2rem;
+        color: #34495e;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        padding: 2rem 0;
+      }
+
+      .feature-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: transform 0.2s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .feature-card i {
+        font-size: 2rem;
+        color: #3498db;
+        margin-bottom: 1rem;
+      }
+
+      .feature-card h3 {
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+      }
+
+      .feature-card p {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+      }
+
+      .data-format-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 2rem 0;
+      }
+
+      .action-section {
+        text-align: center;
+        padding: 2rem 0;
+      }
+
+      @media (max-width: 768px) {
+        .hero-title {
+          font-size: 2rem;
+        }
+
+        .hero-subtitle {
+          font-size: 1rem;
+        }
+
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+      }"))
+      ),
+      div(
+        div(
+          class = "main-content",
+          div(
+            id = "initial_landing_page",
+            # Hero Section
+            div(
+              class = "hero-section",
+              h1("Life Table Analysis Platform", class = "hero-title"),
+              p("Transform mortality data into comprehensive life table analyses with just a few clicks",
+                class = "hero-subtitle"
+              )
+            ),
+
+            # Features Grid
+            div(
+              class = "features-grid",
+              # Upload Feature
+              div(
+                class = "feature-card",
+                icon("upload"),
+                h3("Upload Your Data"),
+                p("Import your mortality data in CSV format containing Age, Deaths, and Exposures")
+              ),
+              # Diagnostics Feature
+              div(
+                class = "feature-card",
+                icon("chart line"),
+                h3("Run Diagnostics"),
+                p("Analyze data quality and identify potential issues with built-in diagnostic tools")
+              ),
+              # Transform Feature
+              div(
+                class = "feature-card",
+                icon("magic"),
+                h3("Transform Data"),
+                p("Apply sophisticated smoothing and adjustments by groups")
+              ),
+              # Results Feature
+              div(
+                class = "feature-card",
+                icon("table"),
+                h3("Get Results"),
+                p("Download complete life table results and visualizations")
+              )
+            ),
+
+            # Start Button
+            div(
+              class = "action-section",
+              actionButton("start_button", "Start", class = "ui blue button")
+            )
+          )
+        )
       ),
       div(
         class = "main-content",
-        div(
+        hidden(div(
           id = "landing_page",
           tags$div(
             class = "info-box",
-            h1("\xF0\x9F\x9A\x80 Welcome to the Online Demographic Analysis Platform! \xF0\x9F\x8E\xAF"),
-            p("\xF0\x9F\x93\x88 Transform your data into insightful forecasts. Begin by uploading your CSV file."),
-            p("\xF0\x9F\xA7\x90 Not sure about your file? Here's what we're looking for:"),
+            h1("\xF0\x9F\x9A\x80 Data upload and validation \xF0\x9F\x8E\xAF"),
+            p("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:"),
             br(),
             div(
               style = "display: flex; gap: 5px;",
@@ -289,7 +426,7 @@ app_ui <- function(request) {
               uiOutput("forward_step2")
             )
           )
-        )
+        ))
       ),
       tags$head(
         tags$script(HTML("

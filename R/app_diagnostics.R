@@ -228,7 +228,7 @@ show_diagnostics_modal <- function(input, output, session, diagnostic_plots, dia
 #' @return List of reactive expressions for plots, table, and text
 #' @importFrom shiny observeEvent
 #' @export
-setup_diagnostic_data <- function(input, output, session, data_in, group_selection_passed, selected_grouping_vars, grouping_dropdowns) {
+setup_diagnostic_data <- function(input, output, session, data_in, group_selection_passed, selected_grouping_vars, grouping_dropdowns, show_modal = TRUE) {
 
   # Generate diagnostic plots
   diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed)
@@ -245,8 +245,10 @@ setup_diagnostic_data <- function(input, output, session, data_in, group_selecti
   # Create reactive for current diagnostics table
   current_diagnostics_table <- create_current_diagnostics_table(diagnostics_table, selected_grouping_vars, data_in, input)
 
-  # Show diagnostics modal when the diagnostics button is clicked
-  show_diagnostics_modal(input, output, session, current_diagnostic_plots, current_diagnostics_table, diagnostics_text, grouping_dropdowns)
+  if (show_modal) {
+    # Show diagnostics modal when the diagnostics button is clicked
+    show_diagnostics_modal(input, output, session, current_diagnostic_plots, current_diagnostics_table, diagnostics_text, grouping_dropdowns)
+  }
 
   list(
     plots = current_diagnostic_plots,

@@ -28,8 +28,6 @@ validate_data <- function(data) {
   reactive({
     req(data())
     validateData(data())
-    # TODO: REMOVE
-    list(pass = "Pass")
   })
 }
 

@@ -6,6 +6,12 @@
 #' @importFrom shinyjs hide show
 #' @export
 handle_transitions <- function(input) {
+
+  observeEvent(input$start_button, {
+    hide("initial_landing_page")
+    show("landing_page")
+  })
+
   observeEvent(input$forward_step, {
     hide("landing_page")
     show("step_adjustment")
