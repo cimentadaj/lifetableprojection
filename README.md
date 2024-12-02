@@ -23,11 +23,20 @@ You can install the development version of lifetableprojection from
 devtools::install_github("cimentadaj/lifetableprojection")
 ```
 
-## Example
+## How to launch the app
 
-This is a basic example which shows you how to solve a common problem:
+To launch the app locally, run:
 
 ``` r
 library(lifetableprojection)
 run_app()
+```
+
+To launch the app through docker run this in the terminal at the root of
+the repository:
+
+``` bash
+PORT=8180
+docker build -t proj-app --build-arg PORT=$PORT .
+docker run -p $PORT:$PORT -e PORT=$PORT -d proj-app
 ```
