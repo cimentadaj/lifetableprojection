@@ -313,6 +313,7 @@ app_server <- function(input, output, session) {
     group_selection_passed(FALSE)
     selected_grouping_vars(NULL)
     executed_adjustments(character(0))
+    output$validation_results <- NULL
 
     # Process the uploaded file
     handle_file_upload(input)
