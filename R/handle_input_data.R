@@ -15,8 +15,6 @@ handle_sample_data <- function() {
   reactive({
     dt_ex <- system.file("data/abridged_data.csv", package = "lifetableprojection")
     dt_read <- read.csv(dt_ex)
-    dt_read$`.id` <- 1
-    dt_read$`.id_label` <- "All"
     dt_read
   })
 }
