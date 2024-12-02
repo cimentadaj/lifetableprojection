@@ -13,7 +13,7 @@ handle_file_upload <- function(input) {
 #' @importFrom shiny reactive
 handle_sample_data <- function() {
   reactive({
-    dt_ex <- system.file("data/abridged_data.csv", package = "lifetableprojection")
+    dt_ex <- system.file("extdata/abridged_data.csv", package = "lifetableprojection")
     dt_read <- read.csv(dt_ex)
     dt_read
   })
