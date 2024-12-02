@@ -62,7 +62,7 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
     if (!group_selection_passed()) {
       # Render the modal UI
       output$modal_ui <- renderUI({
-        modal(
+        shiny.semantic::modal(
           id = "column_selection_modal",
           header = "Column Selection",
           content = div(
@@ -92,7 +92,7 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
 
       # Use session$onFlushed to ensure the UI is updated before showing the modal
       session$onFlushed(function() {
-        show_modal("column_selection_modal")
+        shiny.semantic::show_modal("column_selection_modal")
       }, once = TRUE)
     }
   })
@@ -124,12 +124,12 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
       data(ODAPbackend:::create_groupid(data(), input$id_columns))
       group_selection_passed(TRUE)
       selected_grouping_vars(input$id_columns)
-      hide_modal("column_selection_modal")
+      shiny.semantic::hide_modal("column_selection_modal")
     }
   })
 
   # Close the modal when the "Cancel" button is clicked
   observeEvent(input$cancel_column_selection, {
-    hide_modal("column_selection_modal")
+    shiny.semantic::hide_modal("column_selection_modal")
   })
 }
