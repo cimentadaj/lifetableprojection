@@ -12,29 +12,40 @@ calculateLifeTable <- function(data_in, input) {
   `.id` <- NULL
   print("Went into calculate lifetable")
   req(input$calculate_lt)
-  input_extrapfrom <- isolate(as.numeric(input$input_extrapFrom))
 
-  begin_age <- isolate(which(data_in$Age == input$slider_ages_to_use[1]))
-  end_age <- isolate(which(data_in$Age == input$slider_ages_to_use[2]))
+  input_extrapfrom <- as.numeric(input$input_extrapFrom)
+
+  begin_age <- which(data_in$Age == input$slider_ages_to_use[1])
+  end_age <- which(data_in$Age == input$slider_ages_to_use[2])
   ages_to_use <- data_in$Age[begin_age:end_age]
 
+  input$input_oanew
+  input$input_age_out
+  input$input_extrapLaw
+  input$input_radix
+  input$input_srb
+  input$input_a0rule
+  input$input_axmethod
+  input$input_sex
+
   library(ggplot2)
-  print(begin_age)
-  print(end_age)
-  print(ages_to_use)
+
+  ## if (input$input_age_out == "abridged") {
+  ##   browser()
+  ## }
 
   lt_res <- lt_flexible(
     data_in = data_in,
-    OAnew = isolate(as.numeric(input$input_oanew)),
-    age_out = isolate(input$input_age_out),
+    OAnew = as.numeric(input$input_oanew),
+    age_out = input$input_age_out,
     extrapFrom = input_extrapfrom,
     extrapFit = ages_to_use,
-    extrapLaw = isolate(input$input_extrapLaw),
-    radix = isolate(as.numeric(input$input_radix)),
-    SRB = isolate(as.numeric(input$input_srb)),
-    a0rule = isolate(input$input_a0rule),
-    axmethod = isolate(input$input_axmethod),
-    Sex = isolate(input$input_sex)
+    extrapLaw = input$input_extrapLaw,
+    radix = input$input_radix,
+    SRB = input$input_srb,
+    a0rule = input$input_a0rule,
+    axmethod = input$input_axmethod,
+    Sex = input$input_sex
   )$data_out
 
   lt_res <-
@@ -67,7 +78,6 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
     num - 20
   })
 
-
   ages_data <- reactive({
     req(data_in())
     all_ages <- unique(data_in()$Age)
@@ -77,7 +87,6 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
     step_ages <- as.numeric(names(table(step_ages))[step_repeat])
     list(all_ages = all_ages, min_age_fit = min_age, step_ages = step_ages)
   })
-
 
   output$lt_group_select_ui <- renderUI({
     req(input$calculate_lt)
@@ -94,7 +103,6 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
       )
     )
   })
-
 
   lt_input <- list(
     extrap_age = extrap_age,
@@ -138,7 +146,6 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
     })
   )
 
-
   output$extrap_from_data <- lt_input$extrap_from
   output$ages_to_use <- lt_input$ages_to_use
   output$sex_to_use <- lt_input$sex_to_use
@@ -165,3 +172,17 @@ calculate_lt_and_plots <- function(data, input) {
     )
   })
 }
+
+## tmp <- readr::read_csv("~/Downloads/abridged_data.csv") %>% ODAPbackend::create_groupid(c("Sex", "Province"))
+
+## pt <- lt_flexible(
+##   data_in = tmp,
+##   age_out = "single"
+##   ## extrapFrom = 80,
+##   ## extrapFit = seq(60, 100, by = 5),
+##   ## extrapLaw = "Kannisto",
+##   ## radix = 100000,
+##   ## SRB = 1.05,
+##   ## a0rule = "Andreev-Kingkade",
+##   ## axmethod = "UN (Greville)"
+## )

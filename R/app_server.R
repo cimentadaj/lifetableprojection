@@ -312,6 +312,7 @@ app_server <- function(input, output, session) {
     # Reset variables after new file upload
     group_selection_passed(FALSE)
     selected_grouping_vars(NULL)
+    lt_data(NULL)
     executed_adjustments(character(0))
     output$validation_results <- NULL
 
@@ -324,6 +325,13 @@ app_server <- function(input, output, session) {
 
   # Update data_in when the sample data button is clicked
   observeEvent(input$continue_no_data, {
+    # Reset variables after new file upload
+    group_selection_passed(FALSE)
+    selected_grouping_vars(NULL)
+    lt_data(NULL)
+    executed_adjustments(character(0))
+    output$validation_results <- NULL
+
     data_in(sample_data())
   })
 
@@ -352,7 +360,6 @@ app_server <- function(input, output, session) {
 
   # Setup observers for grouping dropdown changes
   setup_grouping_dropdown_observers(input, selected_grouping_vars)
-
 
   # Initialize diagnostic_data as a reactiveVal
   diagnostic_data <- reactiveVal(NULL)
@@ -922,7 +929,11 @@ app_server <- function(input, output, session) {
         }
 
         # Combine all tables into a single data frame
-        combined_table <- dplyr::bind_rows(all_tables)
+        combined_table <-
+          dplyr::bind_rows(all_tables) %>%
+          mutate(`.id` = as.numeric(`.id`)) %>%
+          left_join(labels_df()) %>%
+          select(.id, .id_label, everything())
 
         # Save the combined diagnostic table with .id column
         write.csv(
@@ -962,14 +973,24 @@ app_server <- function(input, output, session) {
         # Define the directory for the current group
         dir.create(path_folder, recursive = TRUE, showWarnings = FALSE)
 
+        lt_summary <-
+          lt_analysis$summary %>%
+          left_join(labels_df()) %>%
+          select(.id, .id_label, everything())
+
+        lt_res <-
+          lt_analysis$lt %>%
+          left_join(labels_df()) %>%
+          select(.id, .id_label, everything())
+
         write.csv(
-          lt_analysis$summary,
+          lt_summary,
           file = file.path(path_folder, "lifetable_summary.csv"),
           row.names = FALSE
         )
 
         write.csv(
-          lt_analysis$lt,
+          lt_res,
           file = file.path(path_folder, "lifetable_results.csv"),
           row.names = FALSE
         )
@@ -1047,6 +1068,11 @@ app_server <- function(input, output, session) {
               )
             })
           }
+
+          lt_res <-
+            data_output %>%
+            left_join(labels_df()) %>%
+            select(.id, .id_label, selected_grouping_vars(), everything())
 
           # Save the data
           write.csv(

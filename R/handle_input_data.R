@@ -62,6 +62,8 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
           id = "column_selection_modal",
           header = "Column Selection",
           content = div(
+            strong(p("If you're analysis needs to be performed by groups (e.g Sex, Province, Region, etc..), please select the columns that group your data. If your data is not group-wise, tick the box below.")),
+            br(),
             shiny.semantic::selectInput(
               "id_columns",
               label = "Select Identifier Columns",
