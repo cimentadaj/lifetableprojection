@@ -27,7 +27,8 @@ Imports:
     shinyjs,
     untheme (>= 0.0.0.9000),
     R6,
-    zip
+    zip,
+    rintrojs
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1

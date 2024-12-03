@@ -292,6 +292,68 @@ app_server <- function(input, output, session) {
     })
   }
 
+  # At the beginning of app_server
+  current_tab <- reactiveVal()
+
+  # Update current_tab in transition handlers
+  observeEvent(input$start_button, {
+    current_tab("upload_page")
+  })
+
+  # Update current_tab in transition handlers
+  observeEvent(input$forward_step, {
+    current_tab("preprocessing_page")
+  })
+
+  observeEvent(input$forward_to_lifetable, {
+    current_tab("lifetable_page")
+  })
+
+  # Add the instruction observers
+  observeEvent(input$upload_instructions, {
+    if (current_tab() == "upload_page") {
+      rintrojs::introjs(session, options = list(
+        steps = data.frame(
+          element = c("#continue_no_data", "#file-input"),
+          intro = c(
+            "If you want to test out the app's functionalty, click here to use a sample dataset. A pop up window will be prompted for the grouping variables that identify your data. Simply tick the no-grouping box and you'll be able to inspect the diagnostics and perform additional preprocessing.",
+            "Alternatively, upload your own data. Make sure your data is cleaned and ready for analysis (no age duplicates, unless by groups), correct column names (we expect at least the basic to be 'Sex', 'Deaths' and 'Exposures'), either single or abridged ages but nothing else."
+          )
+        )
+      ))
+    }
+  })
+
+  # Add the instruction observers
+  observeEvent(input$preprocessing_instructions, {
+    if (current_tab() == "preprocessing_page") {
+      rintrojs::introjs(session, options = list(
+        steps = data.frame(
+          element = c("#adjustment_tabs", "#tooltip-preprocess", "#forward_to_lifetable"),
+          intro = c(
+            "These are the tabs for the preprocessing. Every time you click execute from each of the preprocessing it will use the output of the previous preprocessing step.",
+            "In this icon you can see which data is used as input for each preprocessing, whether the initial data or the output of a previous preprocessing step.",
+            "Once you've implemented all the preprocessing needed, you can click next to use the output of the final preprocessing step as the input to the lifetable. Equally important, if you've applied a preprocessing step, you'll see the sequential order at which they were executed as pills above this button. You can delete any step and the chain of excution will be recalculated."
+          )
+        )
+      ))
+    }
+  })
+
+  observeEvent(input$lifetable_instructions, {
+    if (current_tab() == "lifetable_page") {
+      rintrojs::introjs(session, options = list(
+        steps = data.frame(
+          element = c("#calculate_lt"),
+          intro = c(
+            "Here you can estimate the lifetable using the output of the final step of your preprocessing. After tweaking the parameters below, click here to see the plot and table outputs."
+          )
+        )
+      ))
+    }
+  })
+
+
   # Add this observer after the existing executed_adjustments observer
   observeEvent(executed_adjustments(), {
     update_step_tooltips(executed_adjustments())
@@ -435,6 +497,7 @@ app_server <- function(input, output, session) {
             })
           ),
           div(
+            id = "tooltip-preprocess",
             class = "tooltip-wrapper",
             style = "position: absolute; right: 0; top: 0;",
             TooltipHost(

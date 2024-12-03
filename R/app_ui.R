@@ -56,10 +56,12 @@ input_page <- function() {
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom rhandsontable rHandsontableOutput
 #' @importFrom shiny.fluent TooltipHost Image
+#' @importFrom rintrojs introjsUI
 #' @noRd
 app_ui <- function(request) {
   fluidUnTheme(
     useShinyjs(),
+    introjsUI(),
     LATEX_PRE_TAGS,
     tags$script(JS_CODE_SCREEN_SIZE),
     main_panel(
@@ -393,7 +395,9 @@ app_ui <- function(request) {
               )
             ),
             br(),
-            strong(h3("\xF0\x9F\x93\xA4 Ready? Click 'Browse...' to select your file or start with our sample data."))
+            strong(h3("\xF0\x9F\x93\xA4 Ready? Click 'Browse...' to select your file or start with our sample data.")),
+            br(),
+            action_button("upload_instructions", "Instructions", class = "ui blue button")
           ),
           tags$script(HTML("
             $(document).ready(function() {
@@ -405,7 +409,7 @@ app_ui <- function(request) {
             div(
               class = "button-container-file",
               style = "display: flex; gap: 10px;",
-              file_input("file1", "", type = "flex-override"),
+              div(id = 'file-input', file_input("file1", "", type = "flex-override")),
               uiOutput("modal_ui"),
               action_button(
                 "continue_no_data",
@@ -454,6 +458,7 @@ app_ui <- function(request) {
               class = "button-group",
               create_pills_ui(),
               action_button("back_to_diagnostics", "Back", class = "ui grey button"),
+              action_button("preprocessing_instructions", "Instructions", class = "ui blue button"),
               action_button("forward_to_lifetable", "Next", class = "ui blue button")
             )
           ),
@@ -479,6 +484,7 @@ app_ui <- function(request) {
             class = "button-container-forecast",
             style = "display: flex; gap: 10px;",
             action_button("back_to_adjustment", "Back", class = "ui grey button"),
+            action_button("lifetable_instructions", "Instructions", class = "ui blue button"),
             action_button("calculate_lt", "Calculate", class = "ui blue button"),
             action_button("reset_lt", "Reset Options", class = "ui blue button"),
             uiOutput("download_button")

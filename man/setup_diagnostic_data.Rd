@@ -11,7 +11,8 @@ setup_diagnostic_data(
   data_in,
   group_selection_passed,
   selected_grouping_vars,
-  grouping_dropdowns
+  grouping_dropdowns,
+  show_modal = TRUE
 )
 }
 \arguments{
