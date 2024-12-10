@@ -1,44 +1,65 @@
 #' Generate Diagnostic Plots
 #'
 #' @param data_in Reactive expression containing the input data
+#' @param group_selection_passed Reactive expression containing the group selection status
+#' @param lazy Boolean indicating whether to use lazy loading
 #' @return Reactive expression containing diagnostic plots
 #' @importFrom dplyr %>% group_split
 #' @importFrom ODAPbackend plot_initial_data check_heaping_general
 #' @importFrom plotly config
-generate_diagnostic_plots <- function(data_in, group_selection_passed) {
-  reactive({
-    if (group_selection_passed()) {
+generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_grouping_vars, input, lazy = TRUE) {
+  if (lazy) {
+    reactive({
+      # Return a reactive function that generates plots on demand
+      req(group_selection_passed())
 
-      # Split data by .id into groups
+      # Get current group ID based on input selections
+      current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
+
+      # Generate plots only for the selected group
+      group_data <- data_in() %>% filter(.id == current_id)
+      plts_original <- group_data %>% plot_initial_data()
+      names(plts_original) <- to_snake(names(plts_original))
+
+      # Convert plots to plotly
+      plts <- lapply(plts_original, function(plt) {
+        ggplt <- ggplotly(plt$figure, tooltip = c("y", "text"))
+        config(ggplt, displayModeBar = FALSE)
+      })
+
+      list(
+        plotly = plts,
+        ggplot = plts_original
+      )
+    })
+  } else {
+    # Original behavior for downloading all plots
+    reactive({
+      req(group_selection_passed())
+
       groups <- group_split(data_in(), .id)
-
-      # Initialize an empty list to store plots for each group
       group_plots_plotly <- list()
       group_plots_ggplot <- list()
 
-      # Loop over each group and apply plot_initial_data
       for (i in seq_along(groups)) {
         plts_original <- groups[[i]] %>% plot_initial_data()
         names(plts_original) <- to_snake(names(plts_original))
 
-        # Convert each plot to ggplotly and configure displayModeBar
         plts <- lapply(plts_original, function(plt) {
           ggplt <- ggplotly(plt$figure, tooltip = c("y", "text"))
           config(ggplt, displayModeBar = FALSE)
         })
 
-        # Store plots for this group in the list with the .id as the name
         group_plots_plotly[[as.character(groups[[i]]$.id[1])]] <- plts
         group_plots_ggplot[[as.character(groups[[i]]$.id[1])]] <- plts_original
       }
 
-      # Return the list of plots for each group with .id as names
       list(
         plotly = group_plots_plotly,
         ggplot = group_plots_ggplot
       )
-    }
-  })
+    })
+  }
 }
 
 #' Generate Diagnostics Text
@@ -225,28 +246,35 @@ show_diagnostics_modal <- function(input, output, session, diagnostic_plots, dia
 #' @param data_in Reactive value containing input data
 #' @param selected_grouping_vars Reactive value containing selected grouping variables
 #' @param grouping_dropdowns Reactive expression containing grouping dropdowns
+#' @param show_modal Boolean indicating whether to show the diagnostics modal
+#' @param download Boolean indicating whether to use lazy loading
 #' @return List of reactive expressions for plots, table, and text
 #' @importFrom shiny observeEvent
 #' @export
-setup_diagnostic_data <- function(input, output, session, data_in, group_selection_passed, selected_grouping_vars, grouping_dropdowns, show_modal = TRUE) {
+setup_diagnostic_data <- function(input, output, session, data_in, group_selection_passed, selected_grouping_vars, grouping_dropdowns, show_modal = TRUE, download = FALSE) {
+  # For downloading, use legacy behavior
+  if (download) {
+    diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed, selected_grouping_vars, input, lazy = FALSE)
+    current_diagnostic_plots <- create_current_diagnostic_plots(diagnostic_plots()$plotly, selected_grouping_vars, data_in, input)
+  } else {
+    # For interactive viewing, use lazy loading
+    diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed, selected_grouping_vars, input, lazy = TRUE)
+    current_diagnostic_plots <- reactive({
+      plots <- diagnostic_plots()$plotly
+      list(
+        exposures = plots$exposures,
+        deaths = plots$deaths,
+        empiricalmx = plots$empiricalmx
+      )
+    })
+  }
 
-  # Generate diagnostic plots
-  diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed)
-
-  # Create reactive for current diagnostic plots
-  current_diagnostic_plots <- create_current_diagnostic_plots(diagnostic_plots()$plotly, selected_grouping_vars, data_in, input)
-
-  # Generate diagnostics text
+  # Generate diagnostics text and table (these are lightweight operations)
   diagnostics_text <- generate_diagnostics_text(data_in)
-
-  # Generate diagnostics table
   diagnostics_table <- generate_diagnostics_table(data_in, group_selection_passed)
-
-  # Create reactive for current diagnostics table
   current_diagnostics_table <- create_current_diagnostics_table(diagnostics_table, selected_grouping_vars, data_in, input)
 
   if (show_modal) {
-    # Show diagnostics modal when the diagnostics button is clicked
     show_diagnostics_modal(input, output, session, current_diagnostic_plots, current_diagnostics_table, diagnostics_text, grouping_dropdowns)
   }
 
@@ -306,3 +334,83 @@ create_current_diagnostics_table <- function(diagnostics_table, selected_groupin
     diagnostics_table()[[current_id]]
   })
 }
+
+
+## setNames(list(plts), as.character(current_id))
+## $`1`
+## $`1`$exposures
+
+## $`1`$deaths
+
+## $`1`$empiricalmx
+
+
+## Browse[1]> setNames(list(plts_original), as.character(current_id))
+## $`1`
+## $`1`$exposures
+## $`1`$exposures$figure
+
+## $`1`$exposures$data
+## # A tibble: 101 × 3
+##      Age age_label Exposures
+##    <int> <chr>         <int>
+##  1     0 [0,1)         14798
+##  2     1 [1,2)         14598
+##  3     2 [2,3)         14818
+##  4     3 [3,4)         15515
+##  5     4 [4,5)         15630
+##  6     5 [5,6)         16235
+##  7     6 [6,7)         16150
+##  8     7 [7,8)         15786
+##  9     8 [8,9)         15204
+## 10     9 [9,10)        15241
+## # ℹ 91 more rows
+## # ℹ Use `print(n = ...)` to see more rows
+
+
+## $`1`$deaths
+## $`1`$deaths$figure
+
+## $`1`$deaths$data
+## # A tibble: 101 × 3
+##      Age age_label Deaths
+##    <int> <chr>      <int>
+##  1     0 [0,1)        288
+##  2     1 [1,2)         23
+##  3     2 [2,3)         13
+##  4     3 [3,4)          5
+##  5     4 [4,5)          5
+##  6     5 [5,6)          3
+##  7     6 [6,7)          4
+##  8     7 [7,8)          3
+##  9     8 [8,9)          3
+## 10     9 [9,10)         3
+## # ℹ 91 more rows
+## # ℹ Use `print(n = ...)` to see more rows
+
+
+## $`1`$empiricalmx
+## $`1`$empiricalmx$figure
+## Warning in scale_y_log10() :
+##   log-10 transformation introduced infinite values.
+## Warning in scale_y_log10() :
+##   log-10 transformation introduced infinite values.
+## `geom_line()`: Each group consists of only one observation.
+## ℹ Do you need to adjust the group aesthetic?
+
+## $`1`$empiricalmx$data
+## # A tibble: 101 × 3
+##      Age age_label      nMx
+##    <int> <chr>        <dbl>
+##  1     0 [0,1)     0.0195
+##  2     1 [1,2)     0.00158
+##  3     2 [2,3)     0.000877
+##  4     3 [3,4)     0.000322
+##  5     4 [4,5)     0.000320
+##  6     5 [5,6)     0.000185
+##  7     6 [6,7)     0.000248
+##  8     7 [7,8)     0.000190
+##  9     8 [8,9)     0.000197
+## 10     9 [9,10)    0.000197
+## # ℹ 91 more rows
+## # ℹ Use `print(n = ...)` to see more rows

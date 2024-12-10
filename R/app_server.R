@@ -428,10 +428,10 @@ app_server <- function(input, output, session) {
 
   # Trigger setup_diagnostic_data when the Diagnostics button is clicked
   observeEvent(input$diagnostics, {
-    req(group_selection_passed() == TRUE) # Ensure the condition is met
+    req(group_selection_passed() == TRUE)
     print("Diagnostics button clicked")
 
-    # Update diagnostic_data reactively
+    # Update diagnostic_data reactively with lazy loading
     diagnostic_data(
       setup_diagnostic_data(
         input,
@@ -440,9 +440,12 @@ app_server <- function(input, output, session) {
         data_in,
         group_selection_passed,
         selected_grouping_vars,
-        grouping_dropdowns
+        grouping_dropdowns,
+        show_modal = TRUE,
+        download = FALSE # Use lazy loading for interactive viewing
       )
     )
+
   })
 
   # Handle transitions
@@ -955,8 +958,19 @@ app_server <- function(input, output, session) {
 
       # Function to save diagnostic results
       save_diagnostic_results <- function(base_path) {
-        diagnostic_analysis <- diagnostic_data()
-
+        # Get full diagnostic analysis with all plots
+        diagnostic_analysis <- setup_diagnostic_data(
+          input,
+          output,
+          session,
+          data_in,
+          group_selection_passed,
+          selected_grouping_vars,
+          grouping_dropdowns,
+          show_modal = FALSE,
+          download = TRUE  # Generate all plots for download
+        )
+        
         if (is.null(diagnostic_analysis)) {
           diagnostic_data(
             setup_diagnostic_data(

@@ -66,9 +66,9 @@ Version 2.0:
 
 - [X] Adapt UI to choose columns to identify unique groups
 
-- [ ] Add tabs for the plots of separate groups
+- [X] Add tabs for the plots of separate groups
 
-- [ ] Accumulate all steps of the different steps saving the arguments for reproducibility in a nested data frame.
+- [X] Accumulate all steps of the different steps saving the arguments for reproducibility in a nested data frame.
 
 - [ ] Build logic so that if a reproducible CSV file is uploaded, all parameters would be taken from there
 
@@ -81,8 +81,36 @@ Version 2.0:
 - [X] If verify_subset is TRUE, I create a .id column that groups everything
 
 - [ ] Change Mortality Rate Comparison to Mortality Rate
-- [ ] What do we download when download all?
-- [ ] Do we add a download button to each separate pre-process?
-- [ ] How do we download all diagnostics?
-- [ ] How do we 
+
 - [ ] Round numbers of the table
+
+
+
+
+
+- [X] Prepare docker image
+- [X] Add no group selection button in selecting the groups
+- [X] Fix use sample data
+- [X] Fix download type names
+- [X] Running lifetable without preprocessing fails
+- [X] Welcome Page
+- [X] Makes sex widget conditional on column not being
+- [X] Add group labels / group id in the download exportable
+- [X] Make sure all analysis is reactive to widgets (lifetable and preprocessing).
+- [X] Instructions button
+
+
+- [ ] Add placeholder image for both plot windows
+- [ ] Add spinner to analysis plot
+- [ ] Report generation
+- [ ] Improve parsing for the expected columns with column names + order. This should not be confused with the parsing from Tim, but the actual structureof the Excel file
+- [ ] Download all parameters to reproduce the analysis
+- [ ] Report / parameter generation
+
+
+- [ ] Change landing page to modules
+- [ ] Change preprocessing tab to be very minimal with a hidden button
+- [ ] Test with new data that has a lot of groups
+- [ ] How to deal with long running runs? like a life table
+- [ ] Ask gabriel for the brazil data for stress testing
+- [ ] Add a comparison line for the lifetable as a benchmark
