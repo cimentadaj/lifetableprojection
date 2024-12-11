@@ -13,28 +13,17 @@ calculateLifeTable <- function(data_in, input) {
   print("Went into calculate lifetable")
   req(input$calculate_lt)
 
-  input_extrapfrom <- as.numeric(input$input_extrapFrom)
+  input_extrapfrom <- as.numeric(isolate(input$input_extrapFrom))
 
-  begin_age <- which(data_in$Age == input$slider_ages_to_use[1])
-  end_age <- which(data_in$Age == input$slider_ages_to_use[2])
-  ages_to_use <- data_in$Age[begin_age:end_age]
+  unique_ages <- unique(data_in$Age)
 
-  input$input_oanew
-  input$input_age_out
-  input$input_extrapLaw
-  input$input_radix
-  input$input_srb
-  input$input_a0rule
-  input$input_axmethod
-  input$input_sex
+  begin_age <- which(unique_ages == isolate(input$slider_ages_to_use[1]))
+  end_age <- which(unique_ages == isolate(input$slider_ages_to_use[2]))
+  ages_to_use <- unique_ages[begin_age:end_age]
 
   library(ggplot2)
 
-  ## if (input$input_age_out == "abridged") {
-  ##   browser()
-  ## }
-
-  lt_res <- lt_flexible(
+  lt_res <- isolate(lt_flexible(
     data_in = data_in,
     OAnew = as.numeric(input$input_oanew),
     age_out = input$input_age_out,
@@ -46,7 +35,7 @@ calculateLifeTable <- function(data_in, input) {
     a0rule = input$input_a0rule,
     axmethod = input$input_axmethod,
     Sex = input$input_sex
-  )$data_out
+  )$data_out)
 
   lt_res <-
     lt_res %>%
@@ -159,7 +148,7 @@ calculate_lt_and_plots <- function(data, input) {
   reactive({
     print("Starting life table calculations")
     lt_res <- calculateLifeTable(data, input)
-    plots <- lt_plot(data, lt_res, input$input_extrapFrom)
+    plots <- lt_plot(data, lt_res, isolate(input$input_extrapFrom))
     plt_names <- unname(unlist(lapply(plots, function(x) unique(x$nMx$nMx_plot_data$.id))))
     names(plots) <- plt_names
     lt_res_summary <- lt_summary(lt_res)
@@ -172,17 +161,3 @@ calculate_lt_and_plots <- function(data, input) {
     )
   })
 }
-
-## tmp <- readr::read_csv("~/Downloads/abridged_data.csv") %>% ODAPbackend::create_groupid(c("Sex", "Province"))
-
-## pt <- lt_flexible(
-##   data_in = tmp,
-##   age_out = "single"
-##   ## extrapFrom = 80,
-##   ## extrapFit = seq(60, 100, by = 5),
-##   ## extrapLaw = "Kannisto",
-##   ## radix = 100000,
-##   ## SRB = 1.05,
-##   ## a0rule = "Andreev-Kingkade",
-##   ## axmethod = "UN (Greville)"
-## )
