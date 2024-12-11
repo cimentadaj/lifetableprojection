@@ -468,10 +468,6 @@ app_ui <- function(request) {
               list(
                 menu = "Smoothing",
                 content = create_adjustment_tab("smoothing", "smoothing_inputs", "smoothing_plot")
-              ),
-              list(
-                menu = "Smoothing Two",
-                content = create_adjustment_tab("smoothing_second", "smoothing_second_inputs", "smoothing_second_plot")
               )
             )
           )

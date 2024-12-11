@@ -192,47 +192,6 @@ adjustment_steps <- list(
         )
       )
     }
-  ),
-  smoothing_second = list(
-    name = "Smoothing Second",
-    input_ui = function() {
-      div(
-        selectInput("smoothing2_variable", "Variable", choices = c("Exposures", "Deaths")),
-        selectInput(
-          "smoothing2_rough_method",
-          "Rough Method",
-          choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
-          selected = "auto"
-        ),
-        selectInput(
-          "smoothing2_fine_method",
-          "Fine Method",
-          choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
-          selected = "auto"
-        ),
-        selectInput(
-          "smoothing2_age_out",
-          "Age Output",
-          choices = c("single", "abridged", "5-year"),
-          selected = "abridged"
-        ),
-        numericInput("smoothing2_u5m", "Under-5 Mortality (optional)", value = NULL),
-        shiny.semantic::checkbox_input("smoothing2_constrain_infants", "Constraint Infants", is_marked = TRUE)
-      )
-    },
-    execute = function(input) {
-      rlang::expr(
-        smooth_flexible(
-          .data,
-          variable = !!input$smoothing2_variable,
-          rough_method = !!input$smoothing2_rough_method,
-          fine_method = !!input$smoothing2_fine_method,
-          constrain_infants = !!input$smoothing2_constrain_infants,
-          age_out = !!input$smoothing2_age_out,
-          u5m = !!input$smoothing2_u5m
-        )
-      )
-    }
   )
 )
 
@@ -445,7 +404,6 @@ app_server <- function(input, output, session) {
         download = FALSE # Use lazy loading for interactive viewing
       )
     )
-
   })
 
   # Handle transitions
@@ -660,20 +618,24 @@ app_server <- function(input, output, session) {
   plots_ready <- reactiveVal(FALSE)
 
   # Event to trigger life table calculation and plot generation
-  observeEvent(input$calculate_lt, {
-    print("Calculate LT button clicked")
-    # Use the final result from preprocessing or data_in if no steps
-    if (!is.null(preprocessing_results())) {
-      final_data <- preprocess_exec()$final_result()
-    } else {
-      final_data <- data_in()
-    }
+  ## observeEvent(input$calculate_lt, {
+  ##   print("Calculate LT button clicked")
+  ##   # Use the final result from preprocessing or data_in if no steps
+  ##   if (!is.null(preprocessing_results())) {
+  ##     final_data <- preprocess_exec()$final_result()
+  ##   } else {
+  ##     final_data <- data_in()
+  ##   }
 
-    req(final_data)
-    plots_ready(FALSE)
-    lt_data(calculate_lt_and_plots(final_data, input))
-    plots_ready(TRUE)
-  })
+  ##   req(final_data)
+  ##   plots_ready(FALSE)
+  ##   lt_data(calculate_lt_and_plots(final_data, input))
+  ##   plots_ready(TRUE)
+  ## })
+
+  # Create a reactive expression for the selected plots
+  # A reactiveVal to track the last calculate_lt count for which we computed results
+  last_calc_count <- reactiveVal(0)
 
   observeEvent(input$calculate_lt, {
     output$lt_summary_indication <- renderUI({
@@ -687,6 +649,7 @@ app_server <- function(input, output, session) {
         )
       )
     })
+
   })
 
   current_id <- reactive({
@@ -694,12 +657,35 @@ app_server <- function(input, output, session) {
     current_id
   })
 
-  # Create a reactive expression for the selected plots
+
   selected_plots <- reactive({
-    req(lt_data())
+    # Force a dependency on the button click
+    req(input$calculate_lt)
+
+    # Check if the button has been clicked more times than the last time we computed
+    if (input$calculate_lt > last_calc_count()) {
+      print("ho")
+      # Button was clicked again, re-run heavy computations
+
+      if (!is.null(preprocessing_results())) {
+        final_data <- preprocess_exec()$final_result()
+      } else {
+        final_data <- data_in()
+      }
+
+      plots_ready(FALSE)
+      # Re-run the heavy computation and store the results
+      lt_data(calculate_lt_and_plots(final_data, input))
+      plots_ready(TRUE)
+
+      # Update the counter to reflect we've computed at this button click count
+      last_calc_count(input$calculate_lt)
+    }
+
     plot_slot <- which(names(lt_data()()$plots) == as.character(current_id()))
     lt_data()()$plots[[plot_slot]]
   })
+
 
   # Create reactive expressions for each plot type
   lt_plots <- reactive({
@@ -745,7 +731,7 @@ app_server <- function(input, output, session) {
 
   # Render plots
   observe({
-    req(plots_ready())
+    req(input$calculate_lt)
 
     output$plot_mortality_rate <- renderPlotly({
       lt_plots()[["Mortality Rate"]]()$plotly
@@ -968,9 +954,9 @@ app_server <- function(input, output, session) {
           selected_grouping_vars,
           grouping_dropdowns,
           show_modal = FALSE,
-          download = TRUE  # Generate all plots for download
+          download = TRUE # Generate all plots for download
         )
-        
+
         if (is.null(diagnostic_analysis)) {
           diagnostic_data(
             setup_diagnostic_data(
