@@ -33,16 +33,17 @@ generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_
       )
     })
   } else {
-    # Original behavior for downloading all plots
+    future::plan(future::multicore, workers = parallelly::availableCores() - 3)
+
+    # Reactive function for parallel processing
     reactive({
       req(group_selection_passed())
 
       groups <- group_split(data_in(), .id)
-      group_plots_plotly <- list()
-      group_plots_ggplot <- list()
 
-      for (i in seq_along(groups)) {
-        plts_original <- groups[[i]] %>% plot_initial_data()
+      # Use `future_map` to process each group in parallel
+      results <- furrr::future_map(groups, function(group) {
+        plts_original <- group %>% plot_initial_data()
         names(plts_original) <- to_snake(names(plts_original))
 
         plts <- lapply(plts_original, function(plt) {
@@ -50,9 +51,16 @@ generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_
           config(ggplt, displayModeBar = FALSE)
         })
 
-        group_plots_plotly[[as.character(groups[[i]]$.id[1])]] <- plts
-        group_plots_ggplot[[as.character(groups[[i]]$.id[1])]] <- plts_original
-      }
+        list(
+          id = as.character(group$.id[1]),
+          plotly = plts,
+          ggplot = plts_original
+        )
+      })
+
+      # Combine the results into two separate lists
+      group_plots_plotly <- setNames(lapply(results, `[[`, "plotly"), sapply(results, `[[`, "id"))
+      group_plots_ggplot <- setNames(lapply(results, `[[`, "ggplot"), sapply(results, `[[`, "id"))
 
       list(
         plotly = group_plots_plotly,

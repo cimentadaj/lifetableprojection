@@ -633,7 +633,6 @@ app_server <- function(input, output, session) {
         )
       )
     })
-
   })
 
   current_id <- reactive({
@@ -906,28 +905,6 @@ app_server <- function(input, output, session) {
       temp_dir <- tempfile()
       dir.create(temp_dir)
 
-      # Function to save plots and data
-      save_plots_and_data <- function(plot_list, data_list, base_path, folder_name) {
-        lapply(names(plot_list), function(plot_name) {
-          plot_folder_path <- file.path(base_path, folder_name, plot_name)
-          dir.create(plot_folder_path, recursive = TRUE)
-
-          # Save the plot
-          ggsave(
-            filename = file.path(plot_folder_path, paste0(plot_name, ".png")),
-            plot = plot_list[[plot_name]],
-            device = "png"
-          )
-
-          # Save the DataTable as a CSV
-          write.csv(
-            data_list[[plot_name]],
-            file = file.path(plot_folder_path, paste0(plot_name, ".csv")),
-            row.names = FALSE
-          )
-        })
-      }
-
       # Function to save diagnostic results
       save_diagnostic_results <- function(base_path) {
         # Get full diagnostic analysis with all plots
@@ -991,12 +968,12 @@ app_server <- function(input, output, session) {
           row.names = FALSE
         )
 
-        # Process diagnostic plots by group and type
-        for (group_id in names(diagnostic_analysis$all_plots()$ggplot)) {
+
+        lapply(names(diagnostic_analysis$all_plots()$ggplot), function(group_id) {
           group_plots <- diagnostic_analysis$all_plots()$ggplot[[group_id]]
 
           # Save each plot type for the group
-          for (plot_type in names(group_plots)) {
+          lapply(names(group_plots), function(plot_type) {
             # Define the filename based on the plot type and group ID
             plot_filename <- paste0(plot_type, "_group_", group_id, ".png")
 
@@ -1006,8 +983,8 @@ app_server <- function(input, output, session) {
               plot = group_plots[[plot_type]]$figure,
               device = "png"
             )
-          }
-        }
+          })
+        })
       }
 
       # Function to save lifetable results
@@ -1044,8 +1021,10 @@ app_server <- function(input, output, session) {
           row.names = FALSE
         )
 
+
         # Iterate over each group ID
-        for (group_id in group_ids) {
+        # Parallelized saving of plots
+        lapply(group_ids, function(group_id) {
           # Check if plots exist for the current group ID
           if (as.character(group_id) %in% names(lt_analysis$plots)) {
             group_plots <- lt_analysis$plots[[as.character(group_id)]]
@@ -1053,8 +1032,8 @@ app_server <- function(input, output, session) {
             # Define which plot types to save for each group
             plot_types <- names(group_plots)
 
-            # Iterate over each plot type and save if it exists
-            for (plot_type in plot_types) {
+            # Save each plot type if it exists
+            lapply(plot_types, function(plot_type) {
               if (!is.null(group_plots[[plot_type]])) {
                 # Save the plot as PNG
                 ggsave(
@@ -1066,9 +1045,9 @@ app_server <- function(input, output, session) {
                   device = "png"
                 )
               }
-            }
+            })
           }
-        }
+        })
       }
 
       # Function to save preprocessing results
@@ -1132,24 +1111,37 @@ app_server <- function(input, output, session) {
         })
       }
 
-      # Depending on the selected option, call the appropriate save functions
-      if (input$download_option == "all") {
-        save_diagnostic_results(temp_dir)
-        save_preprocessing_results(temp_dir)
-        save_lifetable_results(temp_dir)
-      } else if (input$download_option == "lifetable") {
-        save_lifetable_results(temp_dir)
-      } else if (input$download_option == "preprocessing") {
-        save_preprocessing_results(temp_dir)
-      } else if (input$download_option == "diagnostics") {
-        save_diagnostic_results(temp_dir)
-      }
+      withProgress(message = "Preparing download...", value = 0, {
+        total_steps <- ifelse(input$download_option == "all", 3, 1)
 
-      # Zip the files
-      zip::zipr(
-        zipfile = file,
-        files = list.dirs(temp_dir, recursive = FALSE)
-      )
+        # Depending on the selected option, call the appropriate save functions
+        if (input$download_option == "all") {
+          incProgress(1 / total_steps, detail = "Saving diagnostic results...")
+          save_diagnostic_results(temp_dir)
+
+          incProgress(1 / total_steps, detail = "Saving preprocessing results...")
+          save_preprocessing_results(temp_dir)
+
+          incProgress(1 / total_steps, detail = "Saving lifetable results...")
+          save_lifetable_results(temp_dir)
+        } else if (input$download_option == "lifetable") {
+          incProgress(0.5, detail = "Saving lifetable results...")
+          save_lifetable_results(temp_dir)
+        } else if (input$download_option == "preprocessing") {
+          incProgress(0.5, detail = "Saving preprocessing results...")
+          save_preprocessing_results(temp_dir)
+        } else if (input$download_option == "diagnostics") {
+          incProgress(0.5, detail = "Saving diagnostic results...")
+          save_diagnostic_results(temp_dir)
+        }
+
+        # Final step - creating zip file
+        incProgress(1, detail = "Creating zip file...")
+        zip::zipr(
+          zipfile = file,
+          files = list.dirs(temp_dir, recursive = FALSE)
+        )
+      })
     }
   )
 }
