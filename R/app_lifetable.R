@@ -11,7 +11,6 @@
 calculateLifeTable <- function(data_in, input) {
   `.id` <- NULL
   print("Went into calculate lifetable")
-  req(input$calculate_lt)
 
   input_extrapfrom <- as.numeric(isolate(input$input_extrapFrom))
 
@@ -23,7 +22,8 @@ calculateLifeTable <- function(data_in, input) {
 
   library(ggplot2)
 
-  lt_res <- isolate(lt_flexible(
+  lt_res <- isolate(
+    lt_flexible(
     data_in = data_in,
     OAnew = as.numeric(input$input_oanew),
     age_out = input$input_age_out,
@@ -35,7 +35,8 @@ calculateLifeTable <- function(data_in, input) {
     a0rule = input$input_a0rule,
     axmethod = input$input_axmethod,
     Sex = input$input_sex
-  )$data_out)
+    )$data_out
+  )
 
   lt_res <-
     lt_res %>%

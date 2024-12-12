@@ -503,7 +503,7 @@ app_ui <- function(request) {
           div(
             class = "ui container",
             style = "padding-top: 20px;",
-            DTOutput("lt_summary_table")
+            withSpinner(DTOutput("lt_summary_table"))
           )
         )
       ),

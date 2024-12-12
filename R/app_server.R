@@ -617,22 +617,6 @@ app_server <- function(input, output, session) {
   # Create a reactive value to track if plots are ready to be rendered
   plots_ready <- reactiveVal(FALSE)
 
-  # Event to trigger life table calculation and plot generation
-  ## observeEvent(input$calculate_lt, {
-  ##   print("Calculate LT button clicked")
-  ##   # Use the final result from preprocessing or data_in if no steps
-  ##   if (!is.null(preprocessing_results())) {
-  ##     final_data <- preprocess_exec()$final_result()
-  ##   } else {
-  ##     final_data <- data_in()
-  ##   }
-
-  ##   req(final_data)
-  ##   plots_ready(FALSE)
-  ##   lt_data(calculate_lt_and_plots(final_data, input))
-  ##   plots_ready(TRUE)
-  ## })
-
   # Create a reactive expression for the selected plots
   # A reactiveVal to track the last calculate_lt count for which we computed results
   last_calc_count <- reactiveVal(0)
@@ -668,8 +652,10 @@ app_server <- function(input, output, session) {
       # Button was clicked again, re-run heavy computations
 
       if (!is.null(preprocessing_results())) {
+        print("preprocess")
         final_data <- preprocess_exec()$final_result()
       } else {
+        print("original")
         final_data <- data_in()
       }
 
