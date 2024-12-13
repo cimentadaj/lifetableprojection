@@ -123,8 +123,14 @@ adjustment_steps <- list(
     name = "Smoothing",
     input_ui = function() {
       div(
+        # Add explanation div at the top
+        div(
+          style = "margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
+          p("This step simultaneously smooths age patterns in both exposures and deaths.")
+        ),
+        
+        # Rest of the UI remains the same
         fluidRow(
-          # Left column for Exposures
           column(
             6,
             h4("Exposures Parameters"),
@@ -133,18 +139,8 @@ adjustment_steps <- list(
               "Rough Method (Exposures)",
               choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
               selected = "auto"
-            ),
-            selectInput(
-              "smoothing_fine_exp",
-              "Fine Method (Exposures)",
-              choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
-              selected = "auto"
-            ),
-            numericInput("smoothing_u5m_exp", "Under-5 Mortality (optional, Exposures)", value = NULL),
-            shiny.semantic::checkbox_input("smoothing_constrain_infants_exp", "Constrain Infants (Exposures)", is_marked = TRUE)
+            )
           ),
-
-          # Right column for Deaths
           column(
             6,
             h4("Deaths Parameters"),
@@ -153,30 +149,70 @@ adjustment_steps <- list(
               "Rough Method (Deaths)",
               choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
               selected = "auto"
-            ),
-            selectInput(
-              "smoothing_fine_deaths",
-              "Fine Method (Deaths)",
-              choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
-              selected = "auto"
-            ),
-            numericInput("smoothing_u5m_deaths", "Under-5 Mortality (optional, Deaths)", value = NULL),
-            shiny.semantic::checkbox_input("smoothing_constrain_infants_deaths", "Constrain Infants (Deaths)", is_marked = TRUE)
+            )
           )
         ),
-
-        # Shared Age Output
+        
+        # Shared basic parameter
         h4("Shared Parameters"),
         selectInput(
           "smoothing_age_out",
           "Age Output",
           choices = c("single", "abridged", "5-year"),
           selected = "abridged"
-        )
+        ),
+        
+        # Toggle button
+        action_button("toggle_advanced_smoothing", "Show Advanced Options", class = "ui button"),
+        
+        # Advanced options container
+        div(
+          id = "advanced_smoothing_inputs",
+          style = "display: none;",  # Hidden by default
+          
+          fluidRow(
+            column(
+              6,
+              selectInput(
+                "smoothing_fine_exp",
+                "Fine Method (Exposures)",
+                choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+                selected = "auto"
+              ),
+              numericInput("smoothing_u5m_exp", "Under-5 Mortality (optional, Exposures)", value = NULL),
+              shiny.semantic::checkbox_input("smoothing_constrain_infants_exp", "Constrain Infants (Exposures)", is_marked = TRUE)
+            ),
+            column(
+              6,
+              selectInput(
+                "smoothing_fine_deaths",
+                "Fine Method (Deaths)",
+                choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+                selected = "auto"
+              ),
+              numericInput("smoothing_u5m_deaths", "Under-5 Mortality (optional, Deaths)", value = NULL),
+              shiny.semantic::checkbox_input("smoothing_constrain_infants_deaths", "Constrain Infants (Deaths)", is_marked = TRUE)
+            )
+          )
+        ),
+        
+        # Add JavaScript for toggle functionality
+        tags$script(HTML("
+          $(document).on('click', '#toggle_advanced_smoothing', function() {
+            $('#advanced_smoothing_inputs').slideToggle('fast', function() {
+              var isVisible = $('#advanced_smoothing_inputs').is(':visible');
+              if(isVisible) {
+                $('#toggle_advanced_smoothing').text('Hide Advanced Options');
+              } else {
+                $('#toggle_advanced_smoothing').text('Show Advanced Options');
+              }
+            });
+          });
+        "))
       )
     },
     execute = function(input) {
-      # Call smooth_overall with the arguments from the UI
+      # Execute function remains unchanged
       rlang::expr(
         smooth_overall(
           .data,
