@@ -5,16 +5,32 @@
 #' @param input Shiny input object
 #' @importFrom shinyjs hide show
 #' @export
-handle_transitions <- function(input) {
+handle_transitions <- function(input, current_tab) {
 
-  observeEvent(input$start_button, {
-    hide("initial_landing_page")
+  # Module navigation observer
+  observeEvent(input$goto_lifetable, {
+    hide("module_landing_page")
+    show("lifetable_landing_page")
+    current_tab("lifetable")
+  })
+
+  # Add back navigation if needed
+  observeEvent(input$back_to_modules, {
+    hide("lifetable_landing_page")
+    show("module_landing_page")
+    current_tab("module_landing")
+  })
+
+  observeEvent(input$lifetable_start_button, {
+    hide("lifetable_landing_page")
     show("landing_page")
+    current_tab("upload_page")
   })
 
   observeEvent(input$forward_step, {
     hide("landing_page")
     show("step_adjustment")
+    current_tab("preprocessing_page")
   })
 
   observeEvent(input$back_to_diagnostics, {
@@ -25,11 +41,19 @@ handle_transitions <- function(input) {
   observeEvent(input$forward_to_lifetable, {
     hide("step_adjustment")
     show("step_input")
+    current_tab("lifetable_page")
   })
 
   observeEvent(input$back_to_adjustment, {
     hide("step_input")
     show("step_adjustment")
+  })
+
+  # Add new transition
+  observeEvent(input$back_to_lifetable_landing, {
+    hide("landing_page")
+    show("lifetable_landing_page")
+    current_tab("lifetable")
   })
 }
 

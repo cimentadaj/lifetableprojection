@@ -128,7 +128,7 @@ adjustment_steps <- list(
           style = "margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
           p("This step simultaneously smooths age patterns in both exposures and deaths.")
         ),
-        
+
         # Rest of the UI remains the same
         fluidRow(
           column(
@@ -152,7 +152,7 @@ adjustment_steps <- list(
             )
           )
         ),
-        
+
         # Shared basic parameter
         h4("Shared Parameters"),
         selectInput(
@@ -161,15 +161,15 @@ adjustment_steps <- list(
           choices = c("single", "abridged", "5-year"),
           selected = "abridged"
         ),
-        
+
         # Toggle button
         action_button("toggle_advanced_smoothing", "Show Advanced Options", class = "ui button"),
-        
+
         # Advanced options container
         div(
           id = "advanced_smoothing_inputs",
           style = "display: none;",  # Hidden by default
-          
+
           fluidRow(
             column(
               6,
@@ -195,7 +195,7 @@ adjustment_steps <- list(
             )
           )
         ),
-        
+
         # Add JavaScript for toggle functionality
         tags$script(HTML("
           $(document).on('click', '#toggle_advanced_smoothing', function() {
@@ -290,20 +290,6 @@ app_server <- function(input, output, session) {
   # At the beginning of app_server
   current_tab <- reactiveVal()
 
-  # Update current_tab in transition handlers
-  observeEvent(input$start_button, {
-    current_tab("upload_page")
-  })
-
-  # Update current_tab in transition handlers
-  observeEvent(input$forward_step, {
-    current_tab("preprocessing_page")
-  })
-
-  observeEvent(input$forward_to_lifetable, {
-    current_tab("lifetable_page")
-  })
-
   # Add the instruction observers
   observeEvent(input$upload_instructions, {
     if (current_tab() == "upload_page") {
@@ -353,7 +339,6 @@ app_server <- function(input, output, session) {
   observeEvent(executed_adjustments(), {
     update_step_tooltips(executed_adjustments())
   })
-
 
   # Initialize reactive values
   data_in <- reactiveVal()
@@ -443,7 +428,7 @@ app_server <- function(input, output, session) {
   })
 
   # Handle transitions
-  handle_transitions(input)
+  handle_transitions(input, current_tab)
 
   # Create a reactive value to store the list of executed adjustments (step names)
   executed_adjustments <- reactiveVal(character(0))

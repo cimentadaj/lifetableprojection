@@ -42,7 +42,6 @@ input_page <- function() {
 }
 
 
-
 #' The application User-Interface
 #'
 #' @param request Internal parameter for `{shiny}`.
@@ -310,23 +309,228 @@ app_ui <- function(request) {
         .features-grid {
           grid-template-columns: 1fr;
         }
-      }"))
+      }
+
+
+        .module-landing {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+          padding: 2rem;
+        }
+
+        .module-header {
+          text-align: center;
+          margin-bottom: 4rem;
+          padding: 2rem 0;
+        }
+
+        .module-title {
+          font-size: 3rem;
+          color: #1a237e;
+          font-weight: 700;
+          margin-bottom: 1rem;
+          letter-spacing: -0.5px;
+        }
+
+        .module-subtitle {
+          font-size: 1.25rem;
+          color: #546e7a;
+          max-width: 600px;
+          margin: 0 auto;
+          line-height: 1.6;
+        }
+
+        .modules-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 2rem;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .module-card {
+          background: white;
+          border-radius: 16px;
+          padding: 2rem;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+          transition: all 0.3s ease;
+          border: 1px solid rgba(0,0,0,0.05);
+          cursor: pointer;
+        }
+
+        .module-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        .module-icon {
+          width: 60px;
+          height: 60px;
+          background: #e3f2fd;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.5rem;
+        }
+
+        .module-icon i {
+          font-size: 24px;
+          color: #1976d2;
+        }
+
+        .module-name {
+          font-size: 1.5rem;
+          color: #1a237e;
+          margin-bottom: 1rem;
+          font-weight: 600;
+        }
+
+        .module-description {
+          color: #546e7a;
+          line-height: 1.6;
+          margin-bottom: 1.5rem;
+          font-size: 1rem;
+        }
+
+        .module-status {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.5rem 1rem;
+          border-radius: 20px;
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+
+        .status-active {
+          background: #e8f5e9;
+          color: #2e7d32;
+        }
+
+        .status-coming {
+          background: #fff3e0;
+          color: #ef6c00;
+        }
+
+        @media (max-width: 768px) {
+          .module-title {
+            font-size: 2.5rem;
+          }
+          .modules-grid {
+            grid-template-columns: 1fr;
+            padding: 0 1rem;
+          }
+        }
+
+        .button-container-adjustment {
+          margin-bottom: 20px;
+        }
+
+        .button-group {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          align-items: center;
+        }
+
+        .button-group .ui.button,
+        #adjustment_pills .ui.label {
+          height: 36px;
+          line-height: 34px;
+          padding: 0 15px;
+          font-size: 14px;
+          border-radius: 4px;
+          margin: 0;
+          box-sizing: border-box;
+        }
+
+        #adjustment_pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        #adjustment_pills .ui.label {
+          background-color: #e0e1e2;
+          color: rgba(0,0,0,.6);
+          font-weight: 700;
+          border: 1px solid #d4d4d5;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        #adjustment_pills .ui.label i.delete.icon {
+          cursor: pointer;
+          margin-left: 8px;
+          font-size: 12px;
+        }
+
+        /* Ensure consistent sizing for buttons and labels */
+        .ui.button,
+        .ui.label {
+          box-sizing: border-box;
+        }
+        "))
       ),
       div(
+        id = "module_landing_page",
+        class = "module-landing",
         div(
-          class = "main-content",
+          class = "module-header",
+          h1("Demographic Analysis Suite", class = "module-title"),
+          p("Advanced tools for demographic research and analysis",
+            class = "module-subtitle"
+          )
+        ),
+        div(
+          class = "modules-grid",
           div(
-            id = "initial_landing_page",
+            class = "module-card",
+            div(
+              class = "module-icon",
+              icon("table")
+            ),
+            h3("Life Table Analysis", class = "module-name"),
+            p("Create comprehensive life tables with advanced smoothing capabilities and mortality analysis tools.",
+              class = "module-description"
+            ),
+            actionButton("goto_lifetable", "Go to module", class = "ui blue button")
+          ),
+          div(
+            class = "module-card",
+            style = "opacity: 0.7; pointer-events: none;",
+            div(
+              class = "module-icon",
+              icon("users")
+            ),
+            h3("Migration Analysis", class = "module-name"),
+            p("Analyze migration patterns and demographic impacts.",
+              class = "module-description"
+            ),
+            div(
+              class = "module-status status-coming",
+              span("Coming Soon")
+            )
+          )
+        )
+      ),
+      div(
+        class = "main-content",
+        hidden(
+          div(
+            id = "lifetable_landing_page",
             # Hero Section
             div(
               class = "hero-section",
+              div(
+                style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
+                actionButton("back_to_modules", "Back", class = "ui grey button")
+              ),
               h1("Life Table Analysis Platform", class = "hero-title"),
               p("Transform mortality data into comprehensive life table analyses with just a few clicks",
                 class = "hero-subtitle"
               )
             ),
-
-            # Features Grid
             div(
               class = "features-grid",
               # Upload Feature
@@ -358,79 +562,83 @@ app_ui <- function(request) {
                 p("Download complete life table results and visualizations")
               )
             ),
-
-            # Start Button
             div(
               class = "action-section",
-              actionButton("start_button", "Start", class = "ui blue button")
+              actionButton("lifetable_start_button", "Start", class = "ui blue button")
             )
           )
         )
       ),
       div(
         class = "main-content",
-        hidden(div(
-          id = "landing_page",
-          tags$div(
-            class = "info-box",
-            h1("\xF0\x9F\x9A\x80 Data upload and validation \xF0\x9F\x8E\xAF"),
-            p("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:"),
-            br(),
+        hidden(
+          div(
+            id = "landing_page",
             div(
-              style = "display: flex; gap: 5px;",
+              style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
+              actionButton("back_to_lifetable_landing", "Back", class = "ui grey button")
+            ),
+            tags$div(
+              class = "info-box",
+              h1("\xF0\x9F\x9A\x80 Data upload and validation \xF0\x9F\x8E\xAF"),
+              p("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:"),
+              br(),
               div(
-                style = "",
-                rHandsontableOutput("data_table")
-              ),
-              div(
-                TooltipHost(
-                  content = "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.",
-                  delay = 0,
-                  Image(
-                    src = "www/info.png",
-                    width = "20px",
-                    shouldStartVisible = TRUE
+                style = "display: flex; gap: 5px;",
+                div(
+                  style = "",
+                  rHandsontableOutput("data_table")
+                ),
+                div(
+                  TooltipHost(
+                    content = "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.",
+                    delay = 0,
+                    Image(
+                      src = "www/info.png",
+                      width = "20px",
+                      shouldStartVisible = TRUE
+                    )
                   )
                 )
-              )
+              ),
+              br(),
+              strong(h3("\xF0\x9F\x93\xA4 Ready? Click 'Browse...' to select your file or start with our sample data.")),
+              br(),
+              action_button("upload_instructions", "Instructions", class = "ui blue button")
             ),
-            br(),
-            strong(h3("\xF0\x9F\x93\xA4 Ready? Click 'Browse...' to select your file or start with our sample data.")),
-            br(),
-            action_button("upload_instructions", "Instructions", class = "ui blue button")
-          ),
-          tags$script(HTML("
+            tags$script(HTML("
             $(document).ready(function() {
               $('div.ui.left.action.input.ui-ss-input').css('display', 'flex');
             });
           ")),
-          div(
-            br(),
             div(
-              class = "button-container-file",
-              style = "display: flex; gap: 10px;",
-              div(id = 'file-input', file_input("file1", "", type = "flex-override")),
-              uiOutput("modal_ui"),
-              action_button(
-                "continue_no_data",
-                "Use sample data",
-                class = "ui blue button",
-                style = "height: 4%;"
+              br(),
+              div(
+                class = "button-container-file",
+                style = "display: flex; gap: 10px;",
+                div(id = "file-input", file_input("file1", "", type = "flex-override")),
+                uiOutput("modal_ui"),
+                action_button(
+                  "continue_no_data",
+                  "Use sample data",
+                  class = "ui blue button",
+                  style = "height: 4%;"
+                )
+              ),
+              br(),
+              div(
+                class = "validation-results",
+                uiOutput("validation_results")
+              ),
+              br(),
+              div(
+                class = "button-container",
+                style = "display: flex; gap: 10px;",
+                uiOutput("forward_step2")
               )
-            ),
-            br(),
-            div(
-              class = "validation-results",
-              uiOutput("validation_results")
-            ),
-            br(),
-            div(
-              class = "button-container",
-              style = "display: flex; gap: 10px;",
-              uiOutput("forward_step2")
             )
           )
-        ))
+        )
       ),
       tags$head(
         tags$script(HTML("
