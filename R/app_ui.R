@@ -314,7 +314,7 @@ app_ui <- function(request) {
 
         .module-landing {
           min-height: 100vh;
-          background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+          background: white;
           padding: 2rem;
         }
 
