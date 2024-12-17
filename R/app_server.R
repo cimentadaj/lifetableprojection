@@ -355,6 +355,7 @@ app_server <- function(input, output, session) {
     group_selection_passed(FALSE)
     selected_grouping_vars(NULL)
     lt_data(NULL)
+    plots_ready(FALSE)
     executed_adjustments(character(0))
     output$validation_results <- NULL
 
@@ -371,6 +372,7 @@ app_server <- function(input, output, session) {
     group_selection_passed(FALSE)
     selected_grouping_vars(NULL)
     lt_data(NULL)
+    plots_ready(FALSE)
     executed_adjustments(character(0))
     output$validation_results <- NULL
 
@@ -688,6 +690,7 @@ app_server <- function(input, output, session) {
       last_calc_count(input$calculate_lt)
     }
 
+    req(lt_data())
     plot_slot <- which(names(lt_data()()$plots) == as.character(current_id()))
     lt_data()()$plots[[plot_slot]]
   })
@@ -1137,12 +1140,15 @@ app_server <- function(input, output, session) {
 
         # Depending on the selected option, call the appropriate save functions
         if (input$download_option == "all") {
+          print("diagnostics")
           incProgress(1 / total_steps, detail = "Saving diagnostic results...")
           save_diagnostic_results(temp_dir)
 
+          print("preprocessing")
           incProgress(1 / total_steps, detail = "Saving preprocessing results...")
           save_preprocessing_results(temp_dir)
 
+          print("lifetable")
           incProgress(1 / total_steps, detail = "Saving lifetable results...")
           save_lifetable_results(temp_dir)
         } else if (input$download_option == "lifetable") {
@@ -1158,6 +1164,7 @@ app_server <- function(input, output, session) {
 
         # Final step - creating zip file
         incProgress(1, detail = "Creating zip file...")
+        print("zipping")
         zip::zipr(
           zipfile = file,
           files = list.dirs(temp_dir, recursive = FALSE)
