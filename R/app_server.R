@@ -159,7 +159,7 @@ adjustment_steps <- list(
           "smoothing_age_out",
           "Age Output",
           choices = c("single", "abridged", "5-year"),
-          selected = "abridged"
+          selected = "single"
         ),
 
         # Toggle button
