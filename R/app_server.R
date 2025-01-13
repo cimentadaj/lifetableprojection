@@ -1,4 +1,5 @@
 to_snake <- function(x) tolower(gsub(" ", "", x))
+N_CORES <- 1
 
 
 #' Setup Download Handlers
@@ -931,7 +932,6 @@ app_server <- function(input, output, session) {
 
       # Function to save diagnostic results
       save_diagnostic_results <- function(base_path) {
-        # Get full diagnostic analysis with all plots
         diagnostic_analysis <- setup_diagnostic_data(
           input,
           output,
@@ -941,198 +941,190 @@ app_server <- function(input, output, session) {
           selected_grouping_vars,
           grouping_dropdowns,
           show_modal = FALSE,
-          download = TRUE # Generate all plots for download
+          download = TRUE
         )
 
         if (is.null(diagnostic_analysis)) {
-          diagnostic_data(
-            setup_diagnostic_data(
-              input,
-              output,
-              session,
-              data_in,
-              group_selection_passed,
-              selected_grouping_vars,
-              grouping_dropdowns,
-              show_modal = FALSE
-            )
-          )
-
           diagnostic_analysis <- diagnostic_data()
         }
 
-        # Prepare diagnostics path
         diagnostics_path <- file.path(base_path, "diagnostics")
         dir.create(diagnostics_path, recursive = TRUE, showWarnings = FALSE)
 
-        # Initialize an empty list to store tables from each group
+        # Save tables as before
+        print("Saving diagnostic tables...")
         all_tables <- list()
-
-        # Process diagnostic tables by group
         for (group_id in names(diagnostic_analysis$all_tables())) {
-          # Add the group ID to each row in the table and store in the list
-          group_table <-
-            diagnostic_analysis$all_tables()[[group_id]] %>%
+          group_table <- diagnostic_analysis$all_tables()[[group_id]] %>%
             mutate(.id = group_id)
-
           all_tables[[group_id]] <- group_table
         }
 
-        # Combine all tables into a single data frame
-        combined_table <-
-          dplyr::bind_rows(all_tables) %>%
+        combined_table <- dplyr::bind_rows(all_tables) %>%
           mutate(`.id` = as.numeric(`.id`)) %>%
           left_join(labels_df()) %>%
           select(.id, .id_label, everything())
 
-        # Save the combined diagnostic table with .id column
-        write.csv(
-          combined_table,
-          file = file.path(diagnostics_path, "table_diagnostics.csv"),
-          row.names = FALSE
+        write.csv(combined_table, file = file.path(diagnostics_path, "table_diagnostics.csv"), row.names = FALSE)
+        print("Finished saving diagnostic tables")
+
+        # Prepare plot data for parallel processing
+        print("Starting diagnostic plots PDF creation...")
+        print("Collecting plots in parallel...")
+
+        # Create plot collection function
+        collect_group_plots <- function(group_id) {
+          plots <- list()
+          group_plots <- diagnostic_analysis$all_plots()$ggplot[[group_id]]
+          for(plot_type in names(group_plots)) {
+            plots[[length(plots) + 1]] <- group_plots[[plot_type]]$figure +
+              labs(title = paste("Group", group_id, "-", plot_type))
+          }
+          plots
+        }
+
+        # Parallel collection of plots
+        n_cores <- N_CORES
+        plot_lists <- parallel::mclapply(
+          names(diagnostic_analysis$all_plots()$ggplot),
+          collect_group_plots,
+          mc.cores = n_cores
         )
 
+        # Combine all plot lists
+        all_plots <- do.call(c, plot_lists)
+        print("Finished collecting plots")
 
-        lapply(names(diagnostic_analysis$all_plots()$ggplot), function(group_id) {
-          group_plots <- diagnostic_analysis$all_plots()$ggplot[[group_id]]
-
-          # Save each plot type for the group
-          lapply(names(group_plots), function(plot_type) {
-            # Define the filename based on the plot type and group ID
-            plot_filename <- paste0(plot_type, "_group_", group_id, ".png")
-
-            # Save the plot to the diagnostics folder
-            ggsave(
-              filename = file.path(diagnostics_path, plot_filename),
-              plot = group_plots[[plot_type]]$figure,
-              device = "png"
-            )
-          })
-        })
+        # Save plots in a grid layout
+        if (length(all_plots) > 0) {
+          print("Creating PDF with grid layout...")
+          pdf(file = file.path(diagnostics_path, "diagnostic_plots.pdf"), width = 14, height = 10)
+          plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
+          print(plot_matrix)
+          dev.off()
+        }
+        print("Finished diagnostic plots PDF creation")
       }
 
       # Function to save lifetable results
       save_lifetable_results <- function(base_path) {
         lt_analysis <- lt_data()()
-
-        # Extract group IDs from lt_data
         group_ids <- unique(lt_analysis$lt$.id)
-
         path_folder <- file.path(base_path, "lifetable")
-
-        # Define the directory for the current group
         dir.create(path_folder, recursive = TRUE, showWarnings = FALSE)
 
-        lt_summary <-
-          lt_analysis$summary %>%
+        lt_summary <- lt_analysis$summary %>%
           left_join(labels_df()) %>%
           select(.id, .id_label, everything())
 
-        lt_res <-
-          lt_analysis$lt %>%
+        lt_res <- lt_analysis$lt %>%
           left_join(labels_df()) %>%
           select(.id, .id_label, everything())
 
-        write.csv(
-          lt_summary,
-          file = file.path(path_folder, "lifetable_summary.csv"),
-          row.names = FALSE
-        )
+        write.csv(lt_summary, file = file.path(path_folder, "lifetable_summary.csv"), row.names = FALSE)
+        write.csv(lt_res, file = file.path(path_folder, "lifetable_results.csv"), row.names = FALSE)
 
-        write.csv(
-          lt_res,
-          file = file.path(path_folder, "lifetable_results.csv"),
-          row.names = FALSE
-        )
+        # Prepare plot data for parallel processing
+        print("Starting lifetable plots PDF creation...")
+        print("Collecting plots in parallel...")
 
-
-        # Iterate over each group ID
-        # Parallelized saving of plots
-        lapply(group_ids, function(group_id) {
-          # Check if plots exist for the current group ID
+        # Create plot collection function
+        collect_group_plots <- function(group_id) {
+          plots <- list()
           if (as.character(group_id) %in% names(lt_analysis$plots)) {
             group_plots <- lt_analysis$plots[[as.character(group_id)]]
-
-            # Define which plot types to save for each group
             plot_types <- names(group_plots)
-
-            # Save each plot type if it exists
-            lapply(plot_types, function(plot_type) {
+            for(plot_type in plot_types) {
               if (!is.null(group_plots[[plot_type]])) {
-                # Save the plot as PNG
-                ggsave(
-                  filename = file.path(
-                    path_folder,
-                    paste0(plot_type, "_group_", group_id, "_plot.png")
-                  ),
-                  plot = group_plots[[plot_type]][[paste0(plot_type, "_plot")]],
-                  device = "png"
-                )
+                plots[[length(plots) + 1]] <- group_plots[[plot_type]][[paste0(plot_type, "_plot")]] +
+                  labs(title = paste("Group", group_id, "-", plot_type))
               }
-            })
+            }
           }
-        })
+          plots
+        }
+
+        # Parallel collection of plots
+        n_cores <- N_CORES
+        plot_lists <- parallel::mclapply(group_ids, collect_group_plots, mc.cores = n_cores)
+
+        # Combine all plot lists
+        all_plots <- do.call(c, plot_lists)
+        print("Finished collecting plots")
+
+        # Save plots in a grid layout
+        if (length(all_plots) > 0) {
+          print("Creating PDF with grid layout...")
+          pdf(file = file.path(path_folder, "lifetable_plots.pdf"), width = 14, height = 10)
+          plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
+          print(plot_matrix)
+          dev.off()
+        }
+        print("Finished lifetable plots PDF creation")
       }
 
       # Function to save preprocessing results
       save_preprocessing_results <- function(base_path) {
         results <- preprocess_exec()$results
-        lapply(names(results), function(step_name) {
+        for(step_name in names(results)) {
           step_result <- results[[step_name]]
-          # Assuming step_result contains plots and data
-
-          # For each variable (e.g., exposures, deaths, rates)
           plot_list <- step_result$plot_result
           data_output <- step_result$data_output
-          plot_folder_path <- file.path(
-            base_path,
-            "preprocessing",
-            step_name
-          )
-
+          plot_folder_path <- file.path(base_path, "preprocessing", step_name)
           dir.create(plot_folder_path, recursive = TRUE)
 
-          if (is.list(plot_list) && step_name == "smoothing") {
-            lapply(names(plot_list), function(var_name) {
-              var_plots <- plot_list[[var_name]]
-              lapply(names(var_plots), function(group_label) {
-                # Save the plot
-                plot_item <- var_plots[[group_label]]$figure
-                plot_name <- paste0(var_name, "_group_", group_label, ".png")
-
-                ggsave(
-                  filename = file.path(plot_folder_path, plot_name),
-                  plot = plot_item,
-                  device = "png"
-                )
-              })
-            })
-          } else {
-            lapply(names(plot_list), function(group_label) {
-              # Save the plot
-              plot_item <- var_plots[[group_label]]$figure
-              plot_name <- paste0("group_", group_label, ".png")
-
-              ggsave(
-                filename = file.path(plot_folder_path, plot_name),
-                plot = plot_item,
-                device = "png"
-              )
-            })
-          }
-
-          lt_res <-
-            data_output %>%
+          # Save data
+          print(paste("Saving preprocessing data for step:", step_name))
+          lt_res <- data_output %>%
             left_join(labels_df()) %>%
             select(.id, .id_label, selected_grouping_vars(), everything())
 
-          # Save the data
-          write.csv(
-            data_output,
-            file = file.path(plot_folder_path, "output_data.csv"),
-            row.names = FALSE
-          )
-        })
+          write.csv(data_output, file = file.path(plot_folder_path, "output_data.csv"), row.names = FALSE)
+          print(paste("Finished saving preprocessing data for step:", step_name))
+
+          # Prepare plot collection function based on step type
+          print(paste("Starting preprocessing plots PDF creation for step:", step_name))
+          print(paste("Collecting plots in parallel for step:", step_name))
+
+          if (is.list(plot_list) && step_name == "smoothing") {
+            collect_plots <- function(var_name) {
+              plots <- list()
+              var_plots <- plot_list[[var_name]]
+              for(group_label in names(var_plots)) {
+                plots[[length(plots) + 1]] <- var_plots[[group_label]]$figure +
+                  labs(title = paste(var_name, "- Group", group_label))
+              }
+              plots
+            }
+
+            # Parallel collection for smoothing plots
+            n_cores <- N_CORES
+            plot_lists <- parallel::mclapply(names(plot_list), collect_plots, mc.cores = n_cores)
+
+          } else {
+            collect_plots <- function(group_label) {
+              list(plot_list[[group_label]]$figure + labs(title = paste("Group", group_label)))
+            }
+
+            # Parallel collection for other plots
+            n_cores <- N_CORES
+            plot_lists <- parallel::mclapply(names(plot_list), collect_plots, mc.cores = n_cores)
+          }
+
+          # Combine all plot lists
+          all_plots <- do.call(c, plot_lists)
+          print(paste("Finished collecting plots for step:", step_name))
+
+          # Save plots in a grid layout
+          if (length(all_plots) > 0) {
+            print(paste("Creating PDF with grid layout for step:", step_name))
+            pdf(file = file.path(plot_folder_path, "plots.pdf"), width = 14, height = 10)
+            plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
+            print(plot_matrix)
+            dev.off()
+          }
+          print(paste("Finished preprocessing plots PDF creation for step:", step_name))
+        }
       }
 
       withProgress(message = "Preparing download...", value = 0, {
@@ -1140,17 +1132,39 @@ app_server <- function(input, output, session) {
 
         # Depending on the selected option, call the appropriate save functions
         if (input$download_option == "all") {
-          print("diagnostics")
-          incProgress(1 / total_steps, detail = "Saving diagnostic results...")
-          save_diagnostic_results(temp_dir)
+          print("Starting parallel download of all components...")
 
-          print("preprocessing")
-          incProgress(1 / total_steps, detail = "Saving preprocessing results...")
-          save_preprocessing_results(temp_dir)
+          # Create all necessary directories upfront
+          dir.create(file.path(temp_dir, "diagnostics"), recursive = TRUE, showWarnings = FALSE)
+          dir.create(file.path(temp_dir, "preprocessing"), recursive = TRUE, showWarnings = FALSE)
+          dir.create(file.path(temp_dir, "lifetable"), recursive = TRUE, showWarnings = FALSE)
 
-          print("lifetable")
-          incProgress(1 / total_steps, detail = "Saving lifetable results...")
-          save_lifetable_results(temp_dir)
+          # Define tasks for parallel execution
+          tasks <- list(
+            diagnostics = function() {
+              print("Starting diagnostics save...")
+              save_diagnostic_results(temp_dir)
+              print("Finished diagnostics save")
+            },
+            preprocessing = function() {
+              print("Starting preprocessing save...")
+              save_preprocessing_results(temp_dir)
+              print("Finished preprocessing save")
+            },
+            lifetable = function() {
+              print("Starting lifetable save...")
+              save_lifetable_results(temp_dir)
+              print("Finished lifetable save")
+            }
+          )
+
+          # Execute tasks in parallel
+          n_cores <- N_CORES
+          results <- parallel::mclapply(tasks, function(task) task(), mc.cores = n_cores)
+
+          print("Finished parallel execution of all components")
+          incProgress(1, detail = "All components saved...")
+
         } else if (input$download_option == "lifetable") {
           incProgress(0.5, detail = "Saving lifetable results...")
           save_lifetable_results(temp_dir)
