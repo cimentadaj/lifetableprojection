@@ -953,7 +953,7 @@ app_server <- function(input, output, session) {
         # Save tables in parallel
         message("Saving diagnostic tables...")
         all_tables <- list()
-        n_cores <- N_CORES #max(1, parallel::detectCores() - 4)
+        n_cores <- N_CORES
 
         # Prepare table data in parallel
         group_ids <- names(diagnostic_analysis$all_tables())
@@ -988,12 +988,32 @@ app_server <- function(input, output, session) {
           }
         }
 
-        # Save plots in a grid layout
+        # Save plots in a grid layout with batching
         if (length(all_plots) > 0) {
           message("Creating PDF with grid layout...")
           pdf(file = file.path(diagnostics_path, "diagnostic_plots.pdf"), width = 14, height = 10)
-          plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
-          print(plot_matrix)
+
+          # Process plots in batches of 8 (2 pages of 2x2 grid)
+          batch_size <- 8
+          n_batches <- ceiling(length(all_plots) / batch_size)
+
+          for(i in seq_len(n_batches)) {
+            start_idx <- (i-1) * batch_size + 1
+            end_idx <- min(i * batch_size, length(all_plots))
+            batch_plots <- all_plots[start_idx:end_idx]
+
+            # Create and print grid for this batch
+            plot_matrix <- gridExtra::marrangeGrob(
+              batch_plots,
+              nrow = 2,
+              ncol = 2,
+              top = paste("Page", i, "of", n_batches)
+            )
+            print(plot_matrix)
+
+            # Force garbage collection after each batch
+            gc()
+          }
           dev.off()
         }
         message("Finished diagnostic plots PDF creation")
@@ -1045,12 +1065,32 @@ app_server <- function(input, output, session) {
         all_plots <- do.call(c, plot_lists)
         message("Finished collecting plots")
 
-        # Save plots in a grid layout
+        # Save plots in a grid layout with batching
         if (length(all_plots) > 0) {
           message("Creating PDF with grid layout...")
           pdf(file = file.path(path_folder, "lifetable_plots.pdf"), width = 14, height = 10)
-          plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
-          message(plot_matrix)
+
+          # Process plots in batches of 8 (2 pages of 2x2 grid)
+          batch_size <- 8
+          n_batches <- ceiling(length(all_plots) / batch_size)
+
+          for(i in seq_len(n_batches)) {
+            start_idx <- (i-1) * batch_size + 1
+            end_idx <- min(i * batch_size, length(all_plots))
+            batch_plots <- all_plots[start_idx:end_idx]
+
+            # Create and print grid for this batch
+            plot_matrix <- gridExtra::marrangeGrob(
+              batch_plots,
+              nrow = 2,
+              ncol = 2,
+              top = paste("Page", i, "of", n_batches)
+            )
+            print(plot_matrix)
+
+            # Force garbage collection after each batch
+            gc()
+          }
           dev.off()
         }
         message("Finished lifetable plots PDF creation")
@@ -1079,41 +1119,49 @@ app_server <- function(input, output, session) {
           message(paste("Starting preprocessing plots PDF creation for step:", step_name))
           message(paste("Collecting plots in parallel for step:", step_name))
 
+          # Collect all plots
+          all_plots <- list()
           if (is.list(plot_list) && step_name == "smoothing") {
-            collect_plots <- function(var_name) {
-              plots <- list()
+            for(var_name in names(plot_list)) {
               var_plots <- plot_list[[var_name]]
               for(group_label in names(var_plots)) {
-                plots[[length(plots) + 1]] <- var_plots[[group_label]]$figure +
+                all_plots[[length(all_plots) + 1]] <- var_plots[[group_label]]$figure +
                   labs(title = paste(var_name, "- Group", group_label))
               }
-              plots
             }
-
-            # Parallel collection for smoothing plots
-            n_cores <- N_CORES
-            plot_lists <- parallel::mclapply(names(plot_list), collect_plots, mc.cores = n_cores)
-
           } else {
-            collect_plots <- function(group_label) {
-              list(plot_list[[group_label]]$figure + labs(title = paste("Group", group_label)))
+            for(group_label in names(plot_list)) {
+              all_plots[[length(all_plots) + 1]] <- plot_list[[group_label]]$figure +
+                labs(title = paste("Group", group_label))
             }
-
-            # Parallel collection for other plots
-            n_cores <- N_CORES
-            plot_lists <- parallel::mclapply(names(plot_list), collect_plots, mc.cores = n_cores)
           }
 
-          # Combine all plot lists
-          all_plots <- do.call(c, plot_lists)
-          message(paste("Finished collecting plots for step:", step_name))
-
-          # Save plots in a grid layout
+          # Save plots in a grid layout with batching
           if (length(all_plots) > 0) {
             message(paste("Creating PDF with grid layout for step:", step_name))
             pdf(file = file.path(plot_folder_path, "plots.pdf"), width = 14, height = 10)
-            plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
-            message(plot_matrix)
+
+            # Process plots in batches of 8 (2 pages of 2x2 grid)
+            batch_size <- 8
+            n_batches <- ceiling(length(all_plots) / batch_size)
+
+            for(i in seq_len(n_batches)) {
+              start_idx <- (i-1) * batch_size + 1
+              end_idx <- min(i * batch_size, length(all_plots))
+              batch_plots <- all_plots[start_idx:end_idx]
+
+              # Create and print grid for this batch
+              plot_matrix <- gridExtra::marrangeGrob(
+                batch_plots,
+                nrow = 2,
+                ncol = 2,
+                top = paste("Page", i, "of", n_batches)
+              )
+              print(plot_matrix)
+
+              # Force garbage collection after each batch
+              gc()
+            }
             dev.off()
           }
           message(paste("Finished preprocessing plots PDF creation for step:", step_name))
@@ -1132,28 +1180,76 @@ app_server <- function(input, output, session) {
           dir.create(file.path(temp_dir, "preprocessing"), recursive = TRUE, showWarnings = FALSE)
           dir.create(file.path(temp_dir, "lifetable"), recursive = TRUE, showWarnings = FALSE)
 
-          # Define tasks for parallel execution
+          # Pre-compute diagnostic analysis to avoid multiple computations
+          message("Pre-computing diagnostic analysis...")
+          diagnostic_analysis <- setup_diagnostic_data(
+            input, output, session, data_in,
+            group_selection_passed, selected_grouping_vars,
+            grouping_dropdowns, show_modal = FALSE,
+            download = TRUE
+          )
+          if (is.null(diagnostic_analysis)) {
+            diagnostic_analysis <- diagnostic_data()
+          }
+
+          # Pre-compute lifetable analysis
+          message("Pre-computing lifetable analysis...")
+          lt_analysis <- lt_data()()
+
+          # Pre-compute preprocessing results
+          message("Pre-computing preprocessing results...")
+          preprocess_results <- preprocess_exec()$results
+
+          # Define tasks for parallel execution with pre-computed data
           tasks <- list(
             diagnostics = function() {
               message("Starting diagnostics save...")
-              save_diagnostic_results(temp_dir)
-              message("Finished diagnostics save")
+              tryCatch({
+                save_diagnostic_results(temp_dir)
+                message("Finished diagnostics save")
+              }, error = function(e) {
+                message("Error in diagnostics save: ", e$message)
+              })
             },
             preprocessing = function() {
               message("Starting preprocessing save...")
-              save_preprocessing_results(temp_dir)
-              message("Finished preprocessing save")
+              tryCatch({
+                save_preprocessing_results(temp_dir)
+                message("Finished preprocessing save")
+              }, error = function(e) {
+                message("Error in preprocessing save: ", e$message)
+              })
             },
             lifetable = function() {
               message("Starting lifetable save...")
-              save_lifetable_results(temp_dir)
-              message("Finished lifetable save")
+              tryCatch({
+                save_lifetable_results(temp_dir)
+                message("Finished lifetable save")
+              }, error = function(e) {
+                message("Error in lifetable save: ", e$message)
+              })
             }
           )
 
-          # Execute tasks in parallel
+          # Execute tasks in parallel with error handling
+          message("Executing parallel saves...")
           n_cores <- N_CORES
-          results <- parallel::mclapply(tasks, function(task) task(), mc.cores = n_cores)
+          results <- parallel::mclapply(
+            tasks,
+            function(task) {
+              # Force garbage collection before each task
+              gc()
+              task()
+            },
+            mc.cores = n_cores
+          )
+
+          # Check for any errors
+          errors <- sapply(results, inherits, "error")
+          if (any(errors)) {
+            error_messages <- sapply(results[errors], function(e) e$message)
+            warning("Some components failed to save: ", paste(error_messages, collapse = "; "))
+          }
 
           message("Finished parallel execution of all components")
           incProgress(1, detail = "All components saved...")
@@ -1171,11 +1267,12 @@ app_server <- function(input, output, session) {
 
         # Final step - creating zip file
         incProgress(1, detail = "Creating zip file...")
-        message("zipping")
+        message("Creating zip file...")
         zip::zipr(
           zipfile = file,
           files = list.dirs(temp_dir, recursive = FALSE)
         )
+        message("Download preparation complete")
       })
     }
   )
