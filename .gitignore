@@ -1,1 +1,3 @@
 rsconnect/*
+# Environment variables
+.env

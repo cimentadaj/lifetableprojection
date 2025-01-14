@@ -12,7 +12,8 @@ setup_diagnostic_data(
   group_selection_passed,
   selected_grouping_vars,
   grouping_dropdowns,
-  show_modal = TRUE
+  show_modal = TRUE,
+  download = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,10 @@ setup_diagnostic_data(
 \item{selected_grouping_vars}{Reactive value containing selected grouping variables}
 
 \item{grouping_dropdowns}{Reactive expression containing grouping dropdowns}
+
+\item{show_modal}{Boolean indicating whether to show the diagnostics modal}
+
+\item{download}{Boolean indicating whether to use lazy loading}
 }
 \value{
 List of reactive expressions for plots, table, and text

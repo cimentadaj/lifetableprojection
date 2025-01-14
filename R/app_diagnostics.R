@@ -33,7 +33,7 @@ generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_
 
       # Split data by groups
       groups <- group_split(data_in(), .id)
-      n_cores <- 1
+      n_cores <- get_n_cores()  # Use the new function to determine cores
 
       # Stage 1: Parallel data preparation
       message("Stage 1: Parallel data preparation...")

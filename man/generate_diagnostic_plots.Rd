@@ -4,10 +4,20 @@
 \alias{generate_diagnostic_plots}
 \title{Generate Diagnostic Plots}
 \usage{
-generate_diagnostic_plots(data_in, group_selection_passed)
+generate_diagnostic_plots(
+  data_in,
+  group_selection_passed,
+  selected_grouping_vars,
+  input,
+  lazy = TRUE
+)
 }
 \arguments{
 \item{data_in}{Reactive expression containing the input data}
+
+\item{group_selection_passed}{Reactive expression containing the group selection status}
+
+\item{lazy}{Boolean indicating whether to use lazy loading}
 }
 \value{
 Reactive expression containing diagnostic plots

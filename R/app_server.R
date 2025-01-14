@@ -1,5 +1,4 @@
 to_snake <- function(x) tolower(gsub(" ", "", x))
-N_CORES <- 1
 
 
 #' Setup Download Handlers
@@ -930,6 +929,8 @@ app_server <- function(input, output, session) {
       temp_dir <- tempfile()
       dir.create(temp_dir)
 
+      N_CORES <- get_n_cores()  # Use the new function to determine cores
+
       # Function to save diagnostic results
       save_diagnostic_results <- function(base_path) {
         message("Starting diagnostic results save...")
@@ -1169,11 +1170,46 @@ app_server <- function(input, output, session) {
       }
 
       withProgress(message = "Preparing download...", value = 0, {
+        # Calculate number of groups and estimated time
+        n_groups <- length(unique(data_in()$.id))
+        time_per_group <- 0.7  # seconds
+
+        # Calculate estimated times for each component
+        time_estimates <- list(
+          diagnostics = n_groups * time_per_group,
+          preprocessing = n_groups * time_per_group,
+          lifetable = n_groups * time_per_group
+        )
+
+        # Calculate total time based on download option
+        total_time <- if(input$download_option == "all") {
+          sum(unlist(time_estimates))
+        } else {
+          time_estimates[[input$download_option]]
+        }
+
+        # Format time estimate message
+        format_time <- function(seconds) {
+          if (seconds < 60) {
+            return(paste(round(seconds), "seconds"))
+          } else if (seconds < 3600) {
+            minutes <- floor(seconds / 60)
+            return(paste(minutes, "minutes"))
+          } else {
+            hours <- floor(seconds / 3600)
+            minutes <- floor((seconds %% 3600) / 60)
+            return(paste(hours, "hours", minutes, "minutes"))
+          }
+        }
+
+        # Create progress message with time estimate
+        progress_msg <- paste("Preparing download... Estimated time:", format_time(total_time))
+
         total_steps <- ifelse(input$download_option == "all", 3, 1)
 
         # Depending on the selected option, call the appropriate save functions
         if (input$download_option == "all") {
-          message("Starting parallel download of all components...")
+          message(paste("Starting parallel download of all components. Estimated time:", format_time(total_time)))
 
           # Create all necessary directories upfront
           dir.create(file.path(temp_dir, "diagnostics"), recursive = TRUE, showWarnings = FALSE)
@@ -1203,7 +1239,7 @@ app_server <- function(input, output, session) {
           # Define tasks for parallel execution with pre-computed data
           tasks <- list(
             diagnostics = function() {
-              message("Starting diagnostics save...")
+              message(paste("Starting diagnostics save. Estimated time:", format_time(time_estimates$diagnostics)))
               tryCatch({
                 save_diagnostic_results(temp_dir)
                 message("Finished diagnostics save")
@@ -1212,7 +1248,7 @@ app_server <- function(input, output, session) {
               })
             },
             preprocessing = function() {
-              message("Starting preprocessing save...")
+              message(paste("Starting preprocessing save. Estimated time:", format_time(time_estimates$preprocessing)))
               tryCatch({
                 save_preprocessing_results(temp_dir)
                 message("Finished preprocessing save")
@@ -1221,7 +1257,7 @@ app_server <- function(input, output, session) {
               })
             },
             lifetable = function() {
-              message("Starting lifetable save...")
+              message(paste("Starting lifetable save. Estimated time:", format_time(time_estimates$lifetable)))
               tryCatch({
                 save_lifetable_results(temp_dir)
                 message("Finished lifetable save")
@@ -1230,6 +1266,8 @@ app_server <- function(input, output, session) {
               })
             }
           )
+
+          incProgress(0.2, detail = progress_msg)
 
           # Execute tasks in parallel with error handling
           message("Executing parallel saves...")
@@ -1252,16 +1290,22 @@ app_server <- function(input, output, session) {
           }
 
           message("Finished parallel execution of all components")
-          incProgress(1, detail = "All components saved...")
+          incProgress(1, detail = paste("All components saved. Total time:", format_time(total_time)))
 
         } else if (input$download_option == "lifetable") {
-          incProgress(0.5, detail = "Saving lifetable results...")
+          est_time <- format_time(time_estimates$lifetable)
+          message(paste("Starting lifetable save. Estimated time:", est_time))
+          incProgress(0.5, detail = paste("Saving lifetable results... Estimated time:", est_time))
           save_lifetable_results(temp_dir)
         } else if (input$download_option == "preprocessing") {
-          incProgress(0.5, detail = "Saving preprocessing results...")
+          est_time <- format_time(time_estimates$preprocessing)
+          message(paste("Starting preprocessing save. Estimated time:", est_time))
+          incProgress(0.5, detail = paste("Saving preprocessing results... Estimated time:", est_time))
           save_preprocessing_results(temp_dir)
         } else if (input$download_option == "diagnostics") {
-          incProgress(0.5, detail = "Saving diagnostic results...")
+          est_time <- format_time(time_estimates$diagnostics)
+          message(paste("Starting diagnostics save. Estimated time:", est_time))
+          incProgress(0.5, detail = paste("Saving diagnostic results... Estimated time:", est_time))
           save_diagnostic_results(temp_dir)
         }
 

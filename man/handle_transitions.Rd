@@ -4,7 +4,7 @@
 \alias{handle_transitions}
 \title{Handle Transitions}
 \usage{
-handle_transitions(input)
+handle_transitions(input, current_tab)
 }
 \arguments{
 \item{input}{Shiny input object}
