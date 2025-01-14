@@ -932,15 +932,14 @@ app_server <- function(input, output, session) {
 
       # Function to save diagnostic results
       save_diagnostic_results <- function(base_path) {
+        message("Starting diagnostic results save...")
+
+        # Get diagnostic analysis with parallel plot generation
+        message("Generating diagnostic analysis...")
         diagnostic_analysis <- setup_diagnostic_data(
-          input,
-          output,
-          session,
-          data_in,
-          group_selection_passed,
-          selected_grouping_vars,
-          grouping_dropdowns,
-          show_modal = FALSE,
+          input, output, session, data_in,
+          group_selection_passed, selected_grouping_vars,
+          grouping_dropdowns, show_modal = FALSE,
           download = TRUE
         )
 
@@ -951,14 +950,22 @@ app_server <- function(input, output, session) {
         diagnostics_path <- file.path(base_path, "diagnostics")
         dir.create(diagnostics_path, recursive = TRUE, showWarnings = FALSE)
 
-        # Save tables as before
-        print("Saving diagnostic tables...")
+        # Save tables in parallel
+        message("Saving diagnostic tables...")
         all_tables <- list()
-        for (group_id in names(diagnostic_analysis$all_tables())) {
+        n_cores <- N_CORES #max(1, parallel::detectCores() - 4)
+
+        # Prepare table data in parallel
+        group_ids <- names(diagnostic_analysis$all_tables())
+        table_results <- parallel::mclapply(group_ids, function(group_id) {
           group_table <- diagnostic_analysis$all_tables()[[group_id]] %>%
             mutate(.id = group_id)
-          all_tables[[group_id]] <- group_table
-        }
+          list(id = group_id, table = group_table)
+        }, mc.cores = n_cores)
+
+        # Combine tables
+        all_tables <- lapply(table_results, function(x) x$table)
+        names(all_tables) <- sapply(table_results, function(x) x$id)
 
         combined_table <- dplyr::bind_rows(all_tables) %>%
           mutate(`.id` = as.numeric(`.id`)) %>%
@@ -966,44 +973,30 @@ app_server <- function(input, output, session) {
           select(.id, .id_label, everything())
 
         write.csv(combined_table, file = file.path(diagnostics_path, "table_diagnostics.csv"), row.names = FALSE)
-        print("Finished saving diagnostic tables")
+        message("Finished saving diagnostic tables")
 
-        # Prepare plot data for parallel processing
-        print("Starting diagnostic plots PDF creation...")
-        print("Collecting plots in parallel...")
+        # Prepare plots for PDF
+        message("Starting diagnostic plots PDF creation...")
 
-        # Create plot collection function
-        collect_group_plots <- function(group_id) {
-          plots <- list()
+        # Collect all plots (already in ggplot format)
+        all_plots <- list()
+        for(group_id in names(diagnostic_analysis$all_plots()$ggplot)) {
           group_plots <- diagnostic_analysis$all_plots()$ggplot[[group_id]]
           for(plot_type in names(group_plots)) {
-            plots[[length(plots) + 1]] <- group_plots[[plot_type]]$figure +
+            all_plots[[length(all_plots) + 1]] <- group_plots[[plot_type]]$figure +
               labs(title = paste("Group", group_id, "-", plot_type))
           }
-          plots
         }
-
-        # Parallel collection of plots
-        n_cores <- N_CORES
-        plot_lists <- parallel::mclapply(
-          names(diagnostic_analysis$all_plots()$ggplot),
-          collect_group_plots,
-          mc.cores = n_cores
-        )
-
-        # Combine all plot lists
-        all_plots <- do.call(c, plot_lists)
-        print("Finished collecting plots")
 
         # Save plots in a grid layout
         if (length(all_plots) > 0) {
-          print("Creating PDF with grid layout...")
+          message("Creating PDF with grid layout...")
           pdf(file = file.path(diagnostics_path, "diagnostic_plots.pdf"), width = 14, height = 10)
           plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
           print(plot_matrix)
           dev.off()
         }
-        print("Finished diagnostic plots PDF creation")
+        message("Finished diagnostic plots PDF creation")
       }
 
       # Function to save lifetable results
@@ -1025,8 +1018,8 @@ app_server <- function(input, output, session) {
         write.csv(lt_res, file = file.path(path_folder, "lifetable_results.csv"), row.names = FALSE)
 
         # Prepare plot data for parallel processing
-        print("Starting lifetable plots PDF creation...")
-        print("Collecting plots in parallel...")
+        message("Starting lifetable plots PDF creation...")
+        message("Collecting plots in parallel...")
 
         # Create plot collection function
         collect_group_plots <- function(group_id) {
@@ -1050,17 +1043,17 @@ app_server <- function(input, output, session) {
 
         # Combine all plot lists
         all_plots <- do.call(c, plot_lists)
-        print("Finished collecting plots")
+        message("Finished collecting plots")
 
         # Save plots in a grid layout
         if (length(all_plots) > 0) {
-          print("Creating PDF with grid layout...")
+          message("Creating PDF with grid layout...")
           pdf(file = file.path(path_folder, "lifetable_plots.pdf"), width = 14, height = 10)
           plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
-          print(plot_matrix)
+          message(plot_matrix)
           dev.off()
         }
-        print("Finished lifetable plots PDF creation")
+        message("Finished lifetable plots PDF creation")
       }
 
       # Function to save preprocessing results
@@ -1074,17 +1067,17 @@ app_server <- function(input, output, session) {
           dir.create(plot_folder_path, recursive = TRUE)
 
           # Save data
-          print(paste("Saving preprocessing data for step:", step_name))
+          message(paste("Saving preprocessing data for step:", step_name))
           lt_res <- data_output %>%
             left_join(labels_df()) %>%
             select(.id, .id_label, selected_grouping_vars(), everything())
 
           write.csv(data_output, file = file.path(plot_folder_path, "output_data.csv"), row.names = FALSE)
-          print(paste("Finished saving preprocessing data for step:", step_name))
+          message(paste("Finished saving preprocessing data for step:", step_name))
 
           # Prepare plot collection function based on step type
-          print(paste("Starting preprocessing plots PDF creation for step:", step_name))
-          print(paste("Collecting plots in parallel for step:", step_name))
+          message(paste("Starting preprocessing plots PDF creation for step:", step_name))
+          message(paste("Collecting plots in parallel for step:", step_name))
 
           if (is.list(plot_list) && step_name == "smoothing") {
             collect_plots <- function(var_name) {
@@ -1113,17 +1106,17 @@ app_server <- function(input, output, session) {
 
           # Combine all plot lists
           all_plots <- do.call(c, plot_lists)
-          print(paste("Finished collecting plots for step:", step_name))
+          message(paste("Finished collecting plots for step:", step_name))
 
           # Save plots in a grid layout
           if (length(all_plots) > 0) {
-            print(paste("Creating PDF with grid layout for step:", step_name))
+            message(paste("Creating PDF with grid layout for step:", step_name))
             pdf(file = file.path(plot_folder_path, "plots.pdf"), width = 14, height = 10)
             plot_matrix <- gridExtra::marrangeGrob(all_plots, nrow = 2, ncol = 2)
-            print(plot_matrix)
+            message(plot_matrix)
             dev.off()
           }
-          print(paste("Finished preprocessing plots PDF creation for step:", step_name))
+          message(paste("Finished preprocessing plots PDF creation for step:", step_name))
         }
       }
 
@@ -1132,7 +1125,7 @@ app_server <- function(input, output, session) {
 
         # Depending on the selected option, call the appropriate save functions
         if (input$download_option == "all") {
-          print("Starting parallel download of all components...")
+          message("Starting parallel download of all components...")
 
           # Create all necessary directories upfront
           dir.create(file.path(temp_dir, "diagnostics"), recursive = TRUE, showWarnings = FALSE)
@@ -1142,19 +1135,19 @@ app_server <- function(input, output, session) {
           # Define tasks for parallel execution
           tasks <- list(
             diagnostics = function() {
-              print("Starting diagnostics save...")
+              message("Starting diagnostics save...")
               save_diagnostic_results(temp_dir)
-              print("Finished diagnostics save")
+              message("Finished diagnostics save")
             },
             preprocessing = function() {
-              print("Starting preprocessing save...")
+              message("Starting preprocessing save...")
               save_preprocessing_results(temp_dir)
-              print("Finished preprocessing save")
+              message("Finished preprocessing save")
             },
             lifetable = function() {
-              print("Starting lifetable save...")
+              message("Starting lifetable save...")
               save_lifetable_results(temp_dir)
-              print("Finished lifetable save")
+              message("Finished lifetable save")
             }
           )
 
@@ -1162,7 +1155,7 @@ app_server <- function(input, output, session) {
           n_cores <- N_CORES
           results <- parallel::mclapply(tasks, function(task) task(), mc.cores = n_cores)
 
-          print("Finished parallel execution of all components")
+          message("Finished parallel execution of all components")
           incProgress(1, detail = "All components saved...")
 
         } else if (input$download_option == "lifetable") {
@@ -1178,7 +1171,7 @@ app_server <- function(input, output, session) {
 
         # Final step - creating zip file
         incProgress(1, detail = "Creating zip file...")
-        print("zipping")
+        message("zipping")
         zip::zipr(
           zipfile = file,
           files = list.dirs(temp_dir, recursive = FALSE)

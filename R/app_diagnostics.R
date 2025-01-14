@@ -10,18 +10,12 @@
 generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_grouping_vars, input, lazy = TRUE) {
   if (lazy) {
     reactive({
-      # Return a reactive function that generates plots on demand
       req(group_selection_passed())
-
-      # Get current group ID based on input selections
       current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
-
-      # Generate plots only for the selected group
       group_data <- data_in() %>% filter(.id == current_id)
       plts_original <- group_data %>% plot_initial_data()
       names(plts_original) <- to_snake(names(plts_original))
 
-      # Convert plots to plotly
       plts <- lapply(plts_original, function(plt) {
         ggplt <- ggplotly(plt$figure, tooltip = c("y", "text"))
         config(ggplt, displayModeBar = FALSE)
@@ -33,41 +27,65 @@ generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_
       )
     })
   } else {
-    future::plan(future::multicore, workers = parallelly::availableCores() - 3)
-
-    # Reactive function for parallel processing
     reactive({
       req(group_selection_passed())
+      message("Starting parallel diagnostic plot generation...")
 
+      # Split data by groups
       groups <- group_split(data_in(), .id)
+      n_cores <- 1
 
-      # Use `future_map` to process each group in parallel
-      results <- furrr::future_map(groups, function(group) {
-        plts_original <- group %>% plot_initial_data()
-        names(plts_original) <- to_snake(names(plts_original))
+      # Stage 1: Parallel data preparation
+      message("Stage 1: Parallel data preparation...")
+      prepared_data <- parallel::mclapply(
+        groups,
+        prepare_group_data,
+        mc.cores = n_cores
+      )
+      message("Data preparation complete")
 
-        plts <- lapply(plts_original, function(plt) {
-          ggplt <- ggplotly(plt$figure, tooltip = c("y", "text"))
-          config(ggplt, displayModeBar = FALSE)
-        })
+      # Stage 2: Parallel plot generation
+      message("Stage 2: Parallel plot generation...")
+      plot_results <- parallel::mclapply(
+        prepared_data,
+        generate_group_plots,
+        mc.cores = n_cores
+      )
+      message("Plot generation complete")
 
-        list(
-          id = as.character(group$.id[1]),
-          plotly = plts,
-          ggplot = plts_original
-        )
-      })
+      # Combine results (skip plotly conversion for download)
+      group_plots_ggplot <- setNames(
+        lapply(plot_results, function(x) x$plots),
+        sapply(plot_results, function(x) x$id)
+      )
 
-      # Combine the results into two separate lists
-      group_plots_plotly <- setNames(lapply(results, `[[`, "plotly"), sapply(results, `[[`, "id"))
-      group_plots_ggplot <- setNames(lapply(results, `[[`, "ggplot"), sapply(results, `[[`, "id"))
+      message("Diagnostic plot generation complete")
 
       list(
-        plotly = group_plots_plotly,
+        plotly = NULL,  # Not needed for download
         ggplot = group_plots_ggplot
       )
     })
   }
+}
+
+# Helper function for parallel data preparation
+prepare_group_data <- function(group) {
+  list(
+    id = as.character(group$.id[1]),
+    data = group
+  )
+}
+
+# Helper function for parallel plot generation
+generate_group_plots <- function(group_data) {
+  plts_original <- group_data$data %>% plot_initial_data()
+  names(plts_original) <- to_snake(names(plts_original))
+
+  list(
+    id = group_data$id,
+    plots = plts_original
+  )
 }
 
 #' Generate Diagnostics Text
