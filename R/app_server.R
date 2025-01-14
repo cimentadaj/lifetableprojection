@@ -885,7 +885,7 @@ app_server <- function(input, output, session) {
   })
 
   download_choices <- c(
-    "all" = "Download all (diagnostics, preprocessing steps and lifetable results)",
+    ## "all" = "Download all (diagnostics, preprocessing steps and lifetable results)",
     "lifetable" = "Download life table results",
     "preprocessing" = "Download preprocessing results",
     "diagnostics" = "Download diagnostic results"
@@ -1172,7 +1172,7 @@ app_server <- function(input, output, session) {
       withProgress(message = "Preparing download...", value = 0, {
         # Calculate number of groups and estimated time
         n_groups <- length(unique(data_in()$.id))
-        time_per_group <- 0.7  # seconds
+        time_per_group <- 1  # seconds
 
         # Calculate estimated times for each component
         time_estimates <- list(
