@@ -90,7 +90,11 @@ smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp
       group_data %>%
       ggplot(aes(Age, Rates)) +
       geom_line() +
-      theme_minimal()
+      theme_minimal() +
+      labs(title = "Rates (Deaths / Exposures)") +
+      theme_light() + 
+      theme(axis.text = element_text(color = "black"), plot.title = element_text(size = 12)) + 
+      labs(title = "Rates (Deaths / Exposures)")
 
     # Store original data (without mutations) and adjusted data (e.g., `plot_y`)
     data_original <- group_data
@@ -872,23 +876,23 @@ app_server <- function(input, output, session) {
 
       if (sizes$type == "mobile") {
         div(
-          style = "width: 100%; display: grid;",
-          actionButton("download_all", "Download", class = "ui blue button")
+          style = "width: 100%; display: grid; gap: 10px;",
+          actionButton("download_all", "Export", class = "ui blue button")
         )
       } else {
         div(
-          style = "margin-left: auto;",
-          actionButton("download_all", "Download", class = "ui blue button")
+          style = "margin-left: auto; display: flex; gap: 10px;",
+          actionButton("download_all", "Export", class = "ui blue button")
         )
       }
     }
   })
 
   download_choices <- c(
-    ## "all" = "Download all (diagnostics, preprocessing steps and lifetable results)",
     "lifetable" = "Download life table results",
     "preprocessing" = "Download preprocessing results",
-    "diagnostics" = "Download diagnostic results"
+    "diagnostics" = "Download diagnostic results",
+    "report" = "Download PDF Report"
   )
 
   output$download_modal <- renderUI({
@@ -1177,7 +1181,8 @@ app_server <- function(input, output, session) {
         time_estimates <- list(
           diagnostics = n_groups * 1.4,
           preprocessing = n_groups * 1,
-          lifetable = n_groups * 1.4
+          lifetable = n_groups * 1.4,
+          report = n_groups * 1
         )
 
         # Calculate total time based on download option
@@ -1306,9 +1311,46 @@ app_server <- function(input, output, session) {
           message(paste("Starting diagnostics save. Estimated time:", est_time))
           incProgress(0.5, detail = paste("Saving diagnostic results... Estimated time:", est_time))
           save_diagnostic_results(temp_dir)
+        } else if (input$download_option == "report") {
+          message("Generating PDF report...")
+          incProgress(0.3, detail = "Preparing diagnostic data...")
+          
+          # Ensure we have diagnostic data
+          if (is.null(diagnostic_data())) {
+            diagnostic_analysis <- setup_diagnostic_data(
+              input, output, session, data_in,
+              group_selection_passed, selected_grouping_vars,
+              grouping_dropdowns, show_modal = FALSE,
+              download = TRUE
+            )
+          } else {
+            diagnostic_analysis <- diagnostic_data()
+          }
+          
+          # Preprocess diagnostic data to resolve reactive expressions
+          preprocessed_diagnostics <- preprocess_diagnostic_data(diagnostic_analysis)
+          
+          incProgress(0.5, detail = "Generating PDF report...")
+          # Generate report and copy to temp directory
+          labels_names <- setNames(labels_df()$.id_label, labels_df()$.id)
+          
+          # Get preprocessing results if they exist and evaluate them
+          preprocessing_data <- NULL
+          if (!is.null(preprocess_exec()) && length(executed_adjustments()) > 0) {
+            preprocessing_data <- preprocess_exec()$results
+          }
+          
+          report_file <- generate_analysis_report(
+            lt_results = lt_data()(),
+            diagnostic_results = preprocessed_diagnostics,
+            preprocessing_results = preprocessing_data,
+            group_labels = labels_names
+          )
+          dir.create(file.path(temp_dir, "report"), recursive = TRUE, showWarnings = FALSE)
+          file.copy(report_file, file.path(temp_dir, "report", "report.pdf"))
         }
 
-        # Final step - creating zip file
+        # Final step - creating zip file (only for non-report options)
         incProgress(1, detail = "Creating zip file...")
         message("Creating zip file...")
         zip::zipr(

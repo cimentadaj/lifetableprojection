@@ -360,3 +360,56 @@ create_current_diagnostics_table <- function(diagnostics_table, selected_groupin
     diagnostics_table()[[current_id]]
   })
 }
+
+#' Preprocess Diagnostic Data for Report
+#'
+#' Evaluates reactive expressions and restructures diagnostic data for report generation
+#'
+#' @param diagnostic_analysis The diagnostic analysis object containing reactive expressions
+#' @return List containing preprocessed diagnostic data ready for report generation
+#' @noRd
+preprocess_diagnostic_data <- function(diagnostic_analysis) {
+  # Initialize the result structure
+  result <- list()
+  
+  # Get all plots by evaluating the reactive expression
+  all_plots <- diagnostic_analysis$all_plots()
+  
+  # Extract and restructure ggplot objects
+  if (!is.null(all_plots$ggplot)) {
+    result$all_plots <- list()
+    result$all_plots$ggplot <- list()
+    
+    # For each group
+    for (group_id in names(all_plots$ggplot)) {
+      plot_data <- all_plots$ggplot[[group_id]]
+      
+      # Initialize group in result if it has valid plot data
+      if (!is.null(plot_data)) {
+        # For each plot type (exposures, deaths, empiricalmx)
+        for (plot_type in names(plot_data)) {
+          if (!is.null(plot_data[[plot_type]]$figure) && 
+              inherits(plot_data[[plot_type]]$figure, "ggplot")) {
+            # Create the plot type entry if it doesn't exist
+            if (!plot_type %in% names(result$all_plots$ggplot)) {
+              result$all_plots$ggplot[[plot_type]] <- list()
+            }
+            # Store the figure under the plot type, indexed by group
+            result$all_plots$ggplot[[plot_type]][[group_id]] <- list(
+              figure = plot_data[[plot_type]]$figure
+            )
+          }
+        }
+      }
+    }
+  }
+  
+  # Get all tables by evaluating the reactive expression
+  if (is.function(diagnostic_analysis$all_tables)) {
+    result$all_tables <- diagnostic_analysis$all_tables()
+  } else {
+    result$all_tables <- diagnostic_analysis$all_tables
+  }
+  
+  return(result)
+} 
