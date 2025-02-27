@@ -501,10 +501,10 @@ app_ui <- function(request) {
             style = "opacity: 0.7; pointer-events: none;",
             div(
               class = "module-icon",
-              icon("users")
+              icon("chart-line")
             ),
-            h3("Migration Analysis", class = "module-name"),
-            p("Analyze migration patterns and demographic impacts.",
+            h3("Demographic Interpolation", class = "module-name"),
+            p("Fill data gaps and estimate demographic indicators between time points using advanced interpolation methods.",
               class = "module-description"
             ),
             div(
@@ -524,7 +524,7 @@ app_ui <- function(request) {
               class = "hero-section",
               div(
                 style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
-                actionButton("back_to_modules", "Back", class = "ui grey button")
+                actionButton("back_to_modules", "← Previous", class = "ui grey button")
               ),
               h1("Life Table Analysis Platform", class = "hero-title"),
               p("Transform mortality data into comprehensive life table analyses with just a few clicks",
@@ -576,7 +576,7 @@ app_ui <- function(request) {
             id = "landing_page",
             div(
               style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
-              actionButton("back_to_lifetable_landing", "Back", class = "ui grey button")
+              actionButton("back_to_lifetable_landing", "← Previous", class = "ui grey button")
             ),
             tags$div(
               class = "info-box",
@@ -665,9 +665,9 @@ app_ui <- function(request) {
             div(
               class = "button-group",
               create_pills_ui(),
-              action_button("back_to_diagnostics", "Back", class = "ui grey button"),
+              action_button("back_to_diagnostics", "← Previous", class = "ui grey button"),
               action_button("preprocessing_instructions", "Instructions", class = "ui blue button"),
-              action_button("forward_to_lifetable", "Next", class = "ui blue button")
+              action_button("forward_to_lifetable", "Next →", class = "ui blue button")
             )
           ),
           tabset(
@@ -687,7 +687,7 @@ app_ui <- function(request) {
           div(
             class = "button-container-forecast",
             style = "display: flex; gap: 10px;",
-            action_button("back_to_adjustment", "Back", class = "ui grey button"),
+            action_button("back_to_adjustment", "← Previous", class = "ui grey button"),
             action_button("lifetable_instructions", "Instructions", class = "ui blue button"),
             action_button("calculate_lt", "Calculate", class = "ui blue button"),
             action_button("reset_lt", "Reset Options", class = "ui blue button"),
