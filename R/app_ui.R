@@ -1,15 +1,16 @@
 #' The application User-Interface for input page
 #'
+#' @param i18n Translator object for internationalization
 #' @return A div containing the input page UI elements.
 #' @importFrom untheme create_field_set
 #' @importFrom shiny downloadButton
 #' @noRd
-input_page <- function() {
+input_page <- function(i18n) {
   div(
     class = "ui form",
     # Basic Inputs as in initial setup
-    create_field_set("", "Desired Open Age Group", "input_oanew", seq(70, 100, by = 5), 100),
-    create_field_set("", "Output Age Classes", "input_age_out", c("single", "abridged"), "single"),
+    create_field_set("", i18n$t("Desired Open Age Group"), "input_oanew", seq(70, 100, by = 5), 100),
+    create_field_set("", i18n$t("Output Age Classes"), "input_age_out", c("single", "abridged"), "single"),
     uiOutput("sex_to_use"),
     uiOutput("ages_to_use"),
     uiOutput("extrap_from_data"),
@@ -22,19 +23,19 @@ input_page <- function() {
         class = "ui two column grid",
         div(
           class = "column",
-          create_field_set("", "Extrapolation Law", "input_extrapLaw", EXTRAP_LAWS, EXTRAP_LAWS[1]),
-          create_field_set("", "Lifetable Radix", "input_radix", input_selected = 100000, numeric_input = TRUE)
+          create_field_set("", i18n$t("Extrapolation Law"), "input_extrapLaw", EXTRAP_LAWS, EXTRAP_LAWS[1]),
+          create_field_set("", i18n$t("Lifetable Radix"), "input_radix", input_selected = 100000, numeric_input = TRUE)
         ),
         div(
           class = "column",
-          create_field_set("", "Sex Ratio at Birth", "input_srb", input_selected = 1.05, numeric_input = TRUE),
-          create_field_set("", "a(0) Rule", "input_a0rule", c("Andreev-Kingkade", "Coale-Demeny"), "Andreev-Kingkade"),
-          create_field_set("", "a(x) Method", "input_axmethod", c("UN (Greville)", "PASEX"), "UN (Greville)")
+          create_field_set("", i18n$t("Sex Ratio at Birth"), "input_srb", input_selected = 1.05, numeric_input = TRUE),
+          create_field_set("", i18n$t("a(0) Rule"), "input_a0rule", c("Andreev-Kingkade", "Coale-Demeny"), "Andreev-Kingkade"),
+          create_field_set("", i18n$t("a(x) Method"), "input_axmethod", c("UN (Greville)", "PASEX"), "UN (Greville)")
         )
       )
     ),
     # Dropdown to toggle Advanced Inputs
-    action_button("toggle_advanced", "Show Advanced Options", class = "ui button"),
+    action_button("toggle_advanced", i18n$t("Show Advanced Options"), class = "ui button"),
     br(),
     br(),
     uiOutput("download_buttons")
@@ -55,12 +56,18 @@ input_page <- function() {
 #' @importFrom shinycssloaders withSpinner
 #' @importFrom rhandsontable rHandsontableOutput
 #' @importFrom shiny.fluent TooltipHost Image
+#' @importFrom shiny.i18n Translator
 #' @importFrom rintrojs introjsUI
 #' @noRd
 app_ui <- function(request) {
+  # Create translator object
+  # TODO: Make this relative to the app
+  i18n <- usei18n_local()
+
   fluidUnTheme(
     useShinyjs(),
     introjsUI(),
+    shiny.i18n::usei18n(i18n),
     LATEX_PRE_TAGS,
     tags$script(JS_CODE_SCREEN_SIZE),
     main_panel(
@@ -472,13 +479,23 @@ app_ui <- function(request) {
         }
         "))
       ),
+      # Language Switcher
+      div(
+        class = "language-switcher",
+        selectInput(
+          inputId = "selected_language",
+          label = i18n$t("Change language"),
+          choices = i18n$get_languages(),
+          selected = i18n$get_key_translation()
+        )
+      ),
       div(
         id = "module_landing_page",
         class = "module-landing",
         div(
           class = "module-header",
-          h1("Demographic Analysis Suite", class = "module-title"),
-          p("Advanced tools for demographic research and analysis",
+          h1(i18n$t("Demographic Analysis Suite"), class = "module-title"),
+          p(i18n$t("Advanced tools for demographic research and analysis"),
             class = "module-subtitle"
           )
         ),
@@ -490,11 +507,11 @@ app_ui <- function(request) {
               class = "module-icon",
               icon("table")
             ),
-            h3("Life Table Analysis", class = "module-name"),
-            p("Create comprehensive life tables with advanced smoothing capabilities and mortality analysis tools.",
+            h3(i18n$t("Life Table Analysis"), class = "module-name"),
+            p(i18n$t("Create comprehensive life tables with advanced smoothing capabilities and mortality analysis tools."),
               class = "module-description"
             ),
-            actionButton("goto_lifetable", "Go to module", class = "ui blue button")
+            actionButton("goto_lifetable", i18n$t("Go to module"), class = "ui blue button")
           ),
           div(
             class = "module-card",
@@ -503,13 +520,13 @@ app_ui <- function(request) {
               class = "module-icon",
               icon("chart-line")
             ),
-            h3("Demographic Interpolation", class = "module-name"),
-            p("Fill data gaps and estimate demographic indicators between time points using advanced interpolation methods.",
+            h3(i18n$t("Demographic Interpolation"), class = "module-name"),
+            p(i18n$t("Fill data gaps and estimate demographic indicators between time points using advanced interpolation methods."),
               class = "module-description"
             ),
             div(
               class = "module-status status-coming",
-              span("Coming Soon")
+              span(i18n$t("Coming Soon"))
             )
           )
         )
@@ -524,10 +541,10 @@ app_ui <- function(request) {
               class = "hero-section",
               div(
                 style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
-                actionButton("back_to_modules", "← Previous", class = "ui grey button")
+                actionButton("back_to_modules", i18n$t("← Previous"), class = "ui grey button")
               ),
-              h1("Life Table Analysis Platform", class = "hero-title"),
-              p("Transform mortality data into comprehensive life table analyses with just a few clicks",
+              h1(i18n$t("Life Table Analysis Platform"), class = "hero-title"),
+              p(i18n$t("Transform mortality data into comprehensive life table analyses with just a few clicks"),
                 class = "hero-subtitle"
               )
             ),
@@ -537,34 +554,34 @@ app_ui <- function(request) {
               div(
                 class = "feature-card",
                 icon("upload"),
-                h3("Upload Your Data"),
-                p("Import your mortality data in CSV format containing Age, Deaths, and Exposures")
+                h3(i18n$t("Upload Your Data")),
+                p(i18n$t("Import your mortality data in CSV format containing Age, Deaths, and Exposures"))
               ),
               # Diagnostics Feature
               div(
                 class = "feature-card",
                 icon("chart line"),
-                h3("Run Diagnostics"),
-                p("Analyze data quality and identify potential issues with built-in diagnostic tools")
+                h3(i18n$t("Run Diagnostics")),
+                p(i18n$t("Analyze data quality and identify potential issues with built-in diagnostic tools"))
               ),
               # Transform Feature
               div(
                 class = "feature-card",
                 icon("magic"),
-                h3("Transform Data"),
-                p("Apply sophisticated smoothing and adjustments by groups")
+                h3(i18n$t("Transform Data")),
+                p(i18n$t("Apply sophisticated smoothing and adjustments by groups"))
               ),
               # Results Feature
               div(
                 class = "feature-card",
                 icon("table"),
-                h3("Get Results"),
-                p("Download complete life table results and visualizations")
+                h3(i18n$t("Get Results")),
+                p(i18n$t("Download complete life table results and visualizations"))
               )
             ),
             div(
               class = "action-section",
-              actionButton("lifetable_start_button", "Start", class = "ui blue button")
+              actionButton("lifetable_start_button", i18n$t("Start"), class = "ui blue button")
             )
           )
         )
@@ -576,12 +593,12 @@ app_ui <- function(request) {
             id = "landing_page",
             div(
               style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
-              actionButton("back_to_lifetable_landing", "← Previous", class = "ui grey button")
+              actionButton("back_to_lifetable_landing", i18n$t("← Previous"), class = "ui grey button")
             ),
             tags$div(
               class = "info-box",
-              h1("\xF0\x9F\x9A\x80 Data upload and validation \xF0\x9F\x8E\xAF"),
-              p("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:"),
+              h1(i18n$t("Data upload and validation")),
+              p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:")),
               br(),
               div(
                 style = "display: flex; gap: 5px;",
@@ -591,7 +608,7 @@ app_ui <- function(request) {
                 ),
                 div(
                   TooltipHost(
-                    content = "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.",
+                    content = i18n$t("Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures."),
                     delay = 0,
                     Image(
                       src = "www/info.png",
@@ -602,9 +619,9 @@ app_ui <- function(request) {
                 )
               ),
               br(),
-              strong(h3("\xF0\x9F\x93\xA4 Ready? Click 'Browse...' to select your file or start with our sample data.")),
+              strong(h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
               br(),
-              action_button("upload_instructions", "Instructions", class = "ui blue button")
+              action_button("upload_instructions", i18n$t("Instructions"), class = "ui blue button")
             ),
             tags$script(HTML("
             $(document).ready(function() {
@@ -620,7 +637,7 @@ app_ui <- function(request) {
                 uiOutput("modal_ui"),
                 action_button(
                   "continue_no_data",
-                  "Use sample data",
+                  i18n$t("Use sample data"),
                   class = "ui blue button",
                   style = "height: 4%;"
                 )
@@ -665,17 +682,17 @@ app_ui <- function(request) {
             div(
               class = "button-group",
               create_pills_ui(),
-              action_button("back_to_diagnostics", "← Previous", class = "ui grey button"),
-              action_button("preprocessing_instructions", "Instructions", class = "ui blue button"),
-              action_button("forward_to_lifetable", "Next →", class = "ui blue button")
+              action_button("back_to_diagnostics", i18n$t("← Previous"), class = "ui grey button"),
+              action_button("preprocessing_instructions", i18n$t("Instructions"), class = "ui blue button"),
+              action_button("forward_to_lifetable", i18n$t("Next →"), class = "ui blue button")
             )
           ),
           tabset(
             id = "adjustment_tabs",
             list(
               list(
-                menu = "Smoothing",
-                content = create_adjustment_tab("smoothing", "smoothing_inputs", "smoothing_plot")
+                menu = i18n$t("Smoothing"),
+                content = create_adjustment_tab("smoothing", "smoothing_inputs", "smoothing_plot", i18n)
               )
             )
           )
@@ -687,17 +704,17 @@ app_ui <- function(request) {
           div(
             class = "button-container-forecast",
             style = "display: flex; gap: 10px;",
-            action_button("back_to_adjustment", "← Previous", class = "ui grey button"),
-            action_button("lifetable_instructions", "Instructions", class = "ui blue button"),
-            action_button("calculate_lt", "Calculate", class = "ui blue button"),
-            action_button("reset_lt", "Reset Options", class = "ui blue button"),
+            action_button("back_to_adjustment", i18n$t("← Previous"), class = "ui grey button"),
+            action_button("lifetable_instructions", i18n$t("Instructions"), class = "ui blue button"),
+            action_button("calculate_lt", i18n$t("Calculate"), class = "ui blue button"),
+            action_button("reset_lt", i18n$t("Reset Options"), class = "ui blue button"),
             uiOutput("download_button")
           ),
           br(),
           uiOutput("download_modal"),
           div(
             sidebar_layout_responsive(
-              list(children = div(input_page())),
+              list(children = div(input_page(i18n))),
               div(
                 id = "tabContent",
                 uiOutput("lt_group_select_ui"),
@@ -746,7 +763,7 @@ golem_add_external_resources <- function() {
   )
 }
 
-create_adjustment_tab <- function(tab_name, input_id, plot_id) {
+create_adjustment_tab <- function(tab_name, input_id, plot_id, i18n) {
   div(
     br(),
     sidebar_layout_responsive(
@@ -754,7 +771,7 @@ create_adjustment_tab <- function(tab_name, input_id, plot_id) {
         children = div(
           uiOutput(input_id),
           br(),
-          action_button(paste0("execute_", tab_name), "Execute", class = "ui blue button")
+          action_button(paste0("execute_", tab_name), i18n$t("Execute"), class = "ui blue button")
         )
       ),
       div(
@@ -767,7 +784,7 @@ create_adjustment_tab <- function(tab_name, input_id, plot_id) {
 }
 
 # Add this new function to create the pills UI
-create_pills_ui <- function() {
+create_pills_ui <- function(i18n) {
   uiOutput("adjustment_pills")
 }
 
@@ -822,3 +839,9 @@ tags$style(HTML("
     box-sizing: border-box;
   }
 "))
+
+usei18n_local <- function(text) {
+  i18n <- Translator$new(translation_json_path = "/home/jorge/repositories/lifetableprojection/R/translation.json")
+  i18n$set_translation_language("en")
+  i18n
+}

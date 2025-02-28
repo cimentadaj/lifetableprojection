@@ -4,10 +4,12 @@
 \alias{renderDataTable}
 \title{Render Data Table}
 \usage{
-renderDataTable(data)
+renderDataTable(data, i18n)
 }
 \arguments{
 \item{data}{Data frame to be displayed in the table.}
+
+\item{i18n}{Translator object for internationalization}
 }
 \value{
 Shiny UI component for data table.

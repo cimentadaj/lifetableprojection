@@ -12,6 +12,7 @@ setup_diagnostic_data(
   group_selection_passed,
   selected_grouping_vars,
   grouping_dropdowns,
+  i18n,
   show_modal = TRUE,
   download = FALSE
 )
@@ -28,6 +29,8 @@ setup_diagnostic_data(
 \item{selected_grouping_vars}{Reactive value containing selected grouping variables}
 
 \item{grouping_dropdowns}{Reactive expression containing grouping dropdowns}
+
+\item{i18n}{Translator object for internationalization}
 
 \item{show_modal}{Boolean indicating whether to show the diagnostics modal}
 

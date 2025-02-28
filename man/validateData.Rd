@@ -4,10 +4,12 @@
 \alias{validateData}
 \title{Validate Uploaded Data}
 \usage{
-validateData(data)
+validateData(data, i18n)
 }
 \arguments{
 \item{data}{Data frame to be validated.}
+
+\item{i18n}{Translator object for internationalization}
 }
 \value{
 Data frame containing validation results.

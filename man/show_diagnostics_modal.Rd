@@ -11,7 +11,8 @@ show_diagnostics_modal(
   diagnostic_plots,
   diagnostics_table,
   diagnostics_text,
-  grouping_dropdowns
+  grouping_dropdowns,
+  i18n
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ show_diagnostics_modal(
 \item{diagnostics_text}{Reactive expression containing diagnostics text}
 
 \item{grouping_dropdowns}{Reactive expression containing the drop down menus for the selected group keys}
+
+\item{i18n}{Translator object for internationalization}
 }
 \description{
 Show Diagnostics Modal

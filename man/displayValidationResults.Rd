@@ -4,10 +4,12 @@
 \alias{displayValidationResults}
 \title{Display Validation Results}
 \usage{
-displayValidationResults(results)
+displayValidationResults(results, i18n)
 }
 \arguments{
 \item{results}{Data frame with validation results.}
+
+\item{i18n}{Translator object for internationalization}
 }
 \description{
 Renders UI elements to display the results of data validation.

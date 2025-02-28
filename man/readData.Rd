@@ -4,10 +4,12 @@
 \alias{readData}
 \title{Data Input and Validation Module}
 \usage{
-readData(input)
+readData(input, i18n)
 }
 \arguments{
 \item{input}{Shiny input object containing the file input.}
+
+\item{i18n}{Translator object for internationalization}
 }
 \value{
 Data frame read from the uploaded CSV file.

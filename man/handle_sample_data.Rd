@@ -4,7 +4,10 @@
 \alias{handle_sample_data}
 \title{Handle Sample Data}
 \usage{
-handle_sample_data()
+handle_sample_data(i18n)
+}
+\arguments{
+\item{i18n}{Translator object for internationalization}
 }
 \value{
 Reactive expression containing the sample data

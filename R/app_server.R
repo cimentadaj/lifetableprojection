@@ -41,7 +41,7 @@ setupDownloadHandlers <- function(output, plots, data, input) {
 #' @param plots List of reactive expressions for plots.
 #' @param data data to be saved in the download button
 #' @param input Shiny input object.
-#' @importFrom ggplot2 aes
+#' @importFrom ggplot2 aes labs theme_minimal theme_light element_text
 #' @export
 smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp, rough_deaths, fine_deaths, constraint_deaths, u5m_deaths, age_out) {
   expo <- smooth_flexible(
@@ -125,32 +125,32 @@ smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp
 adjustment_steps <- list(
   smoothing = list(
     name = "Smoothing",
-    input_ui = function() {
+    input_ui = function(i18n) {
       div(
         # Add explanation div at the top
         div(
           style = "margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
-          p("This step simultaneously smooths age patterns in both exposures and deaths.")
+          p(i18n$t("This step simultaneously smooths age patterns in both exposures and deaths."))
         ),
 
         # Rest of the UI remains the same
         fluidRow(
           column(
             6,
-            h4("Exposures Parameters"),
+            h4(i18n$t("Exposures Parameters")),
             selectInput(
               "smoothing_rough_exp",
-              "Rough Method (Exposures)",
+              i18n$t("Rough Method (Exposures)"),
               choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
               selected = "auto"
             )
           ),
           column(
             6,
-            h4("Deaths Parameters"),
+            h4(i18n$t("Deaths Parameters")),
             selectInput(
               "smoothing_rough_deaths",
-              "Rough Method (Deaths)",
+              i18n$t("Rough Method (Deaths)"),
               choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
               selected = "auto"
             )
@@ -158,16 +158,16 @@ adjustment_steps <- list(
         ),
 
         # Shared basic parameter
-        h4("Shared Parameters"),
+        h4(i18n$t("Shared Parameters")),
         selectInput(
           "smoothing_age_out",
-          "Age Output",
+          i18n$t("Age Output"),
           choices = c("single", "abridged", "5-year"),
           selected = "single"
         ),
 
         # Toggle button
-        action_button("toggle_advanced_smoothing", "Show Advanced Options", class = "ui button"),
+        action_button("toggle_advanced_smoothing", i18n$t("Show Advanced Options"), class = "ui button"),
 
         # Advanced options container
         div(
@@ -179,40 +179,40 @@ adjustment_steps <- list(
               6,
               selectInput(
                 "smoothing_fine_exp",
-                "Fine Method (Exposures)",
+                i18n$t("Fine Method (Exposures)"),
                 choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
                 selected = "auto"
               ),
-              numericInput("smoothing_u5m_exp", "Under-5 Mortality (optional, Exposures)", value = NULL),
-              shiny.semantic::checkbox_input("smoothing_constrain_infants_exp", "Constrain Infants (Exposures)", is_marked = TRUE)
+              numericInput("smoothing_u5m_exp", i18n$t("Under-5 Mortality (optional, Exposures)"), value = NULL),
+              shiny.semantic::checkbox_input("smoothing_constrain_infants_exp", i18n$t("Constrain Infants (Exposures)"), is_marked = TRUE)
             ),
             column(
               6,
               selectInput(
                 "smoothing_fine_deaths",
-                "Fine Method (Deaths)",
+                i18n$t("Fine Method (Deaths)"),
                 choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
                 selected = "auto"
               ),
-              numericInput("smoothing_u5m_deaths", "Under-5 Mortality (optional, Deaths)", value = NULL),
-              shiny.semantic::checkbox_input("smoothing_constrain_infants_deaths", "Constrain Infants (Deaths)", is_marked = TRUE)
+              numericInput("smoothing_u5m_deaths", i18n$t("Under-5 Mortality (optional, Deaths)"), value = NULL),
+              shiny.semantic::checkbox_input("smoothing_constrain_infants_deaths", i18n$t("Constrain Infants (Deaths)"), is_marked = TRUE)
             )
           )
         ),
 
         # Add JavaScript for toggle functionality
-        tags$script(HTML("
+        tags$script(HTML(sprintf("
           $(document).on('click', '#toggle_advanced_smoothing', function() {
             $('#advanced_smoothing_inputs').slideToggle('fast', function() {
               var isVisible = $('#advanced_smoothing_inputs').is(':visible');
               if(isVisible) {
-                $('#toggle_advanced_smoothing').text('Hide Advanced Options');
+                $('#toggle_advanced_smoothing').text('%s');
               } else {
-                $('#toggle_advanced_smoothing').text('Show Advanced Options');
+                $('#toggle_advanced_smoothing').text('%s');
               }
             });
           });
-        "))
+        ", i18n$t("Hide Advanced Options"), i18n$t("Show Advanced Options"))))
       )
     },
     execute = function(input) {
@@ -254,6 +254,7 @@ adjustment_steps <- list(
 #' @importFrom stats reshape quantile
 #' @importFrom DT datatable renderDT dataTableOutput
 #' @importFrom untheme detect_font_size
+#' @importFrom shiny.i18n update_lang
 #' @importFrom ODAPbackend lt_summary smooth_flexible
 #' @importFrom utils zip
 #' @export
@@ -291,6 +292,13 @@ app_server <- function(input, output, session) {
     })
   }
 
+  i18n <- usei18n_local()
+
+  # Language change observer
+  observeEvent(input$selected_language, {
+    update_lang(input$selected_language)
+  })
+
   # At the beginning of app_server
   current_tab <- reactiveVal()
 
@@ -301,8 +309,8 @@ app_server <- function(input, output, session) {
         steps = data.frame(
           element = c("#continue_no_data", "#file-input"),
           intro = c(
-            "If you want to test out the app's functionalty, click here to use a sample dataset. A pop up window will be prompted for the grouping variables that identify your data. Simply tick the no-grouping box and you'll be able to inspect the diagnostics and perform additional preprocessing.",
-            "Alternatively, upload your own data. Make sure your data is cleaned and ready for analysis (no age duplicates, unless by groups), correct column names (we expect at least the basic to be 'Sex', 'Deaths' and 'Exposures'), either single or abridged ages but nothing else."
+            i18n$t("If you want to test out the app's functionalty, click here to use a sample dataset. A pop up window will be prompted for the grouping variables that identify your data. Simply tick the no-grouping box and you'll be able to inspect the diagnostics and perform additional preprocessing."),
+            i18n$t("Alternatively, upload your own data. Make sure your data is cleaned and ready for analysis (no age duplicates, unless by groups), correct column names (we expect at least the basic to be 'Sex', 'Deaths' and 'Exposures'), either single or abridged ages but nothing else.")
           )
         )
       ))
@@ -316,9 +324,9 @@ app_server <- function(input, output, session) {
         steps = data.frame(
           element = c("#adjustment_tabs", "#tooltip-preprocess", "#forward_to_lifetable"),
           intro = c(
-            "These are the tabs for the preprocessing. Every time you click execute from each of the preprocessing it will use the output of the previous preprocessing step.",
-            "In this icon you can see which data is used as input for each preprocessing, whether the initial data or the output of a previous preprocessing step.",
-            "Once you've implemented all the preprocessing needed, you can click next to use the output of the final preprocessing step as the input to the lifetable. Equally important, if you've applied a preprocessing step, you'll see the sequential order at which they were executed as pills above this button. You can delete any step and the chain of excution will be recalculated."
+            i18n$t("These are the tabs for the preprocessing. Every time you click execute from each of the preprocessing it will use the output of the previous preprocessing step."),
+            i18n$t("In this icon you can see which data is used as input for each preprocessing, whether the initial data or the output of a previous preprocessing step."),
+            i18n$t("Once you've implemented all the preprocessing needed, you can click next to use the output of the final preprocessing step as the input to the lifetable. Equally important, if you've applied a preprocessing step, you'll see the sequential order at which they were executed as pills above this button. You can delete any step and the chain of excution will be recalculated.")
           )
         )
       ))
@@ -331,7 +339,7 @@ app_server <- function(input, output, session) {
         steps = data.frame(
           element = c("#calculate_lt"),
           intro = c(
-            "Here you can estimate the lifetable using the output of the final step of your preprocessing. After tweaking the parameters below, click here to see the plot and table outputs."
+            i18n$t("Here you can estimate the lifetable using the output of the final step of your preprocessing. After tweaking the parameters below, click here to see the plot and table outputs.")
           )
         )
       ))
@@ -364,11 +372,11 @@ app_server <- function(input, output, session) {
     output$validation_results <- NULL
 
     # Process the uploaded file
-    handle_file_upload(input)
+    handle_file_upload(input, i18n)
   })
 
   # Handle sample data
-  sample_data <- handle_sample_data()
+  sample_data <- handle_sample_data(i18n)
 
   # Update data_in when the sample data button is clicked
   observeEvent(input$continue_no_data, {
@@ -388,10 +396,10 @@ app_server <- function(input, output, session) {
   })
 
   # Display table as example..
-  output$data_table <- renderRHandsontable(renderDataTable(sample_data()))
+  output$data_table <- renderRHandsontable(renderDataTable(sample_data(), i18n))
 
   # Handle column selection
-  handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars)
+  handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars, i18n)
 
   # DF containing the id and labels
   labels_df <- reactive({
@@ -404,7 +412,7 @@ app_server <- function(input, output, session) {
   grouping_dropdowns <- setup_grouping_dropdowns(selected_grouping_vars, data_in)
 
   # Validate data after group selection
-  validate_data_after_group_selection(input, output, data_in, group_selection_passed)
+  validate_data_after_group_selection(input, output, data_in, group_selection_passed, i18n)
 
   # Setup observers for grouping dropdown changes
   setup_grouping_dropdown_observers(input, selected_grouping_vars)
@@ -427,6 +435,7 @@ app_server <- function(input, output, session) {
         group_selection_passed,
         selected_grouping_vars,
         grouping_dropdowns,
+        i18n,
         show_modal = TRUE,
         download = FALSE # Use lazy loading for interactive viewing
       )
@@ -507,7 +516,7 @@ app_server <- function(input, output, session) {
       })
 
       # Render input UI
-      output[[paste0(step_name, "_inputs")]] <- renderUI(step$input_ui())
+      output[[paste0(step_name, "_inputs")]] <- renderUI(step$input_ui(i18n))
 
       # Create reactive expression for the function call
       step_func_calls[[step_name]] <- reactive({
@@ -636,7 +645,7 @@ app_server <- function(input, output, session) {
   ## CALCULATE LIFETABLE
 
   # Create life table input UI and reactive values
-  lt_input <- create_life_table_input_ui(data_in, grouping_dropdowns, tabNames, input, output)
+  lt_input <- create_life_table_input_ui(data_in, grouping_dropdowns, tabNames, input, output, i18n)
 
   # Create a reactive value to store the life table data and plots
   lt_data <- reactiveVal(NULL)
@@ -654,9 +663,10 @@ app_server <- function(input, output, session) {
         div(
           class = "below-main-panel fade-in-icon",
           shiny.semantic::icon("arrow down circle", style = "font-size: 3rem;")
-        ), div(
+        ), 
+        div(
           class = "below-main-panel",
-          h1("Life Table Summary Statistics"),
+          i18n$t("Life Table Summary Statistics")
         )
       )
     })
@@ -792,11 +802,11 @@ app_server <- function(input, output, session) {
   })
 
   tabNames <- c(
-    "Mortality Rate",
-    "Survival Curve",
-    "Death Distribution",
-    "Conditional Death Probabilities",
-    "Lifetable Results"
+    i18n$t("Mortality Rate"),
+    i18n$t("Survival Curve"),
+    i18n$t("Death Distribution"),
+    i18n$t("Conditional Death Probabilities"),
+    i18n$t("Lifetable Results")
   )
 
   # Render the life table summary table
@@ -825,7 +835,7 @@ app_server <- function(input, output, session) {
     lapply(seq_along(tabNames), function(i) {
       id <- sprintf("tabContent%s", i)
       plotName <- gsub(" ", "_", tolower(tabNames[i]))
-      OutputFunction <- ifelse(grepl("Lifetable Results", tabNames[i]), DTOutput, plotlyOutput)
+      OutputFunction <- ifelse(grepl(i18n$t("Lifetable Results"), tabNames[i]), DTOutput, plotlyOutput)
 
       # Define UI rendering for each tab
       output[[id]] <- renderUI({
@@ -877,37 +887,37 @@ app_server <- function(input, output, session) {
       if (sizes$type == "mobile") {
         div(
           style = "width: 100%; display: grid; gap: 10px;",
-          actionButton("download_all", "Export", class = "ui blue button")
+          actionButton("download_all", i18n$t("Export"), class = "ui blue button")
         )
       } else {
         div(
           style = "margin-left: auto; display: flex; gap: 10px;",
-          actionButton("download_all", "Export", class = "ui blue button")
+          actionButton("download_all", i18n$t("Export"), class = "ui blue button")
         )
       }
     }
   })
 
   download_choices <- c(
-    "lifetable" = "Download life table results",
-    "preprocessing" = "Download preprocessing results",
-    "diagnostics" = "Download diagnostic results",
-    "report" = "Download PDF Report"
+    "lifetable" = i18n$t("Download life table results"),
+    "preprocessing" = i18n$t("Download preprocessing results"),
+    "diagnostics" = i18n$t("Download diagnostic results"),
+    "report" = i18n$t("Download PDF Report")
   )
 
   output$download_modal <- renderUI({
     shiny.semantic::modal(
       id = "download-modal",
-      header = "Download Options",
+      header = i18n$t("Download Options"),
       shiny.semantic::multiple_radio(
         "download_option",
-        "Select an option:",
+        i18n$t("Select an option:"),
         choices = download_choices,
         choices_value = names(download_choices)
       ),
       footer = tagList(
-        shiny.semantic::button("cancel_download", "Cancel"),
-        downloadButton("confirm_download", "Download")
+        shiny.semantic::button("cancel_download", i18n$t("Cancel")),
+        downloadButton("confirm_download", i18n$t("Download"))
       )
     )
   })
@@ -944,7 +954,8 @@ app_server <- function(input, output, session) {
         diagnostic_analysis <- setup_diagnostic_data(
           input, output, session, data_in,
           group_selection_passed, selected_grouping_vars,
-          grouping_dropdowns, show_modal = FALSE,
+          grouping_dropdowns, i18n,
+          show_modal = FALSE,
           download = TRUE
         )
 
@@ -1109,7 +1120,7 @@ app_server <- function(input, output, session) {
           plot_list <- step_result$plot_result
           data_output <- step_result$data_output
           plot_folder_path <- file.path(base_path, "preprocessing", step_name)
-          dir.create(plot_folder_path, recursive = TRUE)
+          dir.create(plot_folder_path, recursive = TRUE, showWarnings = FALSE)
 
           # Save data
           message(paste("Saving preprocessing data for step:", step_name))
@@ -1173,7 +1184,7 @@ app_server <- function(input, output, session) {
         }
       }
 
-      withProgress(message = "Preparing download...", value = 0, {
+      withProgress(message = i18n$t("Preparing download:"), value = 0, {
         # Calculate number of groups and estimated time
         n_groups <- length(unique(data_in()$.id))
 
@@ -1195,19 +1206,19 @@ app_server <- function(input, output, session) {
         # Format time estimate message
         format_time <- function(seconds) {
           if (seconds < 60) {
-            return(paste(round(seconds), "seconds"))
+            return(paste(round(seconds), i18n$t("seconds")))
           } else if (seconds < 3600) {
             minutes <- floor(seconds / 60)
-            return(paste(minutes, "minutes"))
+            return(paste(minutes, i18n$t("minutes")))
           } else {
             hours <- floor(seconds / 3600)
             minutes <- floor((seconds %% 3600) / 60)
-            return(paste(hours, "hours", minutes, "minutes"))
+            return(paste(hours, i18n$t("hours"), minutes, i18n$t("minutes")))
           }
         }
 
         # Create progress message with time estimate
-        progress_msg <- paste("Preparing download... Estimated time:", format_time(total_time))
+        progress_msg <- paste(i18n$t("Preparing download... Estimated time:"), format_time(total_time))
 
         total_steps <- ifelse(input$download_option == "all", 3, 1)
 
@@ -1225,7 +1236,8 @@ app_server <- function(input, output, session) {
           diagnostic_analysis <- setup_diagnostic_data(
             input, output, session, data_in,
             group_selection_passed, selected_grouping_vars,
-            grouping_dropdowns, show_modal = FALSE,
+            grouping_dropdowns, i18n,
+            show_modal = FALSE,
             download = TRUE
           )
           if (is.null(diagnostic_analysis)) {
@@ -1294,33 +1306,34 @@ app_server <- function(input, output, session) {
           }
 
           message("Finished parallel execution of all components")
-          incProgress(1, detail = paste("All components saved. Total time:", format_time(total_time)))
+          incProgress(1, detail = paste(i18n$t("All components saved. Total time:"), format_time(total_time)))
 
         } else if (input$download_option == "lifetable") {
           est_time <- format_time(time_estimates$lifetable)
           message(paste("Starting lifetable save. Estimated time:", est_time))
-          incProgress(0.5, detail = paste("Saving lifetable results... Estimated time:", est_time))
+          incProgress(0.5, detail = paste(i18n$t("Saving lifetable results... Estimated time:"), est_time))
           save_lifetable_results(temp_dir)
         } else if (input$download_option == "preprocessing") {
           est_time <- format_time(time_estimates$preprocessing)
           message(paste("Starting preprocessing save. Estimated time:", est_time))
-          incProgress(0.5, detail = paste("Saving preprocessing results... Estimated time:", est_time))
+          incProgress(0.5, detail = paste(i18n$t("Saving preprocessing results... Estimated time:"), est_time))
           save_preprocessing_results(temp_dir)
         } else if (input$download_option == "diagnostics") {
           est_time <- format_time(time_estimates$diagnostics)
           message(paste("Starting diagnostics save. Estimated time:", est_time))
-          incProgress(0.5, detail = paste("Saving diagnostic results... Estimated time:", est_time))
+          incProgress(0.5, detail = paste(i18n$t("Saving diagnostic results... Estimated time:"), est_time))
           save_diagnostic_results(temp_dir)
         } else if (input$download_option == "report") {
           message("Generating PDF report...")
-          incProgress(0.3, detail = "Preparing diagnostic data...")
+          incProgress(0.3, detail = i18n$t("Preparing diagnostic data..."))
           
           # Ensure we have diagnostic data
           if (is.null(diagnostic_data())) {
             diagnostic_analysis <- setup_diagnostic_data(
               input, output, session, data_in,
               group_selection_passed, selected_grouping_vars,
-              grouping_dropdowns, show_modal = FALSE,
+              grouping_dropdowns, i18n,
+              show_modal = FALSE,
               download = TRUE
             )
           } else {
@@ -1330,7 +1343,7 @@ app_server <- function(input, output, session) {
           # Preprocess diagnostic data to resolve reactive expressions
           preprocessed_diagnostics <- preprocess_diagnostic_data(diagnostic_analysis)
           
-          incProgress(0.5, detail = "Generating PDF report...")
+          incProgress(0.5, detail = i18n$t("Generating PDF report..."))
           # Generate report and copy to temp directory
           labels_names <- setNames(labels_df()$.id_label, labels_df()$.id)
           
@@ -1351,7 +1364,7 @@ app_server <- function(input, output, session) {
         }
 
         # Final step - creating zip file (only for non-report options)
-        incProgress(1, detail = "Creating zip file...")
+        incProgress(1, detail = i18n$t("Creating zip file..."))
         message("Creating zip file...")
         zip::zipr(
           zipfile = file,

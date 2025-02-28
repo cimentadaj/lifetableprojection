@@ -4,10 +4,12 @@
 \alias{handle_file_upload}
 \title{Handle File Upload}
 \usage{
-handle_file_upload(input)
+handle_file_upload(input, i18n)
 }
 \arguments{
 \item{input}{Shiny input object}
+
+\item{i18n}{Translator object for internationalization}
 }
 \value{
 Reactive expression containing the uploaded data

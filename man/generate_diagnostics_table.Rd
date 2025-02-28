@@ -4,10 +4,12 @@
 \alias{generate_diagnostics_table}
 \title{Generate Diagnostics Table}
 \usage{
-generate_diagnostics_table(data_in, group_selection_passed)
+generate_diagnostics_table(data_in, group_selection_passed, i18n)
 }
 \arguments{
 \item{data_in}{Reactive expression containing the input data}
+
+\item{i18n}{Translator object for internationalization}
 }
 \value{
 Reactive expression containing diagnostics table

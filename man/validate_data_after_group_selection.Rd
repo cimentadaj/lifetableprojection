@@ -8,7 +8,8 @@ validate_data_after_group_selection(
   input,
   output,
   data_in,
-  group_selection_passed
+  group_selection_passed,
+  i18n
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ validate_data_after_group_selection(
 \item{data_in}{Reactive value containing input data}
 
 \item{group_selection_passed}{Reactive value indicating if group selection is complete}
+
+\item{i18n}{Translator object for internationalization}
 }
 \description{
 Validates data and updates UI elements after group selection.

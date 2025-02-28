@@ -4,10 +4,12 @@
 \alias{render_diagnostics_table}
 \title{Render Diagnostics Table}
 \usage{
-render_diagnostics_table(diagnostics_table)
+render_diagnostics_table(diagnostics_table, i18n)
 }
 \arguments{
 \item{diagnostics_table}{Reactive expression containing diagnostics table}
+
+\item{i18n}{Translator object for internationalization}
 }
 \value{
 Rendered DataTable

@@ -9,7 +9,8 @@ create_life_table_input_ui(
   grouping_dropdowns,
   tabNames,
   input,
-  output
+  output,
+  i18n
 )
 }
 \arguments{

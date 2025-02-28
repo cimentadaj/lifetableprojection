@@ -10,7 +10,8 @@ handle_group_selection_modal(
   session,
   data,
   group_selection_passed,
-  selected_grouping_vars
+  selected_grouping_vars,
+  i18n
 )
 }
 \arguments{
@@ -22,9 +23,11 @@ handle_group_selection_modal(
 
 \item{data}{Reactive expression containing the data}
 
-\item{group_selection_passed}{Reactive value to flag whether the group selection stage has been passed0}
+\item{group_selection_passed}{Reactive value to flag whether the group selection stage has been passed}
 
 \item{selected_grouping_vars}{Reactive value to store the variables selected as grouping vars}
+
+\item{i18n}{Translator object for internationalization}
 }
 \description{
 Handle Column Selection

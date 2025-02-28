@@ -2,12 +2,13 @@
 #'
 #' @param data_in Reactive expression containing the input data
 #' @param group_selection_passed Reactive expression containing the group selection status
+#' @param i18n Translator object for internationalization
 #' @param lazy Boolean indicating whether to use lazy loading
 #' @return Reactive expression containing diagnostic plots
 #' @importFrom dplyr %>% group_split
 #' @importFrom ODAPbackend plot_initial_data check_heaping_general
 #' @importFrom plotly config
-generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_grouping_vars, input, lazy = TRUE) {
+generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_grouping_vars, input, i18n, lazy = TRUE) {
   if (lazy) {
     reactive({
       req(group_selection_passed())
@@ -91,15 +92,16 @@ generate_group_plots <- function(group_data) {
 #' Generate Diagnostics Text
 #'
 #' @param data_in Reactive expression containing the input data
+#' @param i18n Translator object for internationalization
 #' @return Reactive expression containing diagnostics text
-generate_diagnostics_text <- function(data_in) {
+generate_diagnostics_text <- function(data_in, i18n) {
   reactive({
     req(data_in())
     is_single_ages <- all(diff(sort(data_in()$Age)) == 1)
 
     paste0(
-      "The Roughness method measures the average absolute percentage deviation from a smoothed trend through the five-year age group data. The Sawtooth method takes the average of the ratios of the value in each five-year age group (in adult ages) to the average of the two adjacent age groups (age groups below and above). Both of these methods are trying to pick up on a phenomenon known as differential age heaping where digit preference is stronger on zeroes than on fives. This phenomenon can cause an apparent sawtooth pattern in demographic count data.",
-      ifelse(is_single_ages, "The Myers and Bachi indices both measure digit preference for single-age data. If there were no digit preference, then the distribution over terminal digits (0-9) would be roughly uniform. Both of these indices measure the departure from uniformity, with slight variations on the implementation. Higher values indicate digit distributions that are farther from uniform. If these indices are high, but the _roughness_ and _sawtooth_ indices are low, then you might adjust data using one of the _fine_ smoothing methods offered.", "")
+      i18n$t("The Roughness method measures the average absolute percentage deviation from a smoothed trend through the five-year age group data. The Sawtooth method takes the average of the ratios of the value in each five-year age group (in adult ages) to the average of the two adjacent age groups (age groups below and above). Both of these methods are trying to pick up on a phenomenon known as differential age heaping where digit preference is stronger on zeroes than on fives. This phenomenon can cause an apparent sawtooth pattern in demographic count data."),
+      ifelse(is_single_ages, i18n$t("The Myers and Bachi indices both measure digit preference for single-age data. If there were no digit preference, then the distribution over terminal digits (0-9) would be roughly uniform. Both of these indices measure the departure from uniformity, with slight variations on the implementation. Higher values indicate digit distributions that are farther from uniform. If these indices are high, but the _roughness_ and _sawtooth_ indices are low, then you might adjust data using one of the _fine_ smoothing methods offered."), "")
     )
   })
 }
@@ -107,9 +109,10 @@ generate_diagnostics_text <- function(data_in) {
 #' Generate Diagnostics Table
 #'
 #' @param data_in Reactive expression containing the input data
+#' @param i18n Translator object for internationalization
 #' @return Reactive expression containing diagnostics table
 #' @importFrom dplyr %>% group_split
-generate_diagnostics_table <- function(data_in, group_selection_passed) {
+generate_diagnostics_table <- function(data_in, group_selection_passed, i18n) {
   reactive({
     if (group_selection_passed()) {
       # Split data by .id into groups
@@ -125,8 +128,8 @@ generate_diagnostics_table <- function(data_in, group_selection_passed) {
         heaping_exposure <- check_heaping_general(group_data, "Exposures")
         heaping_deaths <- check_heaping_general(group_data, "Deaths")
 
-        heaping_exposure$Type <- "Exposures"
-        heaping_deaths$Type <- "Deaths"
+        heaping_exposure$Type <- i18n$t("Exposures")
+        heaping_deaths$Type <- i18n$t("Deaths")
 
         heaping_res <- rbind(heaping_exposure, heaping_deaths)
         heaping_res$result <- round(heaping_res$result, 2)
@@ -135,6 +138,7 @@ generate_diagnostics_table <- function(data_in, group_selection_passed) {
         df <- heaping_res[c("Type", "age scale", "method", "result", "level", "color")]
         df <- df[order(df$method), ]
         names(df) <- toTitleCase(names(df))
+        names(df) <- i18n$t(names(df))
 
         # Store table for this group in the list with the .id as the name
         group_tables[[as.character(group_data$.id[1])]] <- df
@@ -149,9 +153,10 @@ generate_diagnostics_table <- function(data_in, group_selection_passed) {
 #' Render Diagnostics Table
 #'
 #' @param diagnostics_table Reactive expression containing diagnostics table
+#' @param i18n Translator object for internationalization
 #' @return Rendered DataTable
 #' @importFrom DT datatable formatStyle styleEqual
-render_diagnostics_table <- function(diagnostics_table) {
+render_diagnostics_table <- function(diagnostics_table, i18n) {
   renderDT({
     df <- diagnostics_table()
     df <- df[, names(df) != "Color"]
@@ -184,10 +189,11 @@ render_diagnostics_table <- function(diagnostics_table) {
 #' @param diagnostics_table Reactive expression containing diagnostics table
 #' @param diagnostics_text Reactive expression containing diagnostics text
 #' @param grouping_dropdowns Reactive expression containing the drop down menus for the selected group keys
+#' @param i18n Translator object for internationalization
 #' @importFrom shiny div br
 #' @importFrom DT dataTableOutput
 #' @importFrom shinyalert shinyalert
-show_diagnostics_modal <- function(input, output, session, diagnostic_plots, diagnostics_table, diagnostics_text, grouping_dropdowns) {
+show_diagnostics_modal <- function(input, output, session, diagnostic_plots, diagnostics_table, diagnostics_text, grouping_dropdowns, i18n) {
   myContent <- div(
     id = "content-wrapper",
     style = "display: flex; flex-direction: column; align-items: center; width: 100%;",
@@ -212,15 +218,15 @@ show_diagnostics_modal <- function(input, output, session, diagnostic_plots, dia
         tabset(
           list(
             list(
-              menu = "Exposures",
+              menu = i18n$t("Exposures"),
               content = plotlyOutput("diag_exposures", width = "90%")
             ),
             list(
-              menu = "Deaths",
+              menu = i18n$t("Deaths"),
               content = plotlyOutput("diag_deaths", width = "90%")
             ),
             list(
-              menu = "Empirical Mx",
+              menu = i18n$t("Empirical Mx"),
               content = plotlyOutput("diag_empirical_mx", width = "90%")
             )
           )
@@ -240,7 +246,7 @@ show_diagnostics_modal <- function(input, output, session, diagnostic_plots, dia
   )
 
   # Show the alert with the custom content
-  shinyalert(title = "&#x1F50D Data Diagnostics", html = TRUE, size = "l", text = myContent)
+  shinyalert(title = paste0("&#x1F50D ", i18n$t("Data Diagnostics")), html = TRUE, size = "l", text = myContent)
 
   # Render diagnostic plots
   output$diag_exposures <- renderPlotly({
@@ -254,7 +260,7 @@ show_diagnostics_modal <- function(input, output, session, diagnostic_plots, dia
   })
 
   # Render diagnostics table
-  output$diagnostics_table <- render_diagnostics_table(diagnostics_table)
+  output$diagnostics_table <- render_diagnostics_table(diagnostics_table, i18n)
 
   # Render diagnostics text
   output$diagnostics_text <- renderText({
@@ -272,19 +278,20 @@ show_diagnostics_modal <- function(input, output, session, diagnostic_plots, dia
 #' @param data_in Reactive value containing input data
 #' @param selected_grouping_vars Reactive value containing selected grouping variables
 #' @param grouping_dropdowns Reactive expression containing grouping dropdowns
+#' @param i18n Translator object for internationalization
 #' @param show_modal Boolean indicating whether to show the diagnostics modal
 #' @param download Boolean indicating whether to use lazy loading
 #' @return List of reactive expressions for plots, table, and text
 #' @importFrom shiny observeEvent
 #' @export
-setup_diagnostic_data <- function(input, output, session, data_in, group_selection_passed, selected_grouping_vars, grouping_dropdowns, show_modal = TRUE, download = FALSE) {
+setup_diagnostic_data <- function(input, output, session, data_in, group_selection_passed, selected_grouping_vars, grouping_dropdowns, i18n, show_modal = TRUE, download = FALSE) {
   # For downloading, use legacy behavior
   if (download) {
-    diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed, selected_grouping_vars, input, lazy = FALSE)
+    diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed, selected_grouping_vars, input, i18n, lazy = FALSE)
     current_diagnostic_plots <- create_current_diagnostic_plots(diagnostic_plots()$plotly, selected_grouping_vars, data_in, input)
   } else {
     # For interactive viewing, use lazy loading
-    diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed, selected_grouping_vars, input, lazy = TRUE)
+    diagnostic_plots <- generate_diagnostic_plots(data_in, group_selection_passed, selected_grouping_vars, input, i18n, lazy = TRUE)
     current_diagnostic_plots <- reactive({
       plots <- diagnostic_plots()$plotly
       list(
@@ -296,12 +303,12 @@ setup_diagnostic_data <- function(input, output, session, data_in, group_selecti
   }
 
   # Generate diagnostics text and table (these are lightweight operations)
-  diagnostics_text <- generate_diagnostics_text(data_in)
-  diagnostics_table <- generate_diagnostics_table(data_in, group_selection_passed)
+  diagnostics_text <- generate_diagnostics_text(data_in, i18n)
+  diagnostics_table <- generate_diagnostics_table(data_in, group_selection_passed, i18n)
   current_diagnostics_table <- create_current_diagnostics_table(diagnostics_table, selected_grouping_vars, data_in, input)
 
   if (show_modal) {
-    show_diagnostics_modal(input, output, session, current_diagnostic_plots, current_diagnostics_table, diagnostics_text, grouping_dropdowns)
+    show_diagnostics_modal(input, output, session, current_diagnostic_plots, current_diagnostics_table, diagnostics_text, grouping_dropdowns, i18n)
   }
 
   list(

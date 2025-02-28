@@ -61,7 +61,7 @@ calculateLifeTable <- function(data_in, input) {
 #' @importFrom shiny.semantic label
 #' @importFrom stats quantile
 #' @export
-create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, input, output) {
+create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, input, output, i18n) {
   extrap_age <- reactive({
     req(data_in())
     num <- as.numeric(gsub("+", "", max(data_in()$Age)))
@@ -100,7 +100,7 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
     extrap_from = renderUI({
       create_field_set(
         "",
-        "Extrap. Jump-off Age",
+        i18n$t("Extrap. Jump-off Age"),
         "input_extrapFrom",
         input_selected = extrap_age(),
         numeric_input = TRUE
@@ -121,7 +121,7 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
         class = "field",
         shiny.semantic::label(
           class = "main label",
-          "Ages to fit extrapolation model"
+          i18n$t("Ages to fit extrapolation model")
         ),
         slider_widget
       )

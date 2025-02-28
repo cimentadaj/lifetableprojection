@@ -9,6 +9,7 @@ generate_diagnostic_plots(
   group_selection_passed,
   selected_grouping_vars,
   input,
+  i18n,
   lazy = TRUE
 )
 }
@@ -16,6 +17,8 @@ generate_diagnostic_plots(
 \item{data_in}{Reactive expression containing the input data}
 
 \item{group_selection_passed}{Reactive expression containing the group selection status}
+
+\item{i18n}{Translator object for internationalization}
 
 \item{lazy}{Boolean indicating whether to use lazy loading}
 }
