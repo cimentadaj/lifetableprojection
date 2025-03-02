@@ -201,18 +201,34 @@ adjustment_steps <- list(
         ),
 
         # Add JavaScript for toggle functionality
-        tags$script(HTML(sprintf("
-          $(document).on('click', '#toggle_advanced_smoothing', function() {
-            $('#advanced_smoothing_inputs').slideToggle('fast', function() {
-              var isVisible = $('#advanced_smoothing_inputs').is(':visible');
-              if(isVisible) {
-                $('#toggle_advanced_smoothing').text('%s');
-              } else {
-                $('#toggle_advanced_smoothing').text('%s');
-              }
+        tags$script("
+          $(document).ready(function() {
+            let clickTimeout;
+            
+            // Remove any existing click handlers first
+            $(document).off('click', '#toggle_advanced_smoothing');
+            
+            // Add debounced click handler
+            $(document).on('click', '#toggle_advanced_smoothing', function() {
+              // Clear any pending timeouts
+              if (clickTimeout) clearTimeout(clickTimeout);
+              
+              // Set a new timeout
+              clickTimeout = setTimeout(function() {
+                console.log('Button clicked');
+                console.log('Current button text:', $('#toggle_advanced_smoothing').text());
+                console.log('Current visibility:', $('#advanced_smoothing_inputs').is(':visible'));
+                
+                $('#advanced_smoothing_inputs').slideToggle('fast', function() {
+                  var isVisible = $('#advanced_smoothing_inputs').is(':visible');
+                  console.log('After toggle - visibility:', isVisible);
+                  console.log('Sending visibility state to Shiny');
+                  Shiny.setInputValue('advanced_is_visible', isVisible);
+                });
+              }, 100); // 100ms debounce
             });
           });
-        ", i18n$t("Hide Advanced Options"), i18n$t("Show Advanced Options"))))
+        ")
       )
     },
     execute = function(input) {
@@ -267,27 +283,21 @@ app_server <- function(input, output, session) {
   # Add this after setup_adjustment_steps function
   update_step_tooltips <- function(executed_steps) {
     lapply(names(adjustment_steps), function(step_name) {
-      # Find the index of the current step in executed steps
-      step_index <- match(step_name, executed_steps)
-
-      if (is.na(step_index)) {
-        tooltip_text <- "This step will use the initial uploaded data"
-      } else {
-        if (step_index == 1) {
-          tooltip_text <- "This step uses the initial uploaded data"
+      output[[paste0("tooltip_text_", step_name)]] <- renderText({
+        step_index <- match(step_name, executed_steps)
+        
+        if (is.na(step_index)) {
+          i18n$t("This step will use the initial uploaded data")
+        } else if (step_index == 1) {
+          i18n$t("This step uses the initial uploaded data")
         } else {
           prev_step <- executed_steps[step_index - 1]
           prev_step_name <- names(adjustment_steps)[match(prev_step, names(adjustment_steps))]
-          tooltip_text <- sprintf(
-            "This step uses the output data from the '%s' step",
+          sprintf(
+            paste0(i18n$t("This step uses the output data from the"), " '%s' ", i18n$t("step")),
             adjustment_steps[[prev_step_name]]$name
           )
         }
-      }
-
-      # Update the tooltip content using Shiny
-      output[[paste0("tooltip_text_", step_name)]] <- renderText({
-        tooltip_text
       })
     })
   }
@@ -295,8 +305,22 @@ app_server <- function(input, output, session) {
   i18n <- usei18n_local()
 
   # Language change observer
-  observeEvent(input$selected_language, {
-    update_lang(input$selected_language)
+  observeEvent(c(input$selected_language, input$lt_advanced_is_visible), {
+    
+    # Update language if it changed
+    if (!is.null(input$selected_language)) {
+      update_lang(input$selected_language)
+    }
+    
+    # Update button text based on visibility
+    if (!is.null(input$lt_advanced_is_visible)) {
+      new_label <- if (input$lt_advanced_is_visible) i18n$t("Hide Advanced Options") else i18n$t("Show Advanced Options")
+      updateActionButton(
+        session,
+        "toggle_advanced",
+        label = new_label
+      )
+    }
   })
 
   # At the beginning of app_server
@@ -579,6 +603,7 @@ app_server <- function(input, output, session) {
       stop(paste("No plot for group ID", group_id_str, "in step", step_name))
     }
     plot_item <- plot_list[[group_id_str]]
+
     # Depending on the structure, extract the plot
     if ("figure" %in% names(plot_item)) {
       plot <- plot_item$figure
@@ -597,7 +622,16 @@ app_server <- function(input, output, session) {
   # Render the pills UI
   output$adjustment_pills <- renderUI({
     pills <- executed_adjustments()
-    render_adjustment_pills(pills)
+    translated_pills <- setNames(
+      sapply(unname(pills), function(name) i18n$t(name)),
+      sapply(names(pills), function(name) i18n$t(name))
+    )
+
+    print("translated_pills")
+    print(translated_pills)
+    print("pills")
+    print(pills)
+    render_adjustment_pills(translated_pills)
   })
 
   # Reactive expression to execute preprocessing steps
@@ -632,10 +666,17 @@ app_server <- function(input, output, session) {
     preprocess_exec()$results
   })
 
+  observe({
+    print("input$remove_pill")
+    print(input$remove_pill)
+  })
+
   # Observer to handle pill removal
   observeEvent(input$remove_pill, {
     current_steps <- executed_adjustments()
-    current_steps <- current_steps[names(current_steps) != input$remove_pill]
+    tmp_current_steps <- current_steps
+    names(tmp_current_steps) <- sapply(names(tmp_current_steps), function(name) i18n$t(name))
+    current_steps <- current_steps[names(tmp_current_steps) != input$remove_pill]
     executed_adjustments(current_steps)
   })
 
@@ -898,21 +939,22 @@ app_server <- function(input, output, session) {
     }
   })
 
-  download_choices <- c(
-    "lifetable" = i18n$t("Download life table results"),
-    "preprocessing" = i18n$t("Download preprocessing results"),
-    "diagnostics" = i18n$t("Download diagnostic results"),
-    "report" = i18n$t("Download PDF Report")
-  )
+
 
   output$download_modal <- renderUI({
+    download_choices <- c(
+      "lifetable" = i18n$t("Download life table results"),
+      "preprocessing" = i18n$t("Download preprocessing results"),
+      "diagnostics" = i18n$t("Download diagnostic results"),
+      "report" = i18n$t("Download PDF Report")
+    )
     shiny.semantic::modal(
       id = "download-modal",
       header = i18n$t("Download Options"),
       shiny.semantic::multiple_radio(
         "download_option",
         i18n$t("Select an option:"),
-        choices = download_choices,
+        choices = unname(download_choices),
         choices_value = names(download_choices)
       ),
       footer = tagList(
@@ -1366,6 +1408,8 @@ app_server <- function(input, output, session) {
         # Final step - creating zip file (only for non-report options)
         incProgress(1, detail = i18n$t("Creating zip file..."))
         message("Creating zip file...")
+        print(temp_dir)
+        print(list.dirs(temp_dir, recursive = FALSE))
         zip::zipr(
           zipfile = file,
           files = list.dirs(temp_dir, recursive = FALSE)
@@ -1374,4 +1418,9 @@ app_server <- function(input, output, session) {
       })
     }
   )
+
+  # Add tooltip text handler
+  output$exposures_tooltip_text <- renderText({
+    i18n$t("Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.")
+  })
 }

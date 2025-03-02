@@ -479,16 +479,6 @@ app_ui <- function(request) {
         }
         "))
       ),
-      # Language Switcher
-      div(
-        class = "language-switcher",
-        selectInput(
-          inputId = "selected_language",
-          label = i18n$t("Change language"),
-          choices = i18n$get_languages(),
-          selected = i18n$get_key_translation()
-        )
-      ),
       div(
         id = "module_landing_page",
         class = "module-landing",
@@ -608,7 +598,7 @@ app_ui <- function(request) {
                 ),
                 div(
                   TooltipHost(
-                    content = i18n$t("Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures."),
+                    content = textOutput("exposures_tooltip_text"),
                     delay = 0,
                     Image(
                       src = "www/info.png",
@@ -659,20 +649,33 @@ app_ui <- function(request) {
       ),
       tags$head(
         tags$script(HTML("
-    $(document).on('click', '#toggle_advanced', function() {
-      $('#advanced_inputs').slideToggle('fast', function() {
-        // This callback function is called after the slideToggle animation completes
-        var isVisible = $('#advanced_inputs').is(':visible');
-        if(isVisible) {
-          // If the advanced inputs are now visible, change button text to 'Hide Advanced Options'
-          $('#toggle_advanced').text('Hide Advanced Options');
-        } else {
-          // If the advanced inputs are now hidden, change button text to 'Show Advanced Options'
-          $('#toggle_advanced').text('Show Advanced Options');
-        }
-      });
-    });
-  "))
+          $(document).ready(function() {
+            let clickTimeout;
+            
+            // Remove any existing click handlers first
+            $(document).off('click', '#toggle_advanced');
+            
+            // Add debounced click handler
+            $(document).on('click', '#toggle_advanced', function() {
+              // Clear any pending timeouts
+              if (clickTimeout) clearTimeout(clickTimeout);
+              
+              // Set a new timeout
+              clickTimeout = setTimeout(function() {
+                console.log('Button clicked');
+                console.log('Current button text:', $('#toggle_advanced').text());
+                console.log('Current visibility:', $('#advanced_inputs').is(':visible'));
+                
+                $('#advanced_inputs').slideToggle('fast', function() {
+                  var isVisible = $('#advanced_inputs').is(':visible');
+                  console.log('After toggle - visibility:', isVisible);
+                  console.log('Sending visibility state to Shiny');
+                  Shiny.setInputValue('lt_advanced_is_visible', isVisible);
+                });
+              }, 100); // 100ms debounce
+            });
+          });
+        "))
       ),
       hidden(
         div(
@@ -840,8 +843,17 @@ tags$style(HTML("
   }
 "))
 
-usei18n_local <- function(text) {
-  i18n <- Translator$new(translation_json_path = "/home/jorge/repositories/lifetableprojection/R/translation.json")
+#' Create a translator object for internationalization
+#' 
+#' @return A Translator object initialized with the package's translation file
+#' @importFrom shiny.i18n Translator
+#' @export
+usei18n_local <- function() {
+  translation_path <- system.file("extdata", "translation.json", package = "lifetableprojection")
+  if (translation_path == "") {
+    stop("Could not find translation.json in package. Please ensure the package is installed correctly.")
+  }
+  i18n <- Translator$new(translation_json_path = translation_path)
   i18n$set_translation_language("en")
   i18n
 }

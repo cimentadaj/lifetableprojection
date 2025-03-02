@@ -126,6 +126,10 @@
         "fr": "Lissage"
       },
       {
+        "en": "smoothing",
+        "fr": "lissage"
+      },
+      {
         "en": "Calculate",
         "fr": "Calculer"
       },
@@ -244,6 +248,38 @@
       {
         "en": "French",
         "fr": "Français"
+      },
+      {
+        "en": "Join The Conversation:",
+        "fr": "Rejoignez La Conversation :"
+      },
+      {
+        "en": "Donate",
+        "fr": "Faire un don"
+      },
+      {
+        "en": "Contact",
+        "fr": "Contact"
+      },
+      {
+        "en": "Copyright",
+        "fr": "Droits d'auteur"
+      },
+      {
+        "en": "Fraud Alert",
+        "fr": "Alerte à la fraude"
+      },
+      {
+        "en": "Privacy Notice",
+        "fr": "Avis de confidentialité"
+      },
+      {
+        "en": "Site Index",
+        "fr": "Index du site"
+      },
+      {
+        "en": "Terms of Use",
+        "fr": "Conditions d'utilisation"
       },
       {
         "en": "Column Selection",
@@ -472,6 +508,54 @@
       {
         "en": "Export",
         "fr": "Exporter"
+      },
+      {
+        "en": "Welcome to the United Nations",
+        "fr": "Bienvenue aux Nations Unies"
+      },
+      {
+        "en": "Data Portal",
+        "fr": "Portail de Données"
+      },
+      {
+        "en": "Population Division",
+        "fr": "Division de la Population"
+      },
+      {
+        "en": "This step will use the initial uploaded data",
+        "fr": "Cette étape utilisera les données initiales téléchargées"
+      },
+      {
+        "en": "This step uses the initial uploaded data",
+        "fr": "Cette étape utilise les données initiales téléchargées"
+      },
+      {
+        "en": "This step uses the output data from the",
+        "fr": "Cette étape utilise les données de sortie de"
+      },
+      {
+        "en": "step",
+        "fr": "étape"
+      },
+      {
+        "en": "Mortality Rate",
+        "fr": "Taux de Mortalité"
+      },
+      {
+        "en": "Survival Curve",
+        "fr": "Courbe de Survie"
+      },
+      {
+        "en": "Death Distribution",
+        "fr": "Distribution des Décès"
+      },
+      {
+        "en": "Conditional Death Probabilities",
+        "fr": "Probabilités Conditionnelles de Décès"
+      },
+      {
+        "en": "Lifetable Results",
+        "fr": "Résultats de la Table de Mortalité"
       }
     ]
 }
