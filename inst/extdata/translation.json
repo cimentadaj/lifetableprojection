@@ -556,6 +556,202 @@
       {
         "en": "Lifetable Results",
         "fr": "Résultats de la Table de Mortalité"
+      },
+      {
+        "en": "Exposures by Age",
+        "fr": "Expositions par Âge"
+      },
+      {
+        "en": "Deaths by Age",
+        "fr": "Décès par Âge"
+      },
+      {
+        "en": "Empirical Mortality Rates (Mx) by Age",
+        "fr": "Taux de Mortalité Empiriques (Mx) par Âge"
+      },
+      {
+        "en": "Age",
+        "fr": "Âge"
+      },
+      {
+        "en": "Value",
+        "fr": "Valeur"
+      },
+      {
+        "en": "Counts",
+        "fr": "Comptages"
+      },
+      {
+        "en": "Rate",
+        "fr": "Taux"
+      },
+      {
+        "en": "Difference Between Empirical Mx and Extrapolated Values on Log10 Scale",
+        "fr": "Différence Entre Mx Empirique et Valeurs Extrapolées sur Échelle Log10"
+      },
+      {
+        "en": "Empirical",
+        "fr": "Empirique"
+      },
+      {
+        "en": "Smoothed",
+        "fr": "Lissé"
+      },
+      {
+        "en": "Extrapolated",
+        "fr": "Extrapolé"
+      },
+      {
+        "en": "Single-Age",
+        "fr": "Âge Unique"
+      },
+      {
+        "en": "Five-Year",
+        "fr": "Cinq Ans"
+      },
+      {
+        "en": "Mortality Rate (log10 scale)",
+        "fr": "Taux de Mortalité (échelle log10)"
+      },
+      {
+        "en": "Ages between: ",
+        "fr": "Âges entre: "
+      },
+      {
+        "en": "Age histogram of ",
+        "fr": "Histogramme d'âge de "
+      },
+      {
+        "en": "nMx (log10 scale)",
+        "fr": "nMx (échelle log10)"
+      },
+      {
+        "en": "nMx (log scale)",
+        "fr": "nMx (échelle log)"
+      },
+      {
+        "en": "Log transformed Age-specific mortality rate",
+        "fr": "Taux de mortalité par âge transformé en logarithme"
+      },
+      {
+        "en": "Survival curve (lx) generated from lifetable nmx values",
+        "fr": "Courbe de survie (lx) générée à partir des valeurs nMx de la table de mortalité"
+      },
+      {
+        "en": "Marked locations on the curve indicate survival quartiles",
+        "fr": "Les emplacements marqués sur la courbe indiquent les quartiles de survie"
+      },
+      {
+        "en": "Life Expectancy",
+        "fr": "Espérance de Vie"
+      },
+      {
+        "en": "Empirical Mx for a given age range on a log10 scale.",
+        "fr": "Mx empirique pour une plage d'âges donnée sur une échelle log10."
+      },
+      {
+        "en": "Original (black) and adjusted (red)",
+        "fr": "Original (noir) et ajusté (rouge)"
+      },
+      {
+        "en": "Rates (Deaths / Exposures)",
+        "fr": "Taux (Décès / Expositions)"
+      },
+      {
+        "en": "Rates",
+        "fr": "Taux"
+      },
+      {
+        "en": "lx",
+        "fr": "lx"
+      },
+      {
+        "en": "dx",
+        "fr": "dx"
+      },
+      {
+        "en": "Death distribution (dx) generated from lifetable nmx values",
+        "fr": "Distribution des décès (dx) générée à partir des valeurs nMx de la table de mortalité"
+      },
+      {
+        "en": "Marked locations on the distribution indicate age-at-death quartiles (grey)\nand life expectancy (red)",
+        "fr": "Les emplacements marqués sur la distribution indiquent les quartiles d'âge à la mort (gris)\n et l'espérance de vie (rouge)"
+      },
+      {
+        "en": "nqx",
+        "fr": "nqx"
+      },
+      {
+        "en": "nqx (log scale)",
+        "fr": "nqx (échelle log)"
+      },
+      {
+        "en": "nMx",
+        "fr": "nMx"
+      },
+      {
+        "en": "Age-specific Mortality",
+        "fr": "Mortalité Spécifique à l'Âge"
+      },
+      {
+        "en": "Comparison of empirical nMx and lifetable nmx values",
+        "fr": "Comparaison des taux de mortalité empiriques et ajustés"
+      },
+      {
+        "en": "Age_value",
+        "fr": "Âge_valeur"
+      },
+      {
+        "en": "Measure",
+        "fr": "Mesure"
+      },
+      {
+        "en": "Label",
+        "fr": "Étiquette"
+      },
+      {
+        "en": "Message",
+        "fr": "Message"
+      },
+      {
+        "en": "Median",
+        "fr": "Médiane"
+      },
+      {
+        "en": "Mode",
+        "fr": "Mode"
+      },
+      {
+        "en": "Life Expectancy at Birth",
+        "fr": "Espérance de Vie à la Naissance"
+      },
+      {
+        "en": "Median Age at Death",
+        "fr": "Âge Médian au Décès"
+      },
+      {
+        "en": "Modal Age at Death",
+        "fr": "Âge Modal au Décès"
+      },
+      {
+        "en": "Remaining Life Expectancy at Age 65",
+        "fr": "Espérance de Vie Restante à l'Âge de 65 Ans"
+      },
+      {
+        "en": "Lifespan Variation Calculated as Standard Deviation of Age at Death",
+        "fr": "Variation de la Durée de Vie Calculée comme l'Écart-Type de l'Âge au Décès"
+      },
+      {
+        "en": "Standard Deviation of Remaining Lifespan Conditional on Survival to Age 10",
+        "fr": "Écart-Type de la Durée de Vie Restante Conditionnelle à la Survie Jusqu'à l'Âge de 10 Ans"
+      },
+      {
+        "en": "Interquartile Range of Age at Death Distribution",
+        "fr": "Intervalle Interquartile de la Distribution de l'Âge au Décès"
+      },
+      {
+        "en": "Conditional Probability of Death Between Ages 20 and 65",
+        "fr": "Probabilité Conditionnelle de Décès Entre les Âges de 20 et 65 Ans"
       }
     ]
 }

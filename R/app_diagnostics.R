@@ -14,13 +14,17 @@ generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_
       req(group_selection_passed())
       current_id <- get_current_group_id(selected_grouping_vars, data_in, input)
       group_data <- data_in() %>% filter(.id == current_id)
-      plts_original <- group_data %>% plot_initial_data()
+      plts_original <- group_data %>% plot_initial_data(i18n = i18n)
       names(plts_original) <- to_snake(names(plts_original))
 
-      plts <- lapply(plts_original, function(plt) {
-        ggplt <- ggplotly(plt$figure, tooltip = c("y", "text"))
+      # Convert translated plots to plotly
+      plts <- lapply(names(plts_original), function(plot_name) {
+        plt_obj <- plts_original[[plot_name]]
+        # Convert to plotly while preserving translations
+        ggplt <- ggplotly(plt_obj$figure, tooltip = c("y", "text"))
         config(ggplt, displayModeBar = FALSE)
       })
+      names(plts) <- names(plts_original)
 
       list(
         plotly = plts,
@@ -49,7 +53,7 @@ generate_diagnostic_plots <- function(data_in, group_selection_passed, selected_
       message("Stage 2: Parallel plot generation...")
       plot_results <- parallel::mclapply(
         prepared_data,
-        generate_group_plots,
+        function(data) generate_group_plots(data, i18n),  # Pass i18n to generate_group_plots
         mc.cores = n_cores
       )
       message("Plot generation complete")

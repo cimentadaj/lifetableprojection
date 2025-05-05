@@ -58,8 +58,6 @@ preprocessing_execution <- function(data_in) {
           # Evaluate the function call in this environment
           result <- eval(func_call, envir = eval_env)
 
-          ## if (name == "smoothing_two") browser()
-
           result$data$.id <- as.numeric(result$data$.id)
           self$data_in$.id <- as.numeric(self$data_in$.id)
 

@@ -41,9 +41,10 @@ setupDownloadHandlers <- function(output, plots, data, input) {
 #' @param plots List of reactive expressions for plots.
 #' @param data data to be saved in the download button
 #' @param input Shiny input object.
+#' @param i18n An optional i18n object for translation.
 #' @importFrom ggplot2 aes labs theme_minimal theme_light element_text
 #' @export
-smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp, rough_deaths, fine_deaths, constraint_deaths, u5m_deaths, age_out) {
+smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp, rough_deaths, fine_deaths, constraint_deaths, u5m_deaths, age_out, i18n) {
   expo <- smooth_flexible(
     data_in,
     variable = "Exposures",
@@ -51,7 +52,8 @@ smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp
     fine_method = fine_exp,
     constrain_infants = constraint_exp,
     age_out = age_out,
-    u5m = u5m_exp
+    u5m = u5m_exp,
+    i18n = i18n
   )
 
   deaths <- smooth_flexible(
@@ -61,7 +63,8 @@ smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp
     fine_method = fine_deaths,
     constrain_infants = constraint_deaths,
     age_out = age_out,
-    u5m = u5m_deaths
+    u5m = u5m_deaths,
+    i18n = i18n
   )
 
   # Combine the data
@@ -85,16 +88,27 @@ smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp
   for (group_data in id_list) {
     group_id <- unique(group_data$.id)
 
+    rates <- translate_text("Rates", i18n)
+    rates_text <- translate_text("Rates (Deaths / Exposures)", i18n)
+    age_text <- translate_text("Age", i18n)
+
+    names(group_data)[names(group_data) == "Rates"] <- rates
+    names(group_data)[names(group_data) == "Age"] <- age_text
+
+    sym_rates <- sym(rates)
+    sym_rates_title <- sym(rates_text)
+    sym_age <- sym(age_text)
+
     # Create the plot
     figure <-
       group_data %>%
-      ggplot(aes(Age, Rates)) +
+      ggplot(aes(!!sym_age, !!sym_rates)) +
       geom_line() +
       theme_minimal() +
-      labs(title = "Rates (Deaths / Exposures)") +
+      labs(title = rates_text) +
       theme_light() + 
       theme(axis.text = element_text(color = "black"), plot.title = element_text(size = 12)) + 
-      labs(title = "Rates (Deaths / Exposures)")
+      labs(title = rates_text)
 
     # Store original data (without mutations) and adjusted data (e.g., `plot_y`)
     data_original <- group_data
@@ -231,7 +245,7 @@ adjustment_steps <- list(
         ")
       )
     },
-    execute = function(input) {
+    execute = function(input, i18n) {
       # Execute function remains unchanged
       rlang::expr(
         smooth_overall(
@@ -244,7 +258,8 @@ adjustment_steps <- list(
           fine_deaths = !!input$smoothing_fine_deaths,
           constraint_deaths = !!input$smoothing_constrain_infants_deaths,
           u5m_deaths = !!input$smoothing_u5m_deaths,
-          age_out = !!input$smoothing_age_out
+          age_out = !!input$smoothing_age_out,
+          i18n = i18n
         )
       )
     }
@@ -545,7 +560,7 @@ app_server <- function(input, output, session) {
       # Create reactive expression for the function call
       step_func_calls[[step_name]] <- reactive({
         # Build the function call using the current inputs
-        step$execute(input)
+        step$execute(input, i18n)
       })
 
       # Set up execution observer
@@ -738,7 +753,7 @@ app_server <- function(input, output, session) {
 
       plots_ready(FALSE)
       # Re-run the heavy computation and store the results
-      lt_data(calculate_lt_and_plots(final_data, input))
+      lt_data(calculate_lt_and_plots(final_data, input, i18n))
       plots_ready(TRUE)
 
       # Update the counter to reflect we've computed at this button click count
@@ -815,6 +830,7 @@ app_server <- function(input, output, session) {
 
     output$plot_lifetable_results <- renderDT({
       dt <- lt_plots()[["Lifetable Results"]]()
+      # browser()
       dt$AgeInt <- NULL
       mask <- vapply(dt, is.numeric, FUN.VALUE = logical(1))
       dt[mask] <- round(dt[mask], 2)
@@ -856,7 +872,11 @@ app_server <- function(input, output, session) {
 
     plot_slot <- which(names(lt_data()()$plots) == as.character(current_id()))
     tbl <- lt_data()()$summary %>% dplyr::filter(.id == plot_slot)
-    tbl$value <- round(tbl$value, 2)
+
+    value_text <- translate_text("Value", i18n)
+    label_text <- translate_text("Label", i18n)
+
+    tbl[[value_text]] <- round(tbl[[value_text]], 2)
 
     datatable(
       tbl,
@@ -866,7 +886,7 @@ app_server <- function(input, output, session) {
         info = FALSE,
         searching = FALSE,
         columnDefs = list(
-          list(targets = c("label"), render = JS(RENDERKATEX))
+          list(targets = c(label_text), render = JS(RENDERKATEX))
         )
       )
     )
@@ -1424,3 +1444,16 @@ app_server <- function(input, output, session) {
     i18n$t("Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.")
   })
 }
+
+# Helper function for translation with fallback
+translate_text <- function(text, i18n = NULL) {
+  if (!is.null(i18n) && !is.null(text)) {
+    tryCatch({
+      return(i18n$t(text))
+    }, error = function(e) {
+      return(text)  # Fallback to original if translation fails
+    })
+  }
+  return(text)
+}
+

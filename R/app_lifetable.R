@@ -145,14 +145,14 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
 
 
 # Function to calculate life table and generate plots
-calculate_lt_and_plots <- function(data, input) {
+calculate_lt_and_plots <- function(data, input, i18n) {
   reactive({
     print("Starting life table calculations")
     lt_res <- calculateLifeTable(data, input)
-    plots <- lt_plot(data, lt_res, isolate(input$input_extrapFrom))
+    plots <- lt_plot(data, lt_res, isolate(input$input_extrapFrom), i18n)
     plt_names <- unname(unlist(lapply(plots, function(x) unique(x$nMx$nMx_plot_data$.id))))
     names(plots) <- plt_names
-    lt_res_summary <- lt_summary(lt_res)
+    lt_res_summary <- lt_summary(lt_res, i18n)
     print("Life table calculations complete")
 
     list(

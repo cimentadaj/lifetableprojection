@@ -61,7 +61,6 @@ input_page <- function(i18n) {
 #' @noRd
 app_ui <- function(request) {
   # Create translator object
-  # TODO: Make this relative to the app
   i18n <- usei18n_local()
 
   fluidUnTheme(
