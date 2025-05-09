@@ -139,10 +139,15 @@ generate_diagnostics_table <- function(data_in, group_selection_passed, i18n) {
         heaping_res$result <- round(heaping_res$result, 2)
 
         heaping_res$method <- toTitleCase(heaping_res$method)
-        df <- heaping_res[c("Type", "age scale", "method", "result", "level", "color")]
+        df <- heaping_res[c("Type", "age scale", "method", "result", "level")]
         df <- df[order(df$method), ]
+
+        df$method <- i18n$t(df$method)
+        df$level <- i18n$t(df$level)
+
         names(df) <- toTitleCase(names(df))
         names(df) <- i18n$t(names(df))
+
 
         # Store table for this group in the list with the .id as the name
         group_tables[[as.character(group_data$.id[1])]] <- df

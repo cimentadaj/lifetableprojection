@@ -722,7 +722,7 @@ app_server <- function(input, output, session) {
         ), 
         div(
           class = "below-main-panel",
-          i18n$t("Life Table Summary Statistics")
+          h3(i18n$t("Life Table Summary Statistics"))
         )
       )
     })

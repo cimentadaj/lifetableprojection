@@ -702,6 +702,26 @@
         "fr": "Âge_valeur"
       },
       {
+        "en": "Roughness",
+        "fr": "Rugosité"
+      },
+      {
+        "en": "Sawtooth",
+        "fr": "Dents de scie"
+      },
+      {
+        "en": "Very rough",
+        "fr": "Très rugueux"
+      },
+      {
+        "en": "Fairly accurate",
+        "fr": "Assez précis"
+      },
+      {
+        "en": "Rough",
+        "fr": "Grossière"
+      },
+      {
         "en": "Measure",
         "fr": "Mesure"
       },
