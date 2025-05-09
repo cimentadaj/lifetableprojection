@@ -53,7 +53,7 @@ calculateLifeTable <- function(data_in, input) {
 #'
 #' @param data_in Reactive value containing the input data
 #' @param grouping_dropdowns Reactive with widgets for all grouping variabels
-#' @param tabNames Vector with the tab names
+#' @param tabNames_internal Vector with internal fixed tab names (English)
 #' @param input Internal shiny input list
 #' @param output Output shiny input list
 #' @return A list containing UI elements and reactive expressions for life table calculation
@@ -61,7 +61,7 @@ calculateLifeTable <- function(data_in, input) {
 #' @importFrom shiny.semantic label
 #' @importFrom stats quantile
 #' @export
-create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, input, output, i18n) {
+create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames_internal, input, output, i18n) {
   extrap_age <- reactive({
     req(data_in())
     num <- as.numeric(gsub("+", "", max(data_in()$Age)))
@@ -89,7 +89,11 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames, in
       div(
         class = "grouping-dropdowns-container",
         style = "width: 100%; display: flex; flex-wrap: wrap; justify-content: center;",
-        selectInput(inputId = "tabSelector", label = NULL, choices = tabNames)
+        selectInput(
+          inputId = "tabSelector",
+          label = NULL,
+          choices = setNames(tabNames_internal, sapply(tabNames_internal, function(name) i18n$t(name)))
+        )
       )
     )
   })

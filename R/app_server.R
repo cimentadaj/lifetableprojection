@@ -16,9 +16,11 @@ to_snake <- function(x) tolower(gsub(" ", "", x))
 setupDownloadHandlers <- function(output, plots, data, input) {
   output$downloadPlot <- downloadHandler(
     filename = function() {
+      # input$tabSelector will already be an internal name because of how we set up selectInput
       paste(to_snake(input$tabSelector), "plot.png", sep = "_")
     },
     content = function(file) {
+      # Use the internal name directly from input$tabSelector
       plot <- plots[[input$tabSelector]]()$gg
       ggsave(file, plot)
     }
@@ -321,12 +323,25 @@ app_server <- function(input, output, session) {
 
   # Language change observer
   observeEvent(c(input$selected_language, input$lt_advanced_is_visible), {
-    
+
     # Update language if it changed
     if (!is.null(input$selected_language)) {
       update_lang(input$selected_language)
+
+      # Update the tabSelector dropdown with freshly translated names
+      # This preserves internal names as values while showing translated display names
+      if (!is.null(input$tabSelector)) {
+        updateSelectInput(
+          session,
+          "tabSelector",
+          choices = setNames(tabNames_internal, sapply(tabNames_internal, function(name) i18n$t(name))),
+          selected = input$tabSelector # Maintain the current selection
+        )
+      }
+
+      # The variable dropdown is now handled through renderUI with a dependency on the current language
     }
-    
+
     # Update button text based on visibility
     if (!is.null(input$lt_advanced_is_visible)) {
       new_label <- if (input$lt_advanced_is_visible) i18n$t("Hide Advanced Options") else i18n$t("Show Advanced Options")
@@ -508,14 +523,31 @@ app_server <- function(input, output, session) {
       step_clean_name <- step$name
 
       if (step_name %in% c("smoothing")) {
+        # Create the variable dropdown as a dynamic renderUI to ensure it gets updated with language changes
         extra_dropdowns <- div(
+          uiOutput("variable_selector_ui")
+        )
+
+        # This renderUI will get re-rendered when i18n$translator$get_translation_language() changes
+        output$variable_selector_ui <- renderUI({
+
+          # browser()
+          # # Force dependency on current language
+          # current_lang <- i18n$translator$get_translation_language()
+
+          # Define internal variable names for smoothing
+          smoothing_var_internal <- c("exposures", "deaths", "rates")
+
           selectInput(
             inputId = "group_select_smoothing_var",
-            label = "Variable",
-            choices = c("Exposures" = "exposures", "Deaths" = "deaths", "Rates" = "rates"),
-            selected = "exposures"
+            label = i18n$t("Variable"),
+            choices = setNames(
+              smoothing_var_internal,
+              sapply(c("Exposures", "Deaths", "Rates"), function(name) i18n$t(name))
+            ),
+            selected = if(!is.null(input$group_select_smoothing_var)) input$group_select_smoothing_var else "exposures"
           )
-        )
+        })
       } else {
         extra_dropdowns <- div()
       }
@@ -701,7 +733,7 @@ app_server <- function(input, output, session) {
   ## CALCULATE LIFETABLE
 
   # Create life table input UI and reactive values
-  lt_input <- create_life_table_input_ui(data_in, grouping_dropdowns, tabNames, input, output, i18n)
+  lt_input <- create_life_table_input_ui(data_in, grouping_dropdowns, tabNames_internal, input, output, i18n)
 
   # Create a reactive value to store the life table data and plots
   lt_data <- reactiveVal(NULL)
@@ -766,46 +798,53 @@ app_server <- function(input, output, session) {
   })
 
 
-  # Create reactive expressions for each plot type
+  # Create reactive expressions for each plot type using internal tab names
   lt_plots <- reactive({
     req(selected_plots())
-    list(
-      "Mortality Rate" = reactive({
-        gg_plt <- selected_plots()$nMx$nMx_plot
-        list(
-          gg = gg_plt,
-          plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-          dt = selected_plots()$nMx$nMx_plot_data
-        )
-      }),
-      "Survival Curve" = reactive({
-        gg_plt <- selected_plots()$lx$lx_plot
-        list(
-          gg = gg_plt,
-          plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-          dt = selected_plots()$lx$lx_plot_data
-        )
-      }),
-      "Death Distribution" = reactive({
-        gg_plt <- selected_plots()$ndx$ndx_plot
-        list(
-          gg = gg_plt,
-          plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-          dt = selected_plots()$ndx$ndx_plot_data
-        )
-      }),
-      "Conditional Death Probabilities" = reactive({
-        gg_plt <- selected_plots()$nqx$nqx_plot
-        list(
-          gg = gg_plt,
-          plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
-          dt = selected_plots()$nqx$nqx_plot_data
-        )
-      }),
-      "Lifetable Results" = reactive({
-        lt_data()()$lt
-      })
-    )
+    result_list <- list()
+
+    # Map internal tab names to plots
+    result_list[[tabNames_internal[1]]] <- reactive({  # Mortality Rate
+      gg_plt <- selected_plots()$nMx$nMx_plot
+      list(
+        gg = gg_plt,
+        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+        dt = selected_plots()$nMx$nMx_plot_data
+      )
+    })
+
+    result_list[[tabNames_internal[2]]] <- reactive({  # Survival Curve
+      gg_plt <- selected_plots()$lx$lx_plot
+      list(
+        gg = gg_plt,
+        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+        dt = selected_plots()$lx$lx_plot_data
+      )
+    })
+
+    result_list[[tabNames_internal[3]]] <- reactive({  # Death Distribution
+      gg_plt <- selected_plots()$ndx$ndx_plot
+      list(
+        gg = gg_plt,
+        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+        dt = selected_plots()$ndx$ndx_plot_data
+      )
+    })
+
+    result_list[[tabNames_internal[4]]] <- reactive({  # Conditional Death Probabilities
+      gg_plt <- selected_plots()$nqx$nqx_plot
+      list(
+        gg = gg_plt,
+        plotly = config(ggplotly(gg_plt), displayModeBar = FALSE),
+        dt = selected_plots()$nqx$nqx_plot_data
+      )
+    })
+
+    result_list[[tabNames_internal[5]]] <- reactive({  # Lifetable Results
+      lt_data()()$lt
+    })
+
+    result_list
   })
 
   # Render plots
@@ -813,23 +852,23 @@ app_server <- function(input, output, session) {
     req(input$calculate_lt)
 
     output$plot_mortality_rate <- renderPlotly({
-      lt_plots()[["Mortality Rate"]]()$plotly
+      lt_plots()[[tabNames_internal[1]]]()$plotly
     })
 
     output$plot_survival_curve <- renderPlotly({
-      lt_plots()[["Survival Curve"]]()$plotly
+      lt_plots()[[tabNames_internal[2]]]()$plotly
     })
 
     output$plot_conditional_death_probabilities <- renderPlotly({
-      lt_plots()[["Conditional Death Probabilities"]]()$plotly
+      lt_plots()[[tabNames_internal[4]]]()$plotly
     })
 
     output$plot_death_distribution <- renderPlotly({
-      lt_plots()[["Death Distribution"]]()$plotly
+      lt_plots()[[tabNames_internal[3]]]()$plotly
     })
 
     output$plot_lifetable_results <- renderDT({
-      dt <- lt_plots()[["Lifetable Results"]]()
+      dt <- lt_plots()[[tabNames_internal[5]]]()
       # browser()
       dt$AgeInt <- NULL
       mask <- vapply(dt, is.numeric, FUN.VALUE = logical(1))
@@ -858,12 +897,13 @@ app_server <- function(input, output, session) {
     })
   })
 
-  tabNames <- c(
-    i18n$t("Mortality Rate"),
-    i18n$t("Survival Curve"),
-    i18n$t("Death Distribution"),
-    i18n$t("Conditional Death Probabilities"),
-    i18n$t("Lifetable Results")
+  # Fixed internal tab names (English only, for internal references)
+  tabNames_internal <- c(
+    "Mortality Rate",
+    "Survival Curve",
+    "Death Distribution",
+    "Conditional Death Probabilities",
+    "Lifetable Results"
   )
 
   # Render the life table summary table
@@ -893,19 +933,21 @@ app_server <- function(input, output, session) {
   })
 
   output$render_plots <- renderUI({
-    lapply(seq_along(tabNames), function(i) {
+    lapply(seq_along(tabNames_internal), function(i) {
       id <- sprintf("tabContent%s", i)
-      plotName <- gsub(" ", "_", tolower(tabNames[i]))
-      OutputFunction <- ifelse(grepl(i18n$t("Lifetable Results"), tabNames[i]), DTOutput, plotlyOutput)
+      # Use internal tab names for plot naming consistency
+      plotName <- gsub(" ", "_", tolower(tabNames_internal[i]))
+      # Use internal names for logic
+      OutputFunction <- ifelse(grepl("Lifetable Results", tabNames_internal[i]), DTOutput, plotlyOutput)
 
       # Define UI rendering for each tab
       output[[id]] <- renderUI({
         withSpinner(OutputFunction(sprintf("plot_%s", plotName), height = "600px"))
       })
 
-      # Render conditional panel with the appropriate content
+      # Render conditional panel with the internal name as the value to match
       conditionalPanel(
-        condition = sprintf("input.tabSelector === '%s'", tabNames[i]),
+        condition = sprintf("input.tabSelector === '%s'", tabNames_internal[i]),
         uiOutput(id)
       )
     })
@@ -1456,4 +1498,3 @@ translate_text <- function(text, i18n = NULL) {
   }
   return(text)
 }
-
