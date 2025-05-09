@@ -7,12 +7,13 @@
 #' @param diagnostic_results List containing diagnostic analysis results and plots
 #' @param preprocessing_results List containing preprocessing steps results and plots
 #' @param group_labels Named vector mapping group IDs to their full labels
+#' @param i18n An i18n object for translations
 #' @return Path to the generated PDF file
 #' @importFrom rmarkdown render
 #' @importFrom knitr kable
 #' @importFrom dplyr group_by summarize arrange desc
 #' @export
-generate_analysis_report <- function(lt_results = NULL, diagnostic_results = NULL, preprocessing_results = NULL, group_labels = NULL) {
+generate_analysis_report <- function(lt_results = NULL, diagnostic_results = NULL, preprocessing_results = NULL, group_labels = NULL, i18n = NULL) {
   # Create a temporary directory for report generation
   report_dir <- tempfile("report")
   dir.create(report_dir)
@@ -21,7 +22,7 @@ generate_analysis_report <- function(lt_results = NULL, diagnostic_results = NUL
   rmd_file <- file.path(report_dir, "report.Rmd")
   
   # Generate the R Markdown content
-  rmd_content <- create_rmd_template(lt_results, diagnostic_results, preprocessing_results, group_labels)
+  rmd_content <- create_rmd_template(lt_results, diagnostic_results, preprocessing_results, group_labels, i18n)
   writeLines(rmd_content, rmd_file)
   
   # Render the report
@@ -42,12 +43,27 @@ generate_analysis_report <- function(lt_results = NULL, diagnostic_results = NUL
 #' @param diagnostic_results Diagnostic analysis results and plots
 #' @param preprocessing_results List containing preprocessing steps results and plots
 #' @param group_labels Named vector mapping group IDs to their full labels
+#' @param i18n An i18n object for translations
 #' @return Character string containing the R Markdown template
 #' @importFrom glue glue
 #' @noRd
-create_rmd_template <- function(lt_results, diagnostic_results, preprocessing_results, group_labels = NULL) {
+create_rmd_template <- function(lt_results, diagnostic_results, preprocessing_results, group_labels = NULL, i18n = NULL) {
+
+  # Helper function to translate with fallback to original text
+  translate <- function(text, i18n) {
+    if (!is.null(i18n)) {
+      tryCatch({
+        return(i18n$t(text))
+      }, error = function(e) {
+        return(text)  # Fallback to original text if translation fails
+      })
+    }
+    return(text)
+  }
+
+
   glue::glue('---
-title: Mortality Analysis Report
+title: {translate("Mortality Analysis Report", i18n)}
 output:
   pdf_document:
     toc: true
@@ -79,12 +95,26 @@ library(kableExtra)
 library(ggplot2)
 ```
 
-# Executive Summary
+```{{r}}
+# Helper function to translate with fallback to original text
+translate <- function(text, i18n) {{
+  if (!is.null(i18n)) {{
+    tryCatch({{
+      return(i18n$t(text))
+    }}, error = function(e) {{
+      return(text)  # Fallback to original text if translation fails
+    }})
+  }
+  return(text)
+}}
+```
 
-This report presents a comprehensive mortality analysis including data quality diagnostics and life table calculations.
+# {translate("Executive Summary", i18n)}
+
+{translate("This report presents a comprehensive mortality analysis including data quality diagnostics and life table calculations.", i18n)}
 
 
-# Data Quality Diagnostics
+# {translate("Data Quality Diagnostics", i18n)}
 
 ```{{r diagnostics-analysis, results="asis"}}
 if (!is.null(diagnostic_results)) {{
@@ -97,24 +127,21 @@ if (!is.null(diagnostic_results)) {{
     group_label <- if (!is.null(group_labels) && group_id %in% names(group_labels)) {{
       group_labels[group_id]
     }} else {{
-      sprintf("Group %s", group_id)
+      sprintf("%s %s", translate("Group", i18n), group_id)
     }}
     
     cat(sprintf("## %s\\n\\n", group_label))
     
     # Get diagnostic table
     diag_table <- diagnostic_results$all_tables[[group_id]]
-    if ("color" %in% names(diag_table)) {{
-      diag_table <- select(diag_table, -Color)
-    }}
     
-    cat("### Diagnostic Metrics\\n\\n")
+    cat(sprintf("### %s\\n\\n", translate("Diagnostic Metrics", i18n)))
     
     print(
       kable(diag_table,
             format = "latex",
             booktabs = TRUE,
-            caption = sprintf("Diagnostic Metrics for %s", group_label),
+            caption = sprintf("%s %s", translate("Diagnostic Metrics for", i18n), group_label),
             align = "c") %>%
         kable_styling(
           latex_options = c("hold_position"),
@@ -124,7 +151,7 @@ if (!is.null(diagnostic_results)) {{
     )
     cat("\\n\\n\\\\FloatBarrier\\n\\n")
     
-    cat("### Diagnostic Plots\\n\\n")
+    cat(sprintf("### %s\\n\\n", translate("Diagnostic Plots", i18n)))
     # Print plots by type
     plot_types <- names(diagnostic_results$all_plots$ggplot)
     for (plot_type in plot_types) {{
@@ -137,7 +164,7 @@ if (!is.null(diagnostic_results)) {{
 
 ```{{r preprocessing-analysis, results="asis"}}
 if (!is.null(preprocessing_results)) {{
-  cat("# Preprocessing Analysis\\n\\n")
+  cat(sprintf("# %s\\n\\n", translate("Preprocessing Analysis", i18n)))
   # Process each preprocessing step
   for (step_name in names(preprocessing_results)) {{
     # Get step results
@@ -156,7 +183,7 @@ if (!is.null(preprocessing_results)) {{
       group_label <- if (!is.null(group_labels) && group_id %in% names(group_labels)) {{
         group_labels[group_id]
       }} else {{
-        sprintf("Group %s", group_id)
+        sprintf("%s %s", translate("Group", i18n), group_id)
       }}
       
       cat(sprintf("### %s\\n\\n", group_label))
@@ -181,7 +208,7 @@ if (!is.null(preprocessing_results)) {{
 }}
 ```
 
-# Life Table Analysis
+# {translate("Life Table Analysis", i18n)}
 
 ```{{r lifetable-analysis, results="asis"}}
 if (!is.null(lt_results)) {{
@@ -192,7 +219,7 @@ if (!is.null(lt_results)) {{
     group_label <- if (!is.null(group_labels) && group_id %in% names(group_labels)) {{
       group_labels[group_id]
     }} else {{
-      sprintf("Group %s", group_id)
+      sprintf("%s %s", translate("Group", i18n), group_id)
     }}
     
     cat(sprintf("## %s\\n\\n", group_label))
@@ -200,22 +227,21 @@ if (!is.null(lt_results)) {{
     # Summary statistics
     stats <- lt_results$summary %>%
       filter(.id == group_id) %>%
-      select(label, message, value) %>%
-      mutate(
-        message = tools::toTitleCase(paste0(message, "\\\\\\\\"))
-      ) %>%
-      select(message, value)
+      # This is hardcoded to be message and value. Since this table
+      # is coming translated per language, we do this dirty by picking
+      # the 3rd and 4th columns. We also left a note in the ODAPbackend
+      # saying that these column names should be kept.
+      select(4, 3)
     
-    cat("### Summary Statistics\\n\\n")
+    cat(sprintf("### %s\\n\\n", translate("Summary Statistics", i18n)))
     
     print(
       kable(stats,
             format = "latex",
             booktabs = TRUE,
-            col.names = c("Description", "Value"),
             digits = 2,
             escape = FALSE,
-            caption = sprintf("Summary Statistics for %s", group_label),
+            caption = sprintf("%s %s", translate("Summary Statistics for", i18n), group_label),
             align = c("l", "c")) %>%
         kable_styling(
           latex_options = c("hold_position"),
@@ -228,23 +254,22 @@ if (!is.null(lt_results)) {{
     # Plots
     plots <- lt_results$plots[[group_id]]
     
-    cat("### Mortality Rates\\n\\n")
-    print(plots$nMx$nMx_plot + ggtitle(sprintf("Mortality Rates (nMx) - %s", group_label)))
+    cat(sprintf("### %s\\n\\n", translate("Mortality Rates", i18n)))
+    print(plots$nMx$nMx_plot)
     cat("\\n\\n\\\\FloatBarrier\\n\\n")
     
-    cat("### Survival Curve\\n\\n")
-    print(plots$lx$lx_plot + ggtitle(sprintf("Survival Curve (lx) - %s", group_label)))
+    cat(sprintf("### %s\\n\\n", translate("Survival Curve", i18n)))
+    print(plots$lx$lx_plot)
     cat("\\n\\n\\\\FloatBarrier\\n\\n")
     
-    cat("### Death Distribution\\n\\n")
-    print(plots$ndx$ndx_plot + ggtitle(sprintf("Death Distribution (ndx) - %s", group_label)))
+    cat(sprintf("### %s\\n\\n", translate("Death Distribution", i18n)))
+    print(plots$ndx$ndx_plot)
     cat("\\n\\n\\\\FloatBarrier\\n\\n")
     
-    cat("### Death Probabilities\\n\\n")
-    print(plots$nqx$nqx_plot + ggtitle(sprintf("Death Probabilities (nqx) - %s", group_label)))
+    cat(sprintf("### %s\\n\\n", translate("Death Probabilities", i18n)))
+    print(plots$nqx$nqx_plot)
     cat("\\n\\n\\\\FloatBarrier\\n\\n")
   }}
 }}
-```
-')
+```')
 } 

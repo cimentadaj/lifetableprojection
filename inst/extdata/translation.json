@@ -2,6 +2,78 @@
     "languages": ["en", "fr"],
     "translation": [
       {
+        "en": "Mortality Analysis Report",
+        "fr": "Rapport d'Analyse de Mortalité"
+      },
+      {
+        "en": "Executive Summary",
+        "fr": "Résumé Exécutif"
+      },
+      {
+        "en": "This report presents a comprehensive mortality analysis including data quality diagnostics and life table calculations.",
+        "fr": "Ce rapport présente une analyse complète de la mortalité comprenant des diagnostics de qualité des données et des calculs de table de mortalité."
+      },
+      {
+        "en": "Preprocessing Analysis",
+        "fr": "Analyse de Prétraitement"
+      },
+      {
+        "en": "Approximate",
+        "fr": "Approximatif"
+      },
+      {
+        "en": "Highly accurate",
+        "fr": "Très précis"
+      },
+      {
+        "en": "Diagnostic Metrics",
+        "fr": "Métriques de Diagnostic"
+      },
+      {
+        "en": "Diagnostic Metrics for",
+        "fr": "Métriques de Diagnostic pour"
+      },
+      {
+        "en": "Diagnostic Plots",
+        "fr": "Graphiques de Diagnostic"
+      },
+      {
+        "en": "Summary Statistics",
+        "fr": "Statistiques Récapitulatives"
+      },
+      {
+        "en": "Summary Statistics for",
+        "fr": "Statistiques Récapitulatives pour"
+      },
+      {
+        "en": "Mortality Rates (nMx) -",
+        "fr": "Taux de Mortalité (nMx) -"
+      },
+      {
+        "en": "Survival Curve (lx) -",
+        "fr": "Courbe de Survie (lx) -"
+      },
+      {
+        "en": "Death Distribution (ndx) -",
+        "fr": "Distribution des Décès (ndx) -"
+      },
+      {
+        "en": "Death Probabilities",
+        "fr": "Probabilités de Décès"
+      },
+      {
+        "en": "Data Quality Diagnostics",
+        "fr": "Diagnostics de Qualité des Données"
+      },
+      {
+        "en": "Death Probabilities (nqx) -",
+        "fr": "Probabilités de Décès (nqx) -"
+      },
+      {
+        "en": "Description",
+        "fr": "Description"
+      },
+      {
         "en": "Change language",
         "fr": "Changer de langue"
       },
@@ -188,6 +260,22 @@
       {
         "en": "Desired Open Age Group",
         "fr": "Groupe d'Âge Ouvert Souhaité"
+      },
+      {
+        "en": "Group",
+        "fr": "Groupe"
+      },
+      {
+        "en": "Preparing download... Estimated time:",
+        "fr": "Préparation du téléchargement... Temps estimé :"
+      },
+      {
+        "en": "seconds",
+        "fr": "secondes"
+      },
+      {
+        "en": "minutes",
+        "fr": "minutes"
       },
       {
         "en": "Output Age Classes",

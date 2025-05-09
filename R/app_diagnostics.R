@@ -83,8 +83,8 @@ prepare_group_data <- function(group) {
 }
 
 # Helper function for parallel plot generation
-generate_group_plots <- function(group_data) {
-  plts_original <- group_data$data %>% plot_initial_data()
+generate_group_plots <- function(group_data, i18n) {
+  plts_original <- group_data$data %>% plot_initial_data(i18n = i18n)
   names(plts_original) <- to_snake(names(plts_original))
 
   list(

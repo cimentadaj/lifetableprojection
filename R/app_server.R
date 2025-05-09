@@ -531,10 +531,6 @@ app_server <- function(input, output, session) {
         # This renderUI will get re-rendered when i18n$translator$get_translation_language() changes
         output$variable_selector_ui <- renderUI({
 
-          # browser()
-          # # Force dependency on current language
-          # current_lang <- i18n$translator$get_translation_language()
-
           # Define internal variable names for smoothing
           smoothing_var_internal <- c("exposures", "deaths", "rates")
 
@@ -1100,11 +1096,27 @@ app_server <- function(input, output, session) {
 
         # Collect all plots (already in ggplot format)
         all_plots <- list()
+        translated_group_text <- i18n$t("Group")
+
         for(group_id in names(diagnostic_analysis$all_plots()$ggplot)) {
           group_plots <- diagnostic_analysis$all_plots()$ggplot[[group_id]]
           for(plot_type in names(group_plots)) {
-            all_plots[[length(all_plots) + 1]] <- group_plots[[plot_type]]$figure +
-              labs(title = paste("Group", group_id, "-", plot_type))
+            original_plot <- group_plots[[plot_type]]$figure
+            existing_title <- original_plot$labels$title
+            
+            if (is.null(existing_title) || !nzchar(trimws(existing_title))) {
+              existing_title <- "" # Default to empty string if no title
+            } else {
+              # Remove semicolon and .id = digit pattern from existing title
+              existing_title <- gsub(";?\\s*\\.\\s*id\\s*=\\s*\\d+", "", existing_title, perl = TRUE)
+              existing_title <- trimws(existing_title) # Clean up any leading/trailing whitespace after gsub
+            }
+
+            new_title_prefix <- paste(translated_group_text, group_id)
+            new_title <- if (nzchar(existing_title)) paste(new_title_prefix, "-", existing_title) else new_title_prefix
+            
+            all_plots[[length(all_plots) + 1]] <- original_plot +
+              labs(title = new_title)
           }
         }
 
@@ -1164,13 +1176,35 @@ app_server <- function(input, output, session) {
         # Create plot collection function
         collect_group_plots <- function(group_id) {
           plots <- list()
+          translated_group_text <- i18n$t("Group")
+
           if (as.character(group_id) %in% names(lt_analysis$plots)) {
-            group_plots <- lt_analysis$plots[[as.character(group_id)]]
-            plot_types <- names(group_plots)
+            group_plots_data <- lt_analysis$plots[[as.character(group_id)]]
+            plot_types <- names(group_plots_data)
             for(plot_type in plot_types) {
-              if (!is.null(group_plots[[plot_type]])) {
-                plots[[length(plots) + 1]] <- group_plots[[plot_type]][[paste0(plot_type, "_plot")]] +
-                  labs(title = paste("Group", group_id, "-", plot_type))
+              if (!is.null(group_plots_data[[plot_type]])) {
+                original_plot <- group_plots_data[[plot_type]][[paste0(plot_type, "_plot")]]
+                existing_title <- original_plot$labels$title
+                
+                if (is.null(existing_title) || !nzchar(trimws(existing_title))) {
+                  existing_title <- "" # Default to plot_type if no title or only whitespace
+                } else {
+                  # Remove semicolon and .id = digit pattern from existing title
+                  existing_title <- gsub(";?\\s*\\.\\s*id\\s*=\\s*\\d+", "", existing_title, perl = TRUE)
+                  existing_title <- trimws(existing_title) # Clean up any leading/trailing whitespace after gsub
+                }
+
+                new_title_prefix <- paste(translated_group_text, group_id)
+                
+                # Use the plot_type for the specific plot if existing_title is empty, otherwise prepend.
+                new_title <- if (nzchar(existing_title)) {
+                  paste(new_title_prefix, "-", existing_title)
+                } else {
+                  paste(new_title_prefix, "-", plot_type) # Fallback to plot_type if original title is missing/empty after cleaning
+                }
+                
+                plots[[length(plots) + 1]] <- original_plot +
+                  labs(title = new_title)
               }
             }
           }
@@ -1228,7 +1262,8 @@ app_server <- function(input, output, session) {
 
           # Save data
           message(paste("Saving preprocessing data for step:", step_name))
-          lt_res <- data_output %>%
+          lt_res <- 
+            data_output %>%
             left_join(labels_df()) %>%
             select(.id, .id_label, selected_grouping_vars(), everything())
 
@@ -1241,18 +1276,49 @@ app_server <- function(input, output, session) {
 
           # Collect all plots
           all_plots <- list()
+          translated_group_text <- i18n$t("Group")
+
           if (is.list(plot_list) && step_name == "smoothing") {
             for(var_name in names(plot_list)) {
               var_plots <- plot_list[[var_name]]
               for(group_label in names(var_plots)) {
-                all_plots[[length(all_plots) + 1]] <- var_plots[[group_label]]$figure +
-                  labs(title = paste(var_name, "- Group", group_label))
+                original_plot <- var_plots[[group_label]]$figure
+                existing_title <- original_plot$labels$title
+                
+                if (is.null(existing_title) || !nzchar(trimws(existing_title))) {
+                  existing_title <- "" # Default to empty string
+                } else {
+                  # Remove semicolon and .id = digit pattern from existing title
+                  existing_title <- gsub(";?\\s*\\.\\s*id\\s*=\\s*\\d+", "", existing_title, perl = TRUE)
+                  existing_title <- trimws(existing_title)
+                }
+                
+                # The user previously decided to remove var_name from the prefix here.
+                new_title_prefix <- paste(translated_group_text, group_label)
+                new_title <- if (nzchar(existing_title)) paste(new_title_prefix, "-", existing_title) else new_title_prefix
+                
+                all_plots[[length(all_plots) + 1]] <- original_plot +
+                  labs(title = new_title)
               }
             }
-          } else {
+          } else { # For non-smoothing steps
             for(group_label in names(plot_list)) {
-              all_plots[[length(all_plots) + 1]] <- plot_list[[group_label]]$figure +
-                labs(title = paste("Group", group_label))
+              original_plot <- plot_list[[group_label]]$figure
+              existing_title <- original_plot$labels$title
+
+              if (is.null(existing_title) || !nzchar(trimws(existing_title))) {
+                existing_title <- "" # Default to empty string
+              } else {
+                # Remove semicolon and .id = digit pattern from existing title
+                existing_title <- gsub(";?\\s*\\.\\s*id\\s*=\\s*\\d+", "", existing_title, perl = TRUE)
+                existing_title <- trimws(existing_title)
+              }
+
+              new_title_prefix <- paste(translated_group_text, group_label)
+              new_title <- if (nzchar(existing_title)) paste(new_title_prefix, "-", existing_title) else new_title_prefix
+              
+              all_plots[[length(all_plots) + 1]] <- original_plot +
+                labs(title = new_title)
             }
           }
 
@@ -1461,7 +1527,8 @@ app_server <- function(input, output, session) {
             lt_results = lt_data()(),
             diagnostic_results = preprocessed_diagnostics,
             preprocessing_results = preprocessing_data,
-            group_labels = labels_names
+            group_labels = labels_names,
+            i18n = i18n
           )
           dir.create(file.path(temp_dir, "report"), recursive = TRUE, showWarnings = FALSE)
           file.copy(report_file, file.path(temp_dir, "report", "report.pdf"))
