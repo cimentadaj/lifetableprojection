@@ -220,7 +220,7 @@ app_ui <- function(request) {
           }
 
           #adjustment_pills {
-            margin-bottom: 15px;
+            margin-bottom: 5px;
           }
 
           #adjustment_pills .ui.label {
@@ -461,7 +461,6 @@ app_ui <- function(request) {
           color: rgba(0,0,0,.6);
           font-weight: 700;
           border: 1px solid #d4d4d5;
-          display: inline-flex;
           align-items: center;
         }
 
@@ -681,9 +680,9 @@ app_ui <- function(request) {
           id = "step_adjustment",
           div(
             class = "button-container-adjustment",
+            div(id = "pill-container", class = "pill-container", create_pills_ui()),
             div(
               class = "button-group",
-              create_pills_ui(),
               action_button("back_to_diagnostics", i18n$t("← Previous"), class = "ui grey button"),
               action_button("preprocessing_instructions", i18n$t("Instructions"), class = "ui blue button"),
               action_button("forward_to_lifetable", i18n$t("Next →"), class = "ui blue button")
