@@ -1363,7 +1363,7 @@ app_server <- function(input, output, session) {
           diagnostics = n_groups * 1.4,
           preprocessing = n_groups * 1,
           lifetable = n_groups * 1.4,
-          report = n_groups * 1
+          report = n_groups * 2
         )
 
         # Calculate total time based on download option
@@ -1494,8 +1494,9 @@ app_server <- function(input, output, session) {
           incProgress(0.5, detail = paste(i18n$t("Saving diagnostic results... Estimated time:"), est_time))
           save_diagnostic_results(temp_dir)
         } else if (input$download_option == "report") {
-          message("Generating PDF report...")
-          incProgress(0.3, detail = i18n$t("Preparing diagnostic data..."))
+          est_time <- format_time(time_estimates$report)
+          message(paste("Generating PDF report. Estimated time:", est_time))
+          incProgress(0.3, detail = paste(i18n$t("Preparing diagnostic data... Estimated time:"), est_time))
           
           # Ensure we have diagnostic data
           if (is.null(diagnostic_data())) {
@@ -1506,6 +1507,7 @@ app_server <- function(input, output, session) {
               show_modal = FALSE,
               download = TRUE
             )
+            diagnostic_data(diagnostic_analysis)  # Save the diagnostic analysis for future use
           } else {
             diagnostic_analysis <- diagnostic_data()
           }
@@ -1513,7 +1515,7 @@ app_server <- function(input, output, session) {
           # Preprocess diagnostic data to resolve reactive expressions
           preprocessed_diagnostics <- preprocess_diagnostic_data(diagnostic_analysis)
           
-          incProgress(0.5, detail = i18n$t("Generating PDF report..."))
+          incProgress(0.5, detail = paste(i18n$t("Generating PDF report... Estimated time:"), est_time))
           # Generate report and copy to temp directory
           labels_names <- setNames(labels_df()$.id_label, labels_df()$.id)
           

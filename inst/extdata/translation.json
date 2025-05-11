@@ -864,6 +864,10 @@
       {
         "en": "Conditional Probability of Death Between Ages 20 and 65",
         "fr": "Probabilité Conditionnelle de Décès Entre les Âges de 20 et 65 Ans"
+      },
+      {
+        "en": "Generating PDF report... Estimated time:",
+        "fr": "Génération du rapport PDF... Temps estimé:"
       }
     ]
 }
