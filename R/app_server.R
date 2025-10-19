@@ -291,7 +291,7 @@ adjustment_steps <- list(
 #' @importFrom ODAPbackend lt_summary smooth_flexible
 #' @importFrom utils zip
 #' @export
-app_server <- function(input, output, session) {
+lifetable_server <- function(input, output, session) {
   add_resource_path(
     "www",
     app_sys("app/www")
@@ -1566,4 +1566,14 @@ translate_text <- function(text, i18n = NULL) {
     })
   }
   return(text)
+}
+
+app_server <- function(input, output, session) {
+  modules <- get_app_modules(usei18n_local())
+  lapply(modules, function(mod) {
+    if (!is.null(mod$server_fun)) {
+      mod$server_fun(input, output, session)
+    }
+    invisible(NULL)
+  })
 }
