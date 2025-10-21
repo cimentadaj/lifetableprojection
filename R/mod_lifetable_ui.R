@@ -3,7 +3,7 @@
 #' @param i18n Translator object
 #' @noRd
 lifetable_module_ui <- function(i18n) {
-  ui <- tagList(
+  tagList(
     tags$head(
       tags$style(HTML("
           /* Base styles with Flexbox */
@@ -630,8 +630,6 @@ lifetable_module_ui <- function(i18n) {
       )
     )
   )
-
-  i18n$translate_ui(ui)
 }
 
 create_adjustment_tab <- function(tab_name, input_id, plot_id, i18n) {
