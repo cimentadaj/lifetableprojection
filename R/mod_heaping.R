@@ -292,9 +292,16 @@ heaping_module_ui <- function(i18n) {
               class = "heaping-results",
               DT::dataTableOutput(ns("heaping_table"))
             ),
-            shiny::div(
-              class = "button-container heaping-download",
-              shiny::downloadButton(ns("download_heaping_csv"), i18n$t("Download results"), class = "ui button")
+            shinyjs::hidden(
+              shiny::div(
+                id = ns("download_container"),
+                class = "button-container heaping-download",
+                shiny::downloadButton(
+                  ns("download_heaping_csv"),
+                  i18n$t("Download results"),
+                  class = "ui primary button"
+                )
+              )
             )
           )
         )
@@ -330,6 +337,71 @@ heaping_module_server <- function(input, output, session) {
       )
       shared$last_result <- shiny::reactiveVal(NULL)
 
+      output$download_heaping_csv <- shiny::downloadHandler(
+        filename = function() {
+          timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+          sprintf("heaping_results_%s.csv", timestamp)
+        },
+        content = function(file) {
+          latest <- shared$last_result()
+          cat(sprintf("[HEAPING_MODULE] download handler invoked | last_result_null=%s\n", is.null(latest)))
+          shiny::req(latest)
+
+          df <- shared$data()
+          shiny::req(df)
+          variable <- latest$variable %||% "Deaths"
+          cat(sprintf("[HEAPING_MODULE] download context | variable=%s | rows=%s | cols=%s | has_.id=%s\n",
+            variable, nrow(df), ncol(df), ".id" %in% names(df)))
+
+          get_label <- function(gid) {
+            lbl_df <- tryCatch(shared$labels_df(), error = function(e) NULL)
+            if (!is.null(lbl_df) && ".id" %in% names(lbl_df) && ".id_label" %in% names(lbl_df)) {
+              matches <- lbl_df[lbl_df$.id == gid, , drop = FALSE]
+              if (nrow(matches) > 0) return(matches$.id_label[1])
+            }
+            return(as.character(gid))
+          }
+
+          build_results <- function(data_subset, gid_val) {
+            cat(sprintf("[HEAPING_MODULE] building result | gid=%s | subset_rows=%s\n",
+              as.character(gid_val), nrow(data_subset)))
+            out <- tryCatch(
+              ODAPbackend::check_heaping_general(data_subset, variable),
+              error = function(e) NULL
+            )
+            if (is.null(out)) return(NULL)
+            out$.id <- gid_val
+            out$.id_label <- if (is.na(gid_val)) i18n$t("All records") else get_label(gid_val)
+            out
+          }
+
+          if (!".id" %in% names(df)) {
+            cat("[HEAPING_MODULE] download -> no .id column; running single analysis\n")
+            results <- build_results(df, NA)
+          } else {
+            gid_values <- unique(df$.id)
+            cat(sprintf("[HEAPING_MODULE] download -> aggregating %s groups\n", length(gid_values)))
+            pieces <- lapply(gid_values, function(gid) {
+              subset <- df[df$.id == gid, , drop = FALSE]
+              build_results(subset, gid)
+            })
+            pieces <- Filter(Negate(is.null), pieces)
+            results <- if (length(pieces) > 0) do.call(rbind, pieces) else NULL
+          }
+
+          shiny::req(results)
+          results$variable <- variable
+          if (!".id_label" %in% names(results)) {
+            results$.id_label <- ifelse(is.na(results$.id), i18n$t("All records"), vapply(results$.id, get_label, character(1L)))
+          }
+          ordered_cols <- c(".id", ".id_label", "variable", setdiff(names(results), c(".id", ".id_label", "variable")))
+          results <- results[, ordered_cols, drop = FALSE]
+          cat(sprintf("[HEAPING_MODULE] download final dataset | rows=%s | cols=%s\n", nrow(results), ncol(results)))
+          utils::write.csv(results, file, row.names = FALSE)
+        },
+        contentType = "text/csv"
+      )
+
       ns <- session$ns
       data_step_id <- ns("data_step")
       analysis_step_id <- ns("analysis_step")
@@ -340,7 +412,12 @@ heaping_module_server <- function(input, output, session) {
         shiny::outputOptions(output, "heaping_table", suspendWhenHidden = FALSE)
         shiny::outputOptions(output, "run_log", suspendWhenHidden = FALSE)
         shiny::outputOptions(output, "grouping_controls", suspendWhenHidden = FALSE)
+        shinyjs::hide(id = ns("download_container"))
+        shinyjs::disable(ns("download_heaping_csv"))
       }, once = TRUE)
+
+      shinyjs::hide(id = ns("download_container"))
+      shinyjs::disable(ns("download_heaping_csv"))
 
       output$run_log <- shiny::renderUI({ NULL })
 
@@ -377,6 +454,8 @@ heaping_module_server <- function(input, output, session) {
           shared$last_result(NULL)
           output$heaping_table <- DT::renderDT(NULL)
           output$run_log <- shiny::renderUI({ NULL })
+          shinyjs::hide(id = ns("download_container"))
+          shinyjs::disable(ns("download_heaping_csv"))
           return()
         }
 
@@ -390,6 +469,8 @@ heaping_module_server <- function(input, output, session) {
         shared$last_result(NULL)
         output$heaping_table <- DT::renderDT(NULL)
         output$run_log <- shiny::renderUI({ NULL })
+        shinyjs::hide(id = ns("download_container"))
+        shinyjs::disable(ns("download_heaping_csv"))
       }, ignoreNULL = TRUE)
 
       shiny::observeEvent(input$go_to_analysis, {
@@ -404,7 +485,14 @@ heaping_module_server <- function(input, output, session) {
         shinyjs::show(id = data_step_id)
         shinyjs::hide(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
+        shinyjs::hide(id = ns("download_container"))
+        shinyjs::disable(ns("download_heaping_csv"))
       })
+
+      observeEvent(input$download_heaping_csv, {
+        cat(sprintf("[HEAPING_MODULE] download button clicked | value=%s | has_result=%s\n",
+          input$download_heaping_csv, !is.null(shared$last_result())))
+      }, ignoreNULL = TRUE)
 
       shared
     },
@@ -474,12 +562,17 @@ heaping_module_server <- function(input, output, session) {
           shiny::span(class = "heaping-run-log error", msg)
         })
         output$heaping_table <- DT::renderDT(NULL)
+        shinyjs::hide(id = session$ns("download_container"))
+        shinyjs::disable(session$ns("download_heaping_csv"))
         return()
       }
 
       shared$last_result(result)
 
       output$run_log <- shiny::renderUI({ NULL })
+
+      shinyjs::show(id = session$ns("download_container"))
+      shinyjs::enable(session$ns("download_heaping_csv"))
 
       output$heaping_table <- DT::renderDT({
         tbl <- result$table
@@ -515,18 +608,6 @@ heaping_module_server <- function(input, output, session) {
         widget
       })
     },
-    register_downloads = function(result, output, session, shared, i18n) {
-      output$download_heaping_csv <- shiny::downloadHandler(
-        filename = function() {
-          timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-          sprintf("heaping_results_%s.csv", timestamp)
-        },
-        content = function(file) {
-          latest <- shared$last_result()
-          shiny::req(latest)
-          utils::write.csv(latest$table, file, row.names = FALSE)
-        }
-      )
-    }
+    register_downloads = NULL
   ))
 }
