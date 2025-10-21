@@ -453,7 +453,7 @@ lifetable_server <- function(input, output, session) {
   output$data_table <- renderRHandsontable(renderDataTable(sample_data(), i18n))
 
   # Handle column selection
-  handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars, i18n)
+  handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars, i18n, data_raw = data_in)
 
   # DF containing the id and labels
   labels_df <- reactive({

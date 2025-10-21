@@ -2,3 +2,5 @@ LICENSE.md
 Makefile
 README.Rmd
 inst/dat
+^.*\.Rproj$
+^\.Rproj\.user$

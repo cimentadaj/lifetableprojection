@@ -55,6 +55,22 @@ handle_transitions <- function(input, current_tab) {
     show("lifetable_landing_page")
     current_tab("lifetable")
   })
+
+  observeEvent(input$goto_heaping, {
+    hide("module_landing_page")
+    hide("lifetable_landing_page")
+    hide("landing_page")
+    hide("step_adjustment")
+    hide("step_input")
+    show("heaping_module_page")
+    current_tab("heaping")
+  })
+
+  observeEvent(input$heaping_back_to_modules, {
+    hide("heaping_module_page")
+    show("module_landing_page")
+    current_tab("module_landing")
+  })
 }
 
 

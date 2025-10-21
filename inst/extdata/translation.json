@@ -868,6 +868,194 @@
       {
         "en": "Generating PDF report... Estimated time:",
         "fr": "Génération du rapport PDF... Temps estimé:"
+      },
+      {
+        "en": "Heaping Diagnostics",
+        "fr": "Diagnostics de concentration d'âges"
+      },
+      {
+        "en": "Evaluate age heaping patterns for uploaded mortality data.",
+        "fr": "Évaluer les schémas de concentration des âges pour les données de mortalité importées."
+      },
+      {
+        "en": "Compute Bachi, Myers, Roughness, and Sawtooth indices to assess digit preference across ages.",
+        "fr": "Calculez les indices de Bachi, Myers, Rugosité et Dent de scie pour évaluer les préférences de chiffres selon les âges."
+      },
+      {
+        "en": "Upload your CSV, confirm grouping columns when prompted, then choose the variable you wish to evaluate.",
+        "fr": "Téléchargez votre fichier CSV, confirmez les colonnes de regroupement lorsqu'elles sont demandées, puis choisissez la variable à évaluer."
+      },
+      {
+        "en": "Run heaping analysis",
+        "fr": "Lancer l'analyse de concentration"
+      },
+      {
+        "en": "Upload CSV file",
+        "fr": "Télécharger un fichier CSV"
+      },
+      {
+        "en": "← Back to modules",
+        "fr": "← Retour aux modules"
+      },
+      {
+        "en": "Variable to evaluate",
+        "fr": "Variable à évaluer"
+      },
+      {
+        "en": "Download results",
+        "fr": "Télécharger les résultats"
+      },
+      {
+        "en": "Data source: %s",
+        "fr": "Source des données : %s"
+      },
+      {
+        "en": "Sample dataset",
+        "fr": "Jeu de données d'exemple"
+      },
+      {
+        "en": "Uploaded file",
+        "fr": "Fichier téléversé"
+      },
+      {
+        "en": "No grouping variables selected. Analysis will run on the entire dataset.",
+        "fr": "Aucune variable de regroupement sélectionnée. L'analyse s'exécutera sur l'ensemble du jeu de données."
+      },
+      {
+        "en": "No data available. Please upload a dataset first.",
+        "fr": "Aucune donnée disponible. Veuillez d'abord téléverser un jeu de données."
+      },
+      {
+        "en": "Please confirm the grouping modal before running the analysis.",
+        "fr": "Veuillez confirmer la fenêtre de regroupement avant de lancer l'analyse."
+      },
+      {
+        "en": "The selected group returned no rows to analyse.",
+        "fr": "Le groupe sélectionné ne contient aucune ligne à analyser."
+      },
+      {
+        "en": "Column '%s' is missing from the dataset.",
+        "fr": "La colonne « %s » est absente du jeu de données."
+      },
+      {
+        "en": "Heaping diagnostics failed. Check input data validity.",
+        "fr": "Les diagnostics de concentration ont échoué. Vérifiez la validité des données d'entrée."
+      },
+      {
+        "en": "Heaping diagnostics completed for %s (%s).",
+        "fr": "Diagnostics de concentration terminés pour %s (%s)."
+      },
+      {
+        "en": "Current group: %s",
+        "fr": "Groupe actuel : %s"
+      },
+      {
+        "en": "No diagnostics computed yet.",
+        "fr": "Aucun diagnostic n'a encore été calculé."
+      },
+      {
+        "en": "Identify age heaping patterns using Myers, Bachi, Roughness, and Sawtooth indices.",
+        "fr": "Identifiez les schémas de concentration d'âges à l'aide des indices de Myers, Bachi, Rugosité et Dent de scie."
+      },
+      {
+        "en": "Understand reporting accuracy in seconds",
+        "fr": "Comprenez la précision des déclarations en quelques secondes"
+      },
+      {
+        "en": "Select exposures or deaths to reveal digit-preference warnings before you progress into smoothing or graduation.",
+        "fr": "Sélectionnez les expositions ou les décès pour afficher les alertes de préférence de chiffres avant de passer aux étapes de lissage ou de graduation."
+      },
+      {
+        "en": "Single-age and abridged support",
+        "fr": "Prise en charge des âges simples et abrégés"
+      },
+      {
+        "en": "Instant classifications by severity",
+        "fr": "Classements instantanés par niveau de gravité"
+      },
+      {
+        "en": "Quick start checklist",
+        "fr": "Liste de vérification de démarrage rapide"
+      },
+      {
+        "en": "CSV columns must include Age, Deaths, and Exposures.",
+        "fr": "Les colonnes du CSV doivent inclure l'âge, les décès et les expositions."
+      },
+      {
+        "en": "When the modal opens, tick \"No grouping needed\" unless your file contains grouping identifiers.",
+        "fr": "Lorsque la fenêtre s'ouvre, cochez « Aucun regroupement nécessaire » sauf si votre fichier contient des identifiants de regroupement."
+      },
+      {
+        "en": "Use the toggle below to switch between Deaths and Exposures diagnostics.",
+        "fr": "Utilisez le sélecteur ci-dessous pour basculer entre les diagnostics des décès et des expositions."
+      },
+      {
+        "en": "How to prepare your data",
+        "fr": "Comment préparer vos données"
+      },
+      {
+        "en": "Ensure all ages are unique within each group, provide numeric counts, and reserve optional columns like Sex or Region for grouping selections.",
+        "fr": "Assurez-vous que tous les âges sont uniques dans chaque groupe, fournissez des valeurs numériques et réservez les colonnes facultatives telles que le sexe ou la région pour les sélections de regroupement."
+      },
+      {
+        "en": "Required:",
+        "fr": "Obligatoire :"
+      },
+      {
+        "en": "Optional:",
+        "fr": "Facultatif :"
+      },
+      {
+        "en": "Recommended:",
+        "fr": "Recommandé :"
+      },
+      {
+        "en": "Grouping columns (e.g., Sex, Province); leave blank and tick the checkbox if none apply.",
+        "fr": "Colonnes de regroupement (p. ex., sexe, province); laissez vide et cochez la case si aucune ne s'applique."
+      },
+      {
+        "en": "Provide exposures in the same scale as deaths for comparable indices.",
+        "fr": "Fournissez les expositions dans la même échelle que les décès pour des indicateurs comparables."
+      },
+      {
+        "en": "Sample heaping CSV preview",
+        "fr": "Aperçu du CSV de concentration d'âges"
+      },
+      {
+        "en": "Source: ODAPbackend::dat_heap_smooth.csv.gz (single-year age counts).",
+        "fr": "Source : ODAPbackend::dat_heap_smooth.csv.gz (effectifs par âge, par année unique)."
+      },
+      {
+        "en": "Tip: choose \"Deaths\" for Bachi/Myers and \"Exposures\" to inspect denominator quality.",
+        "fr": "Astuce : choisissez « Décès » pour Bachi/Myers et « Expositions » pour examiner la qualité du dénominateur."
+      },
+      {
+        "en": "Current group: awaiting selection",
+        "fr": "Groupe actuel : en attente de sélection"
+      },
+      {
+        "en": "All records",
+        "fr": "Tous les enregistrements"
+      },
+      {
+        "en": "We could not detect any data rows to tag. Please reload your dataset and try again.",
+        "fr": "Nous n’avons détecté aucune ligne de données à marquer. Veuillez recharger votre jeu de données, puis réessayez."
+      },
+      {
+        "en": "Smoothing Preview",
+        "fr": "Aperçu du lissage"
+      },
+      {
+        "en": "Preview mortality smoothing options before integrating them into your workflow.",
+        "fr": "Prévisualisez les options de lissage de la mortalité avant de les intégrer à votre flux de travail."
+      },
+      {
+        "en": "Graduation Tool",
+        "fr": "Outil de graduation"
+      },
+      {
+        "en": "Fine-tune mortality graduation methods with configurable infant and sex constraints.",
+        "fr": "Affinez les méthodes de graduation de la mortalité avec des contraintes configurables pour les nourrissons et selon le sexe."
       }
     ]
 }

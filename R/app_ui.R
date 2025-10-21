@@ -60,6 +60,7 @@ input_page <- function(i18n) {
 #' @importFrom rintrojs introjsUI
 #' @noRd
 app_ui <- function(request) {
+  options(shiny.suppressCompleteHTMLWarning = TRUE)
   # Create translator object
   i18n <- usei18n_local()
 
