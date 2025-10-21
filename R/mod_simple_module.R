@@ -20,8 +20,6 @@
 mod_simple_module_ui <- function(id, metadata, content_ui = list()) {
   ns <- NS(id)
 
-  cat(sprintf("[MODULE_SKELETON_UI][%s] Building wrapper UI\n", id))
-
   styles <- shiny::tags$head(shiny::singleton(shiny::tags$style(shiny::HTML("
     .simple-module-container {
       max-width: 1180px;
@@ -355,7 +353,6 @@ mod_simple_module_server <- function(id, callbacks) {
 
   moduleServer(id, function(input, output, session) {
     i18n <- usei18n_local()
-    cat(sprintf("[MODULE_SKELETON_SERVER][%s] Initialising module server\n", id))
 
     shared <- callbacks$setup(input, output, session, i18n)
     if (is.null(shared) || !is.list(shared)) {
@@ -363,13 +360,9 @@ mod_simple_module_server <- function(id, callbacks) {
     }
 
     observeEvent(input$run_analysis, {
-      cat(sprintf("[MODULE_SKELETON_SERVER][%s] Run button clicked\n", id))
-
       params <- callbacks$prepare(input, shared, i18n)
-      cat(sprintf("[MODULE_SKELETON_SERVER][%s] Parameters prepared: %s\n", id, paste(names(params), collapse = ", ")))
 
       result <- callbacks$run(shared, params, input, i18n)
-      cat(sprintf("[MODULE_SKELETON_SERVER][%s] Run completed: %s\n", id, ifelse(is.null(result), "<NULL>", "ok")))
 
       callbacks$render(result, output, shared, input, i18n)
 

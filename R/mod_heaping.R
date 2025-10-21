@@ -147,14 +147,11 @@ heaping_module_server <- function(input, output, session) {
   mod_simple_module_server("heaping", list(
     setup = function(input, output, session, i18n) {
       heaping_sample_loader <- function() {
-        cat("[HEAPING_MODULE] Loading ODAPbackend heaping sample dataset\n")
         path <- system.file("extdata", "dat_heap_smooth.csv.gz", package = "ODAPbackend")
         df <- readr::read_csv(path, show_col_types = FALSE)
         df <- df |>
           dplyr::select(Age, Deaths, Exposures)
         df <- df[order(df$Age), , drop = FALSE]
-        cat("[HEAPING_MODULE] Sample loader output | class:", paste(class(df), collapse = ", "),
-            "| rows:", nrow(df), "| cols:", ncol(df), "\n")
         df
       }
 
@@ -167,7 +164,6 @@ heaping_module_server <- function(input, output, session) {
 
       observeEvent(shared$group_selection_passed(), {
         if (!isTRUE(shared$group_selection_passed())) return()
-        cat("[HEAPING_MODULE] Group selection confirmed\n")
 
         gid <- shared$active_group_id()
         label <- gid
@@ -238,16 +234,9 @@ heaping_module_server <- function(input, output, session) {
         return(list(error = sprintf(i18n$t("Column '%s' is missing from the dataset."), params$variable)))
       }
 
-      cat(sprintf(
-        "[HEAPING_MODULE] Running diagnostics for variable '%s' on %d rows\n",
-        params$variable,
-        nrow(data_subset)
-      ))
-
       analysis <- tryCatch({
         ODAPbackend::check_heaping_general(data_subset, params$variable)
       }, error = function(e) {
-        cat(sprintf("[HEAPING_MODULE][ERROR] %s\n", e$message))
         list(error = i18n$t("Heaping diagnostics failed. Check input data validity."))
       })
 

@@ -18,29 +18,7 @@
 #' @importFrom DT renderDT datatable dataTableOutput
 #' @noRd
 create_shared_data_context <- function(module_id, input, output, session, i18n, sample_loader = NULL) {
-  cat(sprintf("[DATA_CONTEXT][%s] Initialising shared data helpers\n", module_id))
-
   ns <- session$ns
-
-  log_dataset <- function(tag, df, n_show = 3) {
-    if (is.null(df)) {
-      cat(sprintf("[%s] Dataset is NULL\n", tag))
-      return()
-    }
-    classes <- paste(class(df), collapse = ", ")
-    cols <- if (!is.null(colnames(df))) paste(colnames(df), collapse = ", ") else "<no colnames>"
-    cat(sprintf("[%s] class: %s | rows: %s | cols: %s | names: %s\n",
-      tag,
-      classes,
-      ifelse(is.null(nrow(df)), "NA", nrow(df)),
-      ifelse(is.null(ncol(df)), "NA", ncol(df)),
-      cols
-    ))
-    if (nrow(df) > 0) {
-      preview <- capture.output(print(utils::head(df, n_show)))
-      cat(sprintf("[%s] head:\n%s\n", tag, paste(preview, collapse = "\n")))
-    }
-  }
 
   data_in <- reactiveVal(NULL)
   raw_data <- reactiveVal(NULL)
@@ -52,31 +30,16 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   sample_data <- if (is.null(sample_loader)) {
     handle_sample_data(i18n)
   } else {
-    reactive({
-      cat(sprintf("[DATA_CONTEXT][%s] Loading custom sample data\n", module_id))
-      sample <- sample_loader()
-      cat(sprintf("[DATA_CONTEXT][%s] Sample data loaded | class: %s | rows: %s | cols: %s\n",
-        module_id,
-        paste(class(sample), collapse = ", "),
-        ifelse(is.null(sample), "NULL", nrow(sample)),
-        ifelse(is.null(sample), "NULL", ncol(sample))
-      ))
-      sample
-    })
+    reactive(sample_loader())
   }
 
   uploaded_data <- reactive({
     req(input$file1)
-    cat(sprintf("[DATA_CONTEXT][%s] Upload triggered: %s\n", module_id, input$file1$name))
     handle_file_upload(input, i18n)
   })
 
   observeEvent(uploaded_data(), {
     df <- uploaded_data()
-    cat(sprintf(
-      "[DATA_CONTEXT][%s] Loaded uploaded data -> rows: %d, cols: %d\n",
-      module_id, nrow(df), ncol(df)
-    ))
     raw_data(df)
     session$userData[[raw_storage_key]] <- df
     data_in(df)
@@ -86,30 +49,13 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   })
 
   observeEvent(input$use_sample_data, {
-    cat(sprintf("[DATA_CONTEXT][%s] Sample data requested\n", module_id))
     sample_df <- sample_data()
-    cat(sprintf("[DATA_CONTEXT][%s] Assigning sample data | class: %s | rows: %s | cols: %s\n",
-      module_id,
-      paste(class(sample_df), collapse = ", "),
-      ifelse(is.null(sample_df), "NULL", nrow(sample_df)),
-      ifelse(is.null(sample_df), "NULL", ncol(sample_df))
-    ))
     raw_data(sample_df)
     session$userData[[raw_storage_key]] <- sample_df
     data_in(sample_df)
     data_origin("sample")
     group_selection_passed(FALSE)
     selected_grouping_vars(character(0))
-  })
-
-  observe({
-    current <- data_in()
-    log_dataset(sprintf("[DATA_CONTEXT][%s] data_in reactiveVal updated", module_id), current)
-  })
-
-  observe({
-    raw <- raw_data()
-    log_dataset(sprintf("[DATA_CONTEXT][%s] raw_data reactiveVal updated", module_id), raw)
   })
 
   output$upload_log <- renderUI({
@@ -143,13 +89,11 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   # Validation
   validation_details <- reactive({
     req(data_in())
-    cat(sprintf("[DATA_CONTEXT][%s] Running validation checks\n", module_id))
     validateData(data_in(), i18n)
   })
 
   output$validation_summary <- renderUI({
     req(group_selection_passed())
-    cat(sprintf("[DATA_CONTEXT][%s] Rendering validation summary\n", module_id))
     displayValidationResults(validation_details(), i18n)
   })
 
