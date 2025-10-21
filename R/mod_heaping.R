@@ -17,78 +17,47 @@ heaping_module_ui <- function(i18n) {
   content_ui <- list(
     before_data = function(ns) {
       shiny::div(
-        class = "simple-module-hero",
+        class = "simple-module-intro",
         shiny::div(
-          class = "hero-card",
+          class = "simple-module-intro-text",
+          shiny::h2(i18n$t("Assess age reporting quality")),
+          shiny::p(i18n$t("Upload deaths or exposures and review digit-preference diagnostics before continuing your workflow."))
+        ),
+        shiny::div(
+          class = "simple-module-intro-actions",
           shiny::tags$button(
             id = "heaping_back_to_modules",
-            class = "ui button",
             type = "button",
             onclick = "Shiny.setInputValue('heaping_back_to_modules', Date.now());",
             i18n$t("← Back to modules")
-          ),
-          shiny::h3(i18n$t("Understand reporting accuracy in seconds")),
-          shiny::p(
-            i18n$t("Select exposures or deaths to reveal digit-preference warnings before you progress into smoothing or graduation.")
-          ),
-          shiny::div(
-            class = "hero-actions",
-            shiny::tags$div(
-              class = "ui basic label",
-              shiny::icon("check"),
-              i18n$t("Single-age and abridged support")
-            ),
-            shiny::tags$div(
-              class = "ui basic label",
-              shiny::icon("clock"),
-              i18n$t("Instant classifications by severity")
-            )
-          )
-        ),
-        shiny::div(
-          class = "hero-card",
-          shiny::h3(i18n$t("Quick start checklist")),
-          shiny::tags$ul(
-            shiny::tags$li(i18n$t("CSV columns must include Age, Deaths, and Exposures.")),
-            shiny::tags$li(i18n$t("When the modal opens, tick \"No grouping needed\" unless your file contains grouping identifiers.")),
-            shiny::tags$li(i18n$t("Use the toggle below to switch between Deaths and Exposures diagnostics."))
           )
         )
       )
     },
     info = function(ns) {
       shiny::div(
-        class = "ui stackable two column grid",
-        shiny::div(
-          class = "column",
-          shiny.semantic::segment(
-            shiny::h4(i18n$t("How to prepare your data")),
-            shiny::p(
-              i18n$t("Ensure all ages are unique within each group, provide numeric counts, and reserve optional columns like Sex or Region for grouping selections.")
-            ),
-            shiny::tags$ul(
-              shiny::tags$li(shiny::strong(i18n$t("Required:")), " Age, Deaths, Exposures"),
-              shiny::tags$li(shiny::strong(i18n$t("Optional:")), " ", i18n$t("Grouping columns (e.g., Sex, Province); leave blank and tick the checkbox if none apply.")),
-              shiny::tags$li(shiny::strong(i18n$t("Recommended:")), " ", i18n$t("Provide exposures in the same scale as deaths for comparable indices."))
-            )
-          )
+        class = "simple-module-guidance",
+        shiny.semantic::segment(
+          shiny::h4(i18n$t("What you'll need")),
+          shiny::tags$ul(
+            shiny::tags$li(i18n$t("Single-age or abridged ages with numeric Deaths and Exposures.")),
+            shiny::tags$li(i18n$t("Optional grouping columns (e.g. Sex, Region) if you plan to run diagnostics by subgroup."))
+          ),
+          shiny::p(class = "simple-module-note", i18n$t("Tip: choose \"Deaths\" for Bachi/Myers and \"Exposures\" to inspect denominator quality."))
         ),
-        shiny::div(
-          class = "column",
-          shiny.semantic::segment(
-            shiny::h4(i18n$t("Sample heaping CSV preview")),
-            shiny::p(i18n$t("Source: ODAPbackend::dat_heap_smooth.csv.gz (single-year age counts).")),
-            DT::dataTableOutput(ns("heaping_sample_preview"))
-          )
+        shiny.semantic::segment(
+          shiny::h4(i18n$t("Sample heaping CSV preview")),
+          shiny::p(i18n$t("Source: ODAPbackend::dat_heap_smooth.csv.gz (single-year age counts).")),
+          DT::dataTableOutput(ns("heaping_sample_preview"))
         )
       )
     },
     controls = function(ns) {
       shiny::div(
-        class = "ui form heaping-controls",
+        class = "ui form simple-module-controls",
         shiny.semantic::segment(
           shiny::div(
-            class = "two fields",
+            class = "fields",
             shiny::div(
               class = "field",
               shiny.semantic::selectInput(
@@ -99,16 +68,8 @@ heaping_module_ui <- function(i18n) {
               )
             ),
             shiny::div(
-              class = "field",
+              class = "field simple-module-group-label",
               shiny::uiOutput(ns("active_group_label"))
-            )
-          ),
-          shiny::div(
-            class = "field",
-            shiny::div(
-              class = "ui small message",
-              shiny::icon("info-circle"),
-              shiny::span(i18n$t("Tip: choose \"Deaths\" for Bachi/Myers and \"Exposures\" to inspect denominator quality."))
             )
           )
         )
@@ -144,6 +105,7 @@ heaping_module_ui <- function(i18n) {
 #' @param session Shiny session.
 #' @noRd
 heaping_module_server <- function(input, output, session) {
+  message("[HEAPING_MODULE] server initialised")
   mod_simple_module_server("heaping", list(
     setup = function(input, output, session, i18n) {
       heaping_sample_loader <- function() {
@@ -226,6 +188,10 @@ heaping_module_server <- function(input, output, session) {
       }
 
       data_subset <- shared$filtered_data()
+      cat(sprintf("[HEAPING_MODULE] filtered subset -> rows: %s | cols: %s\n", nrow(data_subset), ncol(data_subset)))
+      if (nrow(data_subset) > 0) {
+        capture.output(print(head(data_subset, 3))) |> cat(sep = "\n")
+      }
       if (is.null(data_subset) || nrow(data_subset) == 0) {
         return(list(error = i18n$t("The selected group returned no rows to analyse.")))
       }
@@ -234,6 +200,7 @@ heaping_module_server <- function(input, output, session) {
         return(list(error = sprintf(i18n$t("Column '%s' is missing from the dataset."), params$variable)))
       }
 
+      cat(sprintf("[HEAPING_MODULE] variable selected: %s\n", params$variable))
       analysis <- tryCatch({
         ODAPbackend::check_heaping_general(data_subset, params$variable)
       }, error = function(e) {

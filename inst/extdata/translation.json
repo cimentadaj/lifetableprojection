@@ -962,6 +962,26 @@
         "fr": "Comprenez la précision des déclarations en quelques secondes"
       },
       {
+        "en": "Assess age reporting quality",
+        "fr": "Évaluez la qualité de la déclaration d'âge"
+      },
+      {
+        "en": "Upload deaths or exposures and review digit-preference diagnostics before continuing your workflow.",
+        "fr": "Téléversez les décès ou expositions et examinez les diagnostics de préférence pour les chiffres avant de poursuivre votre flux de travail."
+      },
+      {
+        "en": "What you'll need",
+        "fr": "Ce dont vous aurez besoin"
+      },
+      {
+        "en": "Single-age or abridged ages with numeric Deaths and Exposures.",
+        "fr": "Âges simples ou abrégés avec des nombres de décès et d'expositions numériques."
+      },
+      {
+        "en": "Optional grouping columns (e.g. Sex, Region) if you plan to run diagnostics by subgroup.",
+        "fr": "Colonnes de regroupement facultatives (p. ex., sexe, région) si vous souhaitez exécuter les diagnostics par sous-groupe."
+      },
+      {
         "en": "Select exposures or deaths to reveal digit-preference warnings before you progress into smoothing or graduation.",
         "fr": "Sélectionnez les expositions ou les décès pour afficher les alertes de préférence de chiffres avant de passer aux étapes de lissage ou de graduation."
       },

@@ -209,6 +209,8 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
         })
         return()
       }
+      cat("[GROUP_MODAL] Updated data labels preview:\n")
+      capture.output(print(unique(updated_data[, c(".id", ".id_label")], drop = FALSE))) |> cat(sep = "\n")
       data(updated_data)
       group_selection_passed(TRUE)
       selected_grouping_vars(selected_columns)

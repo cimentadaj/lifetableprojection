@@ -84,7 +84,7 @@ handle_transitions <- function(input, current_tab) {
 #' @importFrom shiny reactive req
 #' @importFrom shiny.semantic selectInput
 #' @export
-setup_grouping_dropdowns <- function(selected_grouping_vars, data_in) {
+setup_grouping_dropdowns <- function(selected_grouping_vars, data_in, ns = function(x) x) {
   reactive({
     req(data_in())
 
@@ -93,7 +93,7 @@ setup_grouping_dropdowns <- function(selected_grouping_vars, data_in) {
     lapply(selected_grouping_vars(), function(var) {
       unique_values <- unique(data_in()[[var]])
       selectInput(
-        inputId = paste0("group_select_", var),
+        inputId = ns(paste0("group_select_", var)),
         label = var,
         choices = unique_values,
         selected = unique_values[1]
@@ -116,6 +116,7 @@ setup_grouping_dropdown_observers <- function(input, selected_grouping_vars) {
     lapply(selected_grouping_vars(), function(var) {
       observeEvent(input[[paste0("group_select_", var)]], {
         # This will trigger a re-evaluation of current_diagnostic_plots
+        cat(sprintf("[GROUP_DROPDOWN] %s -> %s\n", var, input[[paste0("group_select_", var)]]))
       }, ignoreInit = TRUE)
     })
   })
@@ -132,10 +133,37 @@ setup_grouping_dropdown_observers <- function(input, selected_grouping_vars) {
 #' @importFrom dplyr %>% distinct
 #' @export
 get_current_group_id <- function(selected_grouping_vars, data_in, input) {
-  current_selections <- sapply(selected_grouping_vars(), function(var) {
-    input[[paste0("group_select_", var)]]
-  })
-  current_id_label <- paste(current_selections, collapse = " - ")
-  labels_df <- data_in() %>% distinct(`.id`, `.id_label`)
-  as.character(labels_df$`.id`[labels_df$`.id_label` == current_id_label])
+  df <- data_in()
+  if (is.null(df) || !".id" %in% names(df)) {
+    cat("[GROUP_ID] No .id column present; returning NULL\n")
+    return(NULL)
+  }
+
+  vars <- selected_grouping_vars()
+  if (length(vars) == 0) {
+    ids <- unique(df$.id)
+    gid <- if (length(ids) > 0) ids[[1]] else NA
+    cat(sprintf("[GROUP_ID] No grouping vars selected; fallback gid = %s\n", as.character(gid)))
+    return(gid)
+  }
+
+  current_values <- sapply(vars, function(var) input[[paste0("group_select_", var)]], simplify = TRUE)
+  cat(sprintf("[GROUP_ID] current selections: %s\n", paste(sprintf("%s=%s", vars, current_values), collapse = ", ")))
+
+  filtered <- df
+  for (var in vars) {
+    val <- input[[paste0("group_select_", var)]]
+    if (!is.null(val)) {
+      filtered <- filtered[filtered[[var]] == val, , drop = FALSE]
+    }
+  }
+
+  ids <- unique(filtered$.id)
+  if (length(ids) == 0) {
+    cat("[GROUP_ID] No rows matched selections; falling back to first available id\n")
+    ids <- unique(df$.id)
+  }
+  gid <- if (length(ids) > 0) ids[[1]] else NA
+  cat(sprintf("[GROUP_ID] resolved gid: %s (available ids: %s)\n", as.character(gid), paste(unique(df$.id), collapse = ", ")))
+  gid
 }

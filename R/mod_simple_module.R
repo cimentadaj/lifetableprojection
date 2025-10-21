@@ -170,6 +170,71 @@ mod_simple_module_ui <- function(id, metadata, content_ui = list()) {
       display: flex;
       justify-content: flex-end;
     }
+    .simple-module-intro {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: 1.75rem;
+      background: linear-gradient(135deg, rgba(27,110,194,0.08), rgba(27,110,194,0.02));
+      border-radius: 12px;
+      padding: 1.6rem 2rem;
+    }
+    .simple-module-intro h2 {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.85rem;
+      color: #1b1c1d;
+    }
+    .simple-module-intro p {
+      margin: 0;
+      color: #425466;
+      max-width: 540px;
+    }
+    .simple-module-intro-actions .ui.button,
+    .simple-module-intro-actions button {
+      background: #1b6ec2;
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 0.65rem 1.4rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(27, 110, 194, 0.25);
+    }
+    .simple-module-guidance {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+    .simple-module-guidance .ui.segment {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .simple-module-guidance ul {
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+    .simple-module-guidance li {
+      margin-bottom: 0.4rem;
+      color: #425466;
+    }
+    .simple-module-guidance .simple-module-note {
+      margin-top: auto;
+      font-size: 0.95rem;
+      color: #5f708a;
+    }
+    .simple-module-controls .fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .simple-module-group-label {
+      display: flex;
+      align-items: center;
+    }
     @media (max-width: 992px) {
       .simple-module-inner {
         padding: 2rem 1.5rem;
@@ -180,6 +245,17 @@ mod_simple_module_ui <- function(id, metadata, content_ui = list()) {
       }
       .simple-module-run .ui.button {
         width: 100%;
+      }
+      .simple-module-intro {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .simple-module-intro-actions {
+        width: 100%;
+      }
+      .simple-module-intro-actions button {
+        width: 100%;
+        text-align: center;
       }
     }
     @media (max-width: 640px) {

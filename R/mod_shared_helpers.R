@@ -116,7 +116,8 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
     )
   })
 
-  grouping_dropdowns <- setup_grouping_dropdowns(selected_grouping_vars, data_in)
+  grouping_dropdowns <- setup_grouping_dropdowns(selected_grouping_vars, data_in, ns = session$ns)
+  setup_grouping_dropdown_observers(input, selected_grouping_vars)
 
   output$grouping_controls <- renderUI({
     req(group_selection_passed())
@@ -148,25 +149,42 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
 
   active_group_id <- reactive({
     req(data_in())
+    df <- data_in()
     if (!group_selection_passed()) {
-      return(stats::na.omit(unique(data_in()$.id))[1])
+      ids <- if (".id" %in% names(df)) stats::na.omit(unique(df$.id)) else numeric(0)
+      gid <- if (length(ids) > 0) ids[[1]] else NA
+      cat(sprintf("[DATA_CONTEXT][%s] active_group_id (no grouping) -> %s\n", module_id, as.character(gid)))
+      return(gid)
     }
 
     if (length(selected_grouping_vars()) == 0) {
-      return(stats::na.omit(unique(data_in()$.id))[1])
+      ids <- if (".id" %in% names(df)) stats::na.omit(unique(df$.id)) else numeric(0)
+      gid <- if (length(ids) > 0) ids[[1]] else NA
+      cat(sprintf("[DATA_CONTEXT][%s] active_group_id (no vars) -> %s\n", module_id, as.character(gid)))
+      return(gid)
     }
 
-    get_current_group_id(selected_grouping_vars, data_in, input)
+    gid <- get_current_group_id(selected_grouping_vars, data_in, input)
+    cat(sprintf("[DATA_CONTEXT][%s] active_group_id (selection) -> %s\n", module_id, as.character(gid)))
+    gid
   })
 
   filtered_data <- reactive({
     req(data_in())
     df <- data_in()
     gid <- active_group_id()
-    if (is.null(gid) || !".id" %in% names(df)) {
+    cat(sprintf("[DATA_CONTEXT][%s] filtered_data | gid: %s | rows: %s | cols: %s\n", module_id, as.character(gid), nrow(df), ncol(df)))
+    if (is.null(gid) || length(gid) == 0 || all(is.na(gid)) || !".id" %in% names(df)) {
+      cat(sprintf("[DATA_CONTEXT][%s] filtered_data -> returning full dataset (missing gid/.id)\n", module_id))
       return(df)
     }
-    dplyr::filter(df, .data$.id == gid)
+    out <- dplyr::filter(df, .data$.id == gid[[1]])
+    cat(sprintf("[DATA_CONTEXT][%s] filtered_data -> rows after filter: %s\n", module_id, nrow(out)))
+    if (nrow(out) == 0) {
+      cat(sprintf("[DATA_CONTEXT][%s] filtered_data -> fallback to full dataset\n", module_id))
+      return(df)
+    }
+    out
   })
 
   list(
