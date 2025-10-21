@@ -99,7 +99,7 @@ app_ui <- function(request) {
   module_sections <- Filter(Negate(is.null), module_sections)
   module_sections <- if (length(module_sections) > 0) do.call(tagList, module_sections) else tagList()
 
-  fluidUnTheme(
+  ui_main <- fluidUnTheme(
     useShinyjs(),
     introjsUI(),
     shiny.i18n::usei18n(i18n),
@@ -125,6 +125,8 @@ app_ui <- function(request) {
       width = NULL
     )
   )
+
+  i18n$translate_ui(ui_main)
 }
 
 
@@ -158,12 +160,41 @@ golem_add_external_resources <- function() {
 #' @return A Translator object initialized with the package's translation file
 #' @importFrom shiny.i18n Translator
 #' @export
-usei18n_local <- function() {
+usei18n_local <- function(session = shiny::getDefaultReactiveDomain()) {
   translation_path <- system.file("extdata", "translation.json", package = "lifetableprojection")
   if (translation_path == "") {
     stop("Could not find translation.json in package. Please ensure the package is installed correctly.")
   }
   i18n <- Translator$new(translation_json_path = translation_path)
-  i18n$set_translation_language("en")
+
+  default_lang <- "en"
+
+  if (!is.null(session)) {
+    # Ensure a shared reactive language value exists for the session
+    if (is.null(session$userData$shiny.i18n)) {
+      session$userData$shiny.i18n <- list()
+    }
+    if (is.null(session$userData$shiny.i18n$lang)) {
+      session$userData$shiny.i18n$lang <- shiny::reactiveVal(default_lang)
+    }
+
+    current_lang <- tryCatch(session$userData$shiny.i18n$lang(), error = function(e) default_lang)
+    if (is.null(current_lang) || !nzchar(current_lang)) {
+      current_lang <- default_lang
+    }
+    i18n$set_translation_language(current_lang)
+
+    # Keep the translator in sync with future language changes
+    shiny::observeEvent(session$userData$shiny.i18n$lang(), {
+      lang <- session$userData$shiny.i18n$lang()
+      if (is.null(lang) || !nzchar(lang)) {
+        lang <- default_lang
+      }
+      i18n$set_translation_language(lang)
+    }, ignoreNULL = FALSE)
+  } else {
+    i18n$set_translation_language(default_lang)
+  }
+
   i18n
 }

@@ -5,7 +5,7 @@
 heaping_module_ui <- function(i18n) {
   ns <- shiny::NS("heaping")
 
-  shinyjs::hidden(
+  ui <- shinyjs::hidden(
     shiny::div(
       id = "heaping_module_page",
       shiny::tags$head(
@@ -308,6 +308,8 @@ heaping_module_ui <- function(i18n) {
       )
     )
   )
+
+  i18n$translate_ui(ui)
 }
 
 
