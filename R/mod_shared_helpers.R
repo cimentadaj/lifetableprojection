@@ -50,12 +50,33 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
 
   observeEvent(input$use_sample_data, {
     sample_df <- sample_data()
+    if (is.null(sample_df)) {
+      cat(sprintf("[DATA_CONTEXT][%s] sample data requested but loader returned NULL\n", module_id))
+      return()
+    }
+
+    sample_df <- as.data.frame(sample_df)
+    if (!".id" %in% names(sample_df)) {
+      sample_df$.id <- 1L
+    }
+    if (!".id_label" %in% names(sample_df)) {
+      sample_df$.id_label <- i18n$t("Sample dataset")
+    }
+
+    cat(sprintf(
+      "[DATA_CONTEXT][%s] sample data loaded | rows=%s | cols=%s | unique_ids=%s\n",
+      module_id, nrow(sample_df), ncol(sample_df), paste(unique(sample_df$.id), collapse = ", ")
+    ))
+
+    group_selection_passed(TRUE)
+    selected_grouping_vars(character(0))
+
     raw_data(sample_df)
     session$userData[[raw_storage_key]] <- sample_df
     data_in(sample_df)
     data_origin("sample")
-    group_selection_passed(FALSE)
-    selected_grouping_vars(character(0))
+
+    output$modal_ui <- renderUI(NULL)
   })
 
   output$upload_log <- renderUI({
@@ -94,18 +115,27 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
 
   output$validation_summary <- renderUI({
     req(group_selection_passed())
-    displayValidationResults(validation_details(), i18n)
+    results <- validation_details()
+    displayValidationResults(results, i18n)
   })
 
   output$validation_table_ui <- renderUI({
     req(group_selection_passed())
+    results <- validation_details()
+    if (is.null(results) || all(results$pass == "Pass")) {
+      return(NULL)
+    }
     DT::dataTableOutput(ns("validation_table"))
   })
 
   output$validation_table <- DT::renderDT({
     req(group_selection_passed())
+    results <- validation_details()
+    if (is.null(results) || all(results$pass == "Pass")) {
+      return(NULL)
+    }
     DT::datatable(
-      validation_details(),
+      results,
       rownames = FALSE,
       options = list(
         pageLength = 5,
@@ -120,18 +150,60 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   setup_grouping_dropdown_observers(input, selected_grouping_vars)
 
   output$grouping_controls <- renderUI({
-    req(group_selection_passed())
+    status <- group_selection_passed()
+    cat(sprintf("[GROUPING_UI][%s] render request | group_selection_passed=%s\n", module_id, status))
+    req(status)
     dropdowns <- grouping_dropdowns()
-    if (is.null(dropdowns) || length(dropdowns) == 0) {
-      return(shiny::span(
-        class = "simple-module-log",
-        i18n$t("No grouping variables selected. Analysis will run on the entire dataset.")
+    drop_count <- if (is.null(dropdowns)) 0L else length(dropdowns)
+    cat(sprintf("[GROUPING_UI][%s] render | dropdown_count=%s\n", module_id, drop_count))
+    if (!is.null(dropdowns) && length(dropdowns) > 0) {
+      cat(sprintf("[GROUPING_UI][%s] rendering %s column dropdowns\n", module_id, length(dropdowns)))
+      return(shiny::div(
+        class = "simple-module-grouping ui form",
+        lapply(dropdowns, shiny::div, class = "field")
       ))
     }
 
-    shiny::div(
-      class = "simple-module-grouping ui form",
-      lapply(dropdowns, shiny::div, class = "field")
+    df <- data_in()
+    if (!is.null(df) && ".id" %in% names(df)) {
+      id_values <- unique(df$.id)
+      if (length(id_values) > 0) {
+        id_values_chr <- as.character(id_values)
+        if (".id_label" %in% names(df)) {
+          label_df <- dplyr::distinct(df, .id, .id_label)
+          label_df <- label_df[match(id_values, label_df$.id), , drop = FALSE]
+          labels <- if (!is.null(label_df$.id_label)) label_df$.id_label else id_values_chr
+        } else {
+          labels <- id_values_chr
+        }
+        choices <- stats::setNames(id_values_chr, labels)
+        current <- input[[ns("group_id_select")]]
+        if (is.null(current) || !current %in% id_values_chr) {
+          current <- id_values_chr[1]
+        }
+        cat(sprintf(
+          "[GROUPING_UI][%s] rendering fallback group selector | choices=%s | selected=%s\n",
+          module_id, paste(labels, collapse = ", "), as.character(current)
+        ))
+        return(shiny::div(
+          class = "simple-module-grouping ui form",
+          shiny::div(
+            class = "field",
+            shiny.semantic::selectInput(
+              ns("group_id_select"),
+              i18n$t("Group to view"),
+              choices = choices,
+              selected = current
+            )
+          )
+        ))
+      }
+    }
+
+    cat(sprintf("[GROUPING_UI][%s] no grouping controls available; showing info message\n", module_id))
+    shiny::span(
+      class = "simple-module-log",
+      i18n$t("No grouping variables selected. Analysis will run on the entire dataset.")
     )
   })
 

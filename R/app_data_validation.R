@@ -58,11 +58,19 @@ renderDataTable <- function(data, i18n) {
 #' @importFrom tools toTitleCase
 #' @export
 displayValidationResults <- function(results, i18n) {
+  if (is.null(results) || nrow(results) == 0) {
+    return(NULL)
+  }
+
   if (all(results$pass == "Pass")) {
-    wellPanel(class = "success", i18n$t("✅ Everything is great, all checks passed!"))
+    shiny::wellPanel(
+      class = "success",
+      style = "text-align: center;",
+      i18n$t("✅ Everything is great, all checks passed!")
+    )
   } else {
     failed_checks <- results[results$pass != "Pass", ]
-    wellPanel(
+    shiny::wellPanel(
       class = "danger",
       HTML(paste0(i18n$t("Check Failures:"), "<br>")),
       HTML(paste("\u274C", i18n$t(toTitleCase(failed_checks$message)), collapse = "<br>"))

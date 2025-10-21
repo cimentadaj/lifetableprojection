@@ -3,96 +3,302 @@
 #' @param i18n Translator helper used for labels.
 #' @noRd
 heaping_module_ui <- function(i18n) {
-  metadata <- list(
-    title = i18n$t("Heaping Diagnostics"),
-    subtitle = i18n$t("Evaluate age heaping patterns for uploaded mortality data."),
-    description = i18n$t("Compute Bachi, Myers, Roughness, and Sawtooth indices to assess digit preference across ages."),
-    instructions = i18n$t("Upload your CSV, confirm grouping columns when prompted, then choose the variable you wish to evaluate."),
-    run_button = i18n$t("Run heaping analysis"),
-    file_label = i18n$t("Upload CSV file"),
-    sample_button = i18n$t("Use sample data"),
-    icon = "chart bar"
-  )
-
-  content_ui <- list(
-    before_data = function(ns) {
-      shiny::div(
-        class = "simple-module-intro",
-        shiny::div(
-          class = "simple-module-intro-text",
-          shiny::h2(i18n$t("Assess age reporting quality")),
-          shiny::p(i18n$t("Upload deaths or exposures and review digit-preference diagnostics before continuing your workflow."))
-        ),
-        shiny::div(
-          class = "simple-module-intro-actions",
-          shiny::tags$button(
-            id = "heaping_back_to_modules",
-            type = "button",
-            onclick = "Shiny.setInputValue('heaping_back_to_modules', Date.now());",
-            i18n$t("← Back to modules")
-          )
-        )
-      )
-    },
-    info = function(ns) {
-      shiny::div(
-        class = "simple-module-guidance",
-        shiny.semantic::segment(
-          shiny::h4(i18n$t("What you'll need")),
-          shiny::tags$ul(
-            shiny::tags$li(i18n$t("Single-age or abridged ages with numeric Deaths and Exposures.")),
-            shiny::tags$li(i18n$t("Optional grouping columns (e.g. Sex, Region) if you plan to run diagnostics by subgroup."))
-          ),
-          shiny::p(class = "simple-module-note", i18n$t("Tip: choose \"Deaths\" for Bachi/Myers and \"Exposures\" to inspect denominator quality."))
-        ),
-        shiny.semantic::segment(
-          shiny::h4(i18n$t("Sample heaping CSV preview")),
-          shiny::p(i18n$t("Source: ODAPbackend::dat_heap_smooth.csv.gz (single-year age counts).")),
-          DT::dataTableOutput(ns("heaping_sample_preview"))
-        )
-      )
-    },
-    controls = function(ns) {
-      shiny::div(
-        class = "ui form simple-module-controls",
-        shiny.semantic::segment(
-          shiny::div(
-            class = "fields",
-            shiny::div(
-              class = "field",
-              shiny.semantic::selectInput(
-                ns("heaping_variable"),
-                i18n$t("Variable to evaluate"),
-                choices = c("Deaths", "Exposures"),
-                selected = "Deaths"
-              )
-            ),
-            shiny::div(
-              class = "field simple-module-group-label",
-              shiny::uiOutput(ns("active_group_label"))
-            )
-          )
-        )
-      )
-    },
-    results = function(ns) {
-      shiny::div(
-        class = "simple-module-results-table",
-        DT::dataTableOutput(ns("heaping_table"))
-      )
-    },
-    downloads = function(ns) {
-      shiny::div(
-        class = "simple-module-download",
-        shiny::downloadButton(ns("download_heaping_csv"), i18n$t("Download results"), class = "ui button")
-      )
-    }
-  )
+  ns <- shiny::NS("heaping")
 
   shinyjs::hidden(
     shiny::div(
       id = "heaping_module_page",
-      mod_simple_module_ui("heaping", metadata, content_ui)
+      shiny::tags$head(
+        shiny::tags$style(shiny::HTML("
+          .heaping-main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 3rem;
+          }
+          
+          .heaping-step {
+            width: 100%;
+          }
+          .heaping-step.main-content {
+            display: block;
+          }
+          .heaping-hero {
+            margin-bottom: 1.5rem;
+            padding: 0 1rem;
+          }
+          .heaping-hero h1 {
+            margin: 0 0 0.35rem 0;
+            font-size: 2rem;
+            color: #1b1c1d;
+          }
+          .heaping-hero p {
+            margin: 0;
+            color: #425466;
+            max-width: 100%;
+          }
+          .info-box {
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 0 0 24px;
+            text-align: left;
+            color: #1b1c1d;
+            background: #ffffff;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+          }
+          .info-box h1 {
+            margin-top: 0;
+            color: #1b6ec2;
+            font-size: 1.65rem;
+          }
+          .info-box h3 {
+            margin-top: 1rem;
+          }
+          .info-box p {
+            font-size: 1rem;
+            color: #4a5568;
+          }
+          .validation-results {
+            text-align: center;
+            font-size: 15px;
+            color: #555;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            margin-top: 1rem;
+          }
+          .button-container,
+          .button-container-file {
+            display: flex;
+            justify-content: center; /* Aligns children (buttons) in the center horizontally */
+            gap: 10px; /* Space between buttons */
+          }
+          .button-container {
+            margin-top: 1.5rem;
+          }
+          .button-container-file .ui.button,
+          .button-container .ui.button {
+            min-width: 180px;
+            font-weight: 600;
+          }
+          .button-container-file {
+            display: flex;
+            justify-content: center; /* Aligns children (buttons) in the center horizontally */
+            gap: 10px; /* Space between buttons */
+          }
+          .button-container-file .ui-ss-input {
+            display: flex;
+            align-items: center;
+            min-width: 260px;
+          }
+          .button-container-file .ui.button {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Aligns children (buttons) in the center horizontally */
+            height: 38px;
+          }
+          .heaping-upload-log {
+            margin-top: 0.75rem;
+            text-align: center;
+            color: #4a5568;
+            font-weight: 500;
+          }
+          .heaping-controls-block {
+            margin-bottom: 1.5rem;
+          }
+          .heaping-controls-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+          }
+          .heaping-controls-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #1b1c1d;
+          }
+          .heaping-controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: flex-end;
+          }
+          .heaping-controls-row .heaping-control-form {
+            flex: 0 0 220px;
+            min-width: 200px;
+          }
+          .heaping-controls-row .grouping-control-panel {
+            flex: 1 1 calc(100% - 240px);
+            min-width: 240px;
+          }
+          .heaping-controls-row .grouping-control-panel .simple-module-grouping {
+            width: 100%;
+          }
+          .heaping-control-form .field {
+            margin-bottom: 1rem;
+          }
+          .heaping-run-panel {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem 1.5rem;
+            border-radius: 12px;
+            background: #f8fbff;
+            border: 1px solid rgba(27,110,194,0.2);
+          }
+          .heaping-run-panel .ui.button {
+            min-width: 220px;
+            font-size: 1.05rem;
+            padding: 0.85rem 1.75rem;
+          }
+          .heaping-run-log {
+            flex: 1 1 auto;
+            color: #425466;
+          }
+          .heaping-run-log.error {
+            color: #c0392b;
+            font-weight: 600;
+          }
+          .heaping-results {
+            margin-bottom: 1.5rem;
+          }
+          .heaping-download {
+            justify-content: flex-end;
+          }
+          @media (max-width: 768px) {
+            .heaping-run-panel {
+              flex-direction: column;
+              align-items: stretch;
+            }
+            .heaping-run-panel .ui.button {
+              width: 100%;
+            }
+            .heaping-controls-row {
+              flex-direction: column;
+            }
+          }
+        "))
+      ),
+      shiny::div(
+        class = "heaping-main",
+        shiny::div(
+          id = ns("data_step"),
+          class = "heaping-step main-content",
+          style = "width: 74%; margin: 0 auto;",
+          shiny::div(
+            class = "heaping-hero",
+            shiny::div(
+              style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
+              shiny::actionButton("heaping_back_to_modules", i18n$t("← Previous"), class = "ui grey button")
+            ),
+            shiny::h1(i18n$t("Heaping Diagnostics")),
+            shiny::p(i18n$t("Upload mortality detail, confirm group columns, and review age heaping checks before continuing your workflow."))
+          ),
+          shiny::div(
+            class = "info-box",
+            shiny::h1(i18n$t("Data upload and validation")),
+            shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:")),
+            rhandsontable::rHandsontableOutput(ns("heaping_sample_table"), width = "100%", height = 210),
+            shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
+            shiny::p(i18n$t("The heaping sample contains Age, Deaths, and Exposures observed at single ages."))
+          ),
+          shiny::tags$script(shiny::HTML("
+            $(document).ready(function() {
+              $('div.ui.left.action.input.ui-ss-input').css('display', 'flex');
+            });
+          ")),
+          shiny::div(
+            class = "button-container-file",
+            style = "display: flex; gap: 10px; padding: 0 1rem;",
+            shiny::div(
+              id = ns("file_input"),
+              shiny.semantic::file_input(
+                ns("file1"),
+                label = "",
+                type = "flex-override"
+              )
+            ),
+            shiny::uiOutput(ns("modal_ui")),
+            shiny.semantic::action_button(
+              ns("use_sample_data"),
+              i18n$t("Use sample data"),
+              class = "ui blue button"
+            )
+          ),
+          shiny::div(
+            class = "heaping-upload-log",
+            shiny::uiOutput(ns("upload_log"))
+          ),
+          shiny::div(
+            class = "validation-results",
+            shiny::uiOutput(ns("validation_summary")),
+            shiny::uiOutput(ns("validation_table_ui"))
+          ),
+          shiny::div(
+            class = "button-container",
+            shiny::uiOutput(ns("heaping_continue_ui"))
+          )
+        ),
+        shinyjs::hidden(
+          shiny::div(
+            id = ns("analysis_step"),
+            class = "heaping-step",
+            shiny::div(
+              style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
+              shiny::actionButton(ns("back_to_upload"), i18n$t("← Previous"), class = "ui grey button")
+            ),
+            shiny::div(
+              class = "info-box",
+              shiny::h1(i18n$t("Heaping Diagnostics")),
+              shiny::p(i18n$t("Analyze data quality and identify potential issues with built-in diagnostic tools"))
+            ),
+            shiny::div(
+              class = "heaping-controls-block",
+              shiny::div(
+                class = "heaping-controls-header",
+                shiny::h3(i18n$t("Controls"))
+              ),
+              shiny::div(
+                class = "heaping-controls-row",
+                shiny::div(
+                  class = "ui form heaping-control-form",
+                  shiny::div(
+                    class = "field",
+                    shiny.semantic::selectInput(
+                      ns("heaping_variable"),
+                      i18n$t("Variable to evaluate"),
+                      choices = c("Deaths", "Exposures"),
+                      selected = "Deaths"
+                    )
+                  )
+                ),
+                shiny::div(
+                  class = "grouping-control-panel",
+                  shiny::uiOutput(ns("grouping_controls"))
+                )
+              )
+            ),
+            shiny::div(
+              class = "heaping-run-panel",
+              shiny::actionButton(
+                ns("run_analysis"),
+                i18n$t("Run heaping analysis"),
+                class = "ui primary button"
+              ),
+              shiny::uiOutput(ns("run_log"))
+            ),
+            shiny::div(
+              class = "heaping-results",
+              DT::dataTableOutput(ns("heaping_table"))
+            ),
+            shiny::div(
+              class = "button-container heaping-download",
+              shiny::downloadButton(ns("download_heaping_csv"), i18n$t("Download results"), class = "ui button")
+            )
+          )
+        )
+      )
     )
   )
 }
@@ -124,49 +330,80 @@ heaping_module_server <- function(input, output, session) {
       )
       shared$last_result <- shiny::reactiveVal(NULL)
 
-      observeEvent(shared$group_selection_passed(), {
-        if (!isTRUE(shared$group_selection_passed())) return()
+      ns <- session$ns
+      data_step_id <- ns("data_step")
+      analysis_step_id <- ns("analysis_step")
 
-        gid <- shared$active_group_id()
-        label <- gid
-        labels_df <- tryCatch(shared$labels_df(), error = function(e) NULL)
-        if (!is.null(labels_df)) {
-          if (!is.null(labels_df) && ".id" %in% names(labels_df) && ".id_label" %in% names(labels_df)) {
-            match_idx <- which(labels_df$.id == gid)
-            if (length(match_idx) > 0) {
-              label <- labels_df$.id_label[match_idx][1]
-            }
-          }
-        }
-        if (is.null(label) || identical(label, "")) {
-          label <- i18n$t("All records")
-        }
-        output$active_group_label <- shiny::renderUI({
-          shiny::span(
-            class = "simple-module-log",
-            sprintf(i18n$t("Current group: %s"), label)
-          )
-        })
+      session$onFlushed(function() {
+        shinyjs::hide(id = analysis_step_id)
+        shinyjs::runjs(sprintf("$('#%s').hide();", analysis_step_id))
+        shiny::outputOptions(output, "heaping_table", suspendWhenHidden = FALSE)
+        shiny::outputOptions(output, "run_log", suspendWhenHidden = FALSE)
+        shiny::outputOptions(output, "grouping_controls", suspendWhenHidden = FALSE)
+      }, once = TRUE)
+
+      output$run_log <- shiny::renderUI({ NULL })
+
+      sample_preview <- heaping_sample_loader()
+
+      output$heaping_sample_table <- rhandsontable::renderRHandsontable({
+        renderDataTable(sample_preview, i18n)
       })
 
-      sample_preview <- head(heaping_sample_loader(), 6)
-
-      output$heaping_sample_preview <- DT::renderDT({
-        DT::datatable(
-          sample_preview,
-          rownames = FALSE,
-          options = list(
-            dom = "t",
-            paging = FALSE
+      output$heaping_continue_ui <- shiny::renderUI({
+        if (!isTRUE(shared$group_selection_passed())) {
+          return(NULL)
+        }
+        details <- shared$validation_details()
+        if (is.null(details) || !is.data.frame(details)) {
+          return(NULL)
+        }
+        if (all(details$pass == "Pass")) {
+          shiny::actionButton(
+            ns("go_to_analysis"),
+            i18n$t("Continue"),
+            class = "ui blue button"
           )
-        )
+        } else {
+          NULL
+        }
       })
 
-      output$active_group_label <- shiny::renderUI({
-        shiny::span(
-          class = "simple-module-log",
-          i18n$t("Current group: awaiting selection")
-        )
+      shiny::observeEvent(shared$group_selection_passed(), {
+        if (!isTRUE(shared$group_selection_passed())) {
+          shinyjs::show(id = data_step_id)
+          shinyjs::hide(id = analysis_step_id)
+          shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
+          shared$last_result(NULL)
+          output$heaping_table <- DT::renderDT(NULL)
+          output$run_log <- shiny::renderUI({ NULL })
+          return()
+        }
+
+        # no-op when grouping is confirmed; UI controls update via outputs
+      }, ignoreNULL = FALSE)
+
+      shiny::observeEvent(shared$data(), {
+        shinyjs::show(id = data_step_id)
+        shinyjs::hide(id = analysis_step_id)
+        shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
+        shared$last_result(NULL)
+        output$heaping_table <- DT::renderDT(NULL)
+        output$run_log <- shiny::renderUI({ NULL })
+      }, ignoreNULL = TRUE)
+
+      shiny::observeEvent(input$go_to_analysis, {
+        message("[HEAPING_MODULE] Continuing to analysis view")
+        shinyjs::hide(id = data_step_id)
+        shinyjs::show(id = analysis_step_id)
+        shinyjs::runjs(sprintf("$('#%s').hide(); $('#%s').show();", data_step_id, analysis_step_id))
+      })
+
+      shiny::observeEvent(input$back_to_upload, {
+        message("[HEAPING_MODULE] Returning to upload view")
+        shinyjs::show(id = data_step_id)
+        shinyjs::hide(id = analysis_step_id)
+        shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
       })
 
       shared
@@ -207,8 +444,11 @@ heaping_module_server <- function(input, output, session) {
         list(error = i18n$t("Heaping diagnostics failed. Check input data validity."))
       })
 
-      if (!is.null(analysis$error)) {
-        return(analysis)
+      if (!is.data.frame(analysis)) {
+        if (!is.null(analysis$error)) {
+          return(analysis)
+        }
+        return(list(error = i18n$t("Heaping diagnostics failed. Check input data validity.")))
       }
 
       gid <- shared$active_group_id()
@@ -231,7 +471,7 @@ heaping_module_server <- function(input, output, session) {
       if (is.null(result) || !is.null(result$error)) {
         msg <- if (!is.null(result$error)) result$error else i18n$t("No diagnostics computed yet.")
         output$run_log <- shiny::renderUI({
-          shiny::span(class = "simple-module-log error", msg)
+          shiny::span(class = "heaping-run-log error", msg)
         })
         output$heaping_table <- DT::renderDT(NULL)
         return()
@@ -239,19 +479,7 @@ heaping_module_server <- function(input, output, session) {
 
       shared$last_result(result)
 
-      output$run_log <- shiny::renderUI({
-        shiny::span(
-          class = "simple-module-log success",
-          sprintf(i18n$t("Heaping diagnostics completed for %s (%s)."), result$group_label, result$variable)
-        )
-      })
-
-      output$active_group_label <- shiny::renderUI({
-        shiny::span(
-          class = "simple-module-log",
-          sprintf(i18n$t("Current group: %s"), result$group_label)
-        )
-      })
+      output$run_log <- shiny::renderUI({ NULL })
 
       output$heaping_table <- DT::renderDT({
         tbl <- result$table

@@ -90,8 +90,14 @@ setup_grouping_dropdowns <- function(selected_grouping_vars, data_in, ns = funct
 
     if (length(selected_grouping_vars()) == 0) return()
 
+    cat(sprintf(
+      "[GROUP_DROPDOWNS] building column dropdowns for vars: %s\n",
+      paste(selected_grouping_vars(), collapse = ", ")
+    ))
+
     lapply(selected_grouping_vars(), function(var) {
       unique_values <- unique(data_in()[[var]])
+      cat(sprintf("[GROUP_DROPDOWNS] %s unique values: %s\n", var, paste(unique_values, collapse = ", ")))
       selectInput(
         inputId = ns(paste0("group_select_", var)),
         label = var,
@@ -131,6 +137,7 @@ setup_grouping_dropdown_observers <- function(input, selected_grouping_vars) {
 #' @param input Shiny input object
 #' @return Character string representing the current group ID
 #' @importFrom dplyr %>% distinct
+#' @importFrom utils type.convert
 #' @export
 get_current_group_id <- function(selected_grouping_vars, data_in, input) {
   df <- data_in()
@@ -141,6 +148,12 @@ get_current_group_id <- function(selected_grouping_vars, data_in, input) {
 
   vars <- selected_grouping_vars()
   if (length(vars) == 0) {
+    manual <- input$group_id_select
+    if (!is.null(manual) && length(manual) > 0) {
+      manual_value <- utils::type.convert(manual, as.is = TRUE)
+      cat(sprintf("[GROUP_ID] manual group selection -> %s\n", as.character(manual_value)))
+      return(manual_value)
+    }
     ids <- unique(df$.id)
     gid <- if (length(ids) > 0) ids[[1]] else NA
     cat(sprintf("[GROUP_ID] No grouping vars selected; fallback gid = %s\n", as.character(gid)))
