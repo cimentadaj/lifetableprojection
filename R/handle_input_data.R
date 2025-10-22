@@ -47,7 +47,6 @@ validate_data <- function(data) {
 handle_group_selection_modal <- function(input, output, session, data, group_selection_passed, selected_grouping_vars, i18n, data_raw = NULL, raw_key = NULL) {
   ns <- session$ns
   modal_id <- ns("column_selection_modal")
-
   # Reactive expression for choices with safe defaults
   choices <- reactive({
     x <- names(data())
@@ -58,48 +57,111 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
     }
   })
 
+  modal_show_pending <- FALSE
+
+  show_group_selection_modal <- function() {
+    if (is.null(data())) {
+      cat("[GROUP_MODAL] show request skipped (no data available)\n")
+      return()
+    }
+
+    if (isTRUE(modal_show_pending)) {
+      cat(sprintf("[GROUP_MODAL] show request skipped (already pending) | modal_id=%s\n", modal_id))
+      return()
+    }
+    modal_show_pending <<- TRUE
+    cat(sprintf("[GROUP_MODAL] show request registered | modal_id=%s\n", modal_id))
+
+    current_names <- paste(names(data()), collapse = ",")
+    cat(sprintf("[GROUP_MODAL] preparing modal | rows=%s | cols=%s | columns=%s | group_passed=%s\n",
+      nrow(data()), ncol(data()), current_names, group_selection_passed()))
+
+    output$modal_error_message <- renderUI(NULL)
+
+    output$modal_ui <- renderUI({
+      cat(sprintf("[GROUP_MODAL] rendering modal UI | modal_id=%s\n", modal_id))
+      shiny.semantic::modal(
+        id = modal_id,
+        header = i18n$t("Column Selection"),
+        content = div(
+          strong(p(i18n$t("If you're analysis needs to be performed by groups (e.g Sex, Province, Region, etc..), please select the columns that group your data. If your data is not group-wise, tick the box below."))),
+          br(),
+          shiny.semantic::selectInput(
+            ns("id_columns"),
+            label = i18n$t("Select Identifier Columns"),
+            choices = choices(),
+            multiple = TRUE
+          ),
+          br(),
+          shiny.semantic::checkbox_input(
+            ns("skip_grouping"),
+            i18n$t("No grouping needed for this analysis"),
+            is_marked = FALSE
+          ),
+          br(),
+          br(),
+          br(),
+          uiOutput(ns("modal_error_message"))
+        ),
+        footer = tagList(
+          actionButton(ns("confirm_column_selection"), i18n$t("Confirm"), class = "ui button primary"),
+          actionButton(ns("cancel_column_selection"), i18n$t("Cancel"), class = "ui button")
+        )
+      )
+    })
+    cat(sprintf("[GROUP_MODAL] modal UI assigned | modal_id=%s; awaiting flush\n", modal_id))
+
+    session$onFlushed(function() {
+      cat(sprintf("[GROUP_MODAL] onFlushed -> scheduling modal show via shinyjs::delay | modal_id=%s\n", modal_id))
+      shinyjs::delay(0, {
+        cat(sprintf("[GROUP_MODAL] delayed show executing | modal_id=%s | pending=%s | group_passed=%s\n",
+          modal_id, modal_show_pending, group_selection_passed()))
+        if (!isTRUE(modal_show_pending)) {
+          cat("[GROUP_MODAL] delayed show aborted (pending flag cleared)\n")
+          return()
+        }
+        if (isTRUE(group_selection_passed())) {
+          cat("[GROUP_MODAL] delayed show aborted (group already confirmed)\n")
+          modal_show_pending <<- FALSE
+          return()
+        }
+        shinyjs::runjs("$('.ui.dimmer.modals.transition').removeClass('visible active');")
+        cat(sprintf("[GROUP_MODAL] calling shiny.semantic::show_modal | modal_id=%s\n", modal_id))
+        shiny.semantic::show_modal(modal_id, session = session)
+        modal_show_pending <<- FALSE
+        cat(sprintf("[GROUP_MODAL] modal show complete | pending reset -> %s\n", modal_show_pending))
+      })
+    }, once = TRUE)
+  }
+
   # Observe when data is updated AND group selection hasn't passed yet
   observeEvent(data(), {
+    cat(sprintf("[GROUP_MODAL] data observer triggered | group_passed=%s | has_data=%s\n",
+      group_selection_passed(), !is.null(data())))
     # Only show modal if group selection hasn't passed
     if (!group_selection_passed()) {
-      # Render the modal UI
-      output$modal_ui <- renderUI({
-        shiny.semantic::modal(
-          id = modal_id,
-          header = i18n$t("Column Selection"),
-          content = div(
-            strong(p(i18n$t("If you're analysis needs to be performed by groups (e.g Sex, Province, Region, etc..), please select the columns that group your data. If your data is not group-wise, tick the box below."))),
-            br(),
-            shiny.semantic::selectInput(
-              ns("id_columns"),
-              label = i18n$t("Select Identifier Columns"),
-              choices = choices(),
-              multiple = TRUE
-            ),
-            br(),
-            shiny.semantic::checkbox_input(
-              ns("skip_grouping"),
-              i18n$t("No grouping needed for this analysis"),
-              is_marked = FALSE
-            ),
-            br(),
-            br(),
-            br(),
-            uiOutput(ns("modal_error_message"))
-          ),
-          footer = tagList(
-            actionButton(ns("confirm_column_selection"), i18n$t("Confirm"), class = "ui button primary"),
-            actionButton(ns("cancel_column_selection"), i18n$t("Cancel"), class = "ui button")
-          )
-        )
-      })
-
-      # Use session$onFlushed to ensure the UI is updated before showing the modal
-      session$onFlushed(function() {
-        shiny.semantic::show_modal(modal_id, session = session)
-      }, once = TRUE)
+      show_group_selection_modal()
     }
   })
+
+  observeEvent(group_selection_passed(), {
+    cat(sprintf("[GROUP_MODAL] group_selection_passed changed -> %s | has_data=%s\n",
+      group_selection_passed(), !is.null(data())))
+    if (!isTRUE(group_selection_passed())) {
+      if (!is.null(data())) {
+        show_group_selection_modal()
+      }
+    } else {
+      modal_show_pending <<- FALSE
+      cat(sprintf("[GROUP_MODAL] grouping confirmed; pending reset -> %s\n", modal_show_pending))
+      cat(sprintf("[GROUP_MODAL] grouping confirmed; hiding modal_id=%s\n", modal_id))
+      shiny.semantic::hide_modal(modal_id, session = session)
+      shinyjs::runjs("$('.ui.dimmer.modals.transition').removeClass('visible active');")
+      shinyjs::runjs(sprintf("console.log('[GROUP_MODAL][client] hide invoked (id=%s) at ' + Date.now());", modal_id))
+      output$modal_ui <- renderUI(NULL)
+      cat(sprintf("[GROUP_MODAL] modal UI cleared | modal_id=%s\n", modal_id))
+    }
+  }, ignoreNULL = FALSE)
 
   validate_groups <- function(selected_columns) {
     if (isTRUE(input$skip_grouping)) {
@@ -207,6 +269,7 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
           HTML(sprintf('<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;">%s</p>', 
             i18n$t("We could not tag your groups with the selected columns. Please check your file structure and try again.")))
         })
+        cat(sprintf("[GROUP_MODAL] failed to update groups | modal_id=%s | error=%s\n", modal_id, updated_data$message))
         return()
       }
       cat("[GROUP_MODAL] Updated data labels preview:\n")
@@ -220,6 +283,10 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
 
   # Close the modal when the "Cancel" button is clicked
   observeEvent(input$cancel_column_selection, {
+    cat(sprintf("[GROUP_MODAL] cancel clicked | modal_id=%s | group_passed=%s\n",
+      modal_id, group_selection_passed()))
+    modal_show_pending <<- FALSE
     shiny.semantic::hide_modal(modal_id, session = session)
+    shinyjs::runjs("$('.ui.dimmer.modals.transition').removeClass('visible active');")
   })
 }

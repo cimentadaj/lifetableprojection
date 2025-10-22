@@ -40,12 +40,18 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
 
   observeEvent(uploaded_data(), {
     df <- uploaded_data()
+    prev_origin <- data_origin()
+    prev_status <- group_selection_passed()
+    cat(sprintf("[DATA_CONTEXT][%s] upload detected | prev_origin=%s | prev_group_passed=%s | rows=%s | cols=%s\n",
+      module_id, prev_origin, prev_status, nrow(df), ncol(df)))
     raw_data(df)
     session$userData[[raw_storage_key]] <- df
     data_in(df)
     data_origin("upload")
-    group_selection_passed(FALSE)
     selected_grouping_vars(character(0))
+    group_selection_passed(FALSE) # reset so the grouping modal reopens for new uploads
+    cat(sprintf("[DATA_CONTEXT][%s] upload state reset | new_origin=%s | group_passed=%s | selected_vars=%s\n",
+      module_id, data_origin(), group_selection_passed(), paste(selected_grouping_vars(), collapse = ",")))
   })
 
   observeEvent(input$use_sample_data, {
@@ -70,6 +76,8 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
 
     group_selection_passed(TRUE)
     selected_grouping_vars(character(0))
+    cat(sprintf("[DATA_CONTEXT][%s] sample data applied | group_passed=%s | selected_vars=%s\n",
+      module_id, group_selection_passed(), paste(selected_grouping_vars(), collapse = ",")))
 
     raw_data(sample_df)
     session$userData[[raw_storage_key]] <- sample_df

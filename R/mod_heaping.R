@@ -407,6 +407,7 @@ heaping_module_server <- function(input, output, session) {
       analysis_step_id <- ns("analysis_step")
 
       session$onFlushed(function() {
+        cat("[HEAPING_MODULE] session onFlushed (initial setup) triggered; hiding analysis step\n")
         shinyjs::hide(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').hide();", analysis_step_id))
         shiny::outputOptions(output, "heaping_table", suspendWhenHidden = FALSE)
@@ -447,6 +448,8 @@ heaping_module_server <- function(input, output, session) {
       })
 
       shiny::observeEvent(shared$group_selection_passed(), {
+        cat(sprintf("[HEAPING_MODULE] shared$group_selection_passed observer | status=%s | data_null=%s | origin=%s\n",
+          shared$group_selection_passed(), is.null(shared$data()), shared$data_origin()))
         if (!isTRUE(shared$group_selection_passed())) {
           shinyjs::show(id = data_step_id)
           shinyjs::hide(id = analysis_step_id)
@@ -463,6 +466,9 @@ heaping_module_server <- function(input, output, session) {
       }, ignoreNULL = FALSE)
 
       shiny::observeEvent(shared$data(), {
+        dims <- if (is.null(shared$data())) "NA" else sprintf("%s x %s", nrow(shared$data()), ncol(shared$data()))
+        cat(sprintf("[HEAPING_MODULE] shared$data() observer fired | data_null=%s | dims=%s | group_passed=%s | origin=%s\n",
+          is.null(shared$data()), dims, shared$group_selection_passed(), shared$data_origin()))
         shinyjs::show(id = data_step_id)
         shinyjs::hide(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
@@ -475,6 +481,8 @@ heaping_module_server <- function(input, output, session) {
 
       shiny::observeEvent(input$go_to_analysis, {
         message("[HEAPING_MODULE] Continuing to analysis view")
+        cat(sprintf("[HEAPING_MODULE] go_to_analysis clicked | data_available=%s | last_result_null=%s | group_passed=%s\n",
+          !is.null(shared$data()), is.null(shared$last_result()), shared$group_selection_passed()))
         shinyjs::hide(id = data_step_id)
         shinyjs::show(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').hide(); $('#%s').show();", data_step_id, analysis_step_id))
@@ -482,6 +490,8 @@ heaping_module_server <- function(input, output, session) {
 
       shiny::observeEvent(input$back_to_upload, {
         message("[HEAPING_MODULE] Returning to upload view")
+        cat(sprintf("[HEAPING_MODULE] back_to_upload clicked | data_origin=%s | group_passed=%s\n",
+          shared$data_origin(), shared$group_selection_passed()))
         shinyjs::show(id = data_step_id)
         shinyjs::hide(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
