@@ -45,6 +45,7 @@ setupDownloadHandlers <- function(output, plots, data, input) {
 #' @param input Shiny input object.
 #' @param i18n An optional i18n object for translation.
 #' @importFrom ggplot2 aes labs theme_minimal theme_light element_text
+#' @importFrom dplyr rename_with left_join mutate select group_split sym
 #' @export
 smooth_overall <- function(data_in, rough_exp, fine_exp, constraint_exp, u5m_exp, rough_deaths, fine_deaths, constraint_deaths, u5m_deaths, age_out, i18n) {
   expo <- smooth_flexible(

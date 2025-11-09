@@ -165,6 +165,9 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames_int
 # Function to calculate life table and generate plots
 calculate_lt_and_plots <- function(data, input, i18n) {
   reactive({
+    # Get fresh i18n instance to ensure translations update with language changes
+    i18n <- usei18n_local()
+
     print("Starting life table calculations")
     lt_res <- calculateLifeTable(data, input)
     plots <- lt_plot(data, lt_res, isolate(input$input_extrapFrom), i18n)

@@ -30,6 +30,7 @@
 #' - `final_result()`: Retrieves the output data from the final executed step. If no steps have been executed,
 #' `NULL` is returned.
 #'
+#' @importFrom dplyr left_join select rename_with
 #' @export
 preprocessing_execution <- function(data_in) {
   preprocessing_execution_internal <- R6::R6Class(
