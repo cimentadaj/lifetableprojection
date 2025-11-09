@@ -97,10 +97,16 @@ generate_group_plots <- function(group_data, i18n) {
 #'
 #' @param data_in Reactive expression containing the input data
 #' @param i18n Translator object for internationalization
+#' @param selected_language Reactive value for current language selection
 #' @return Reactive expression containing diagnostics text
-generate_diagnostics_text <- function(data_in, i18n) {
+generate_diagnostics_text <- function(data_in, i18n, selected_language = NULL) {
   reactive({
     req(data_in())
+    # Force reactivity to language changes
+    if (!is.null(selected_language)) {
+      selected_language
+    }
+
     is_single_ages <- all(diff(sort(data_in()$Age)) == 1)
 
     paste0(
@@ -312,7 +318,7 @@ setup_diagnostic_data <- function(input, output, session, data_in, group_selecti
   }
 
   # Generate diagnostics text and table (these are lightweight operations)
-  diagnostics_text <- generate_diagnostics_text(data_in, i18n)
+  diagnostics_text <- generate_diagnostics_text(data_in, i18n, input$selected_language)
   diagnostics_table <- generate_diagnostics_table(data_in, group_selection_passed, i18n)
   current_diagnostics_table <- create_current_diagnostics_table(diagnostics_table, selected_grouping_vars, data_in, input)
 

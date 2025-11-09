@@ -1569,6 +1569,50 @@ translate_text <- function(text, i18n = NULL) {
 }
 
 app_server <- function(input, output, session) {
+  # Render lifetable module card dynamically for language switching
+  output$lifetable_module_card <- renderUI({
+    i18n <- usei18n_local()
+    # Force reactivity on language change
+    input$selected_language
+
+    # Get the lifetable module definition with current language
+    modules <- get_app_modules(i18n)
+    mod <- modules$lifetable
+
+    div(
+      class = "module-card",
+      div(
+        class = "module-icon",
+        icon(mod$icon)
+      ),
+      h3(mod$name, class = "module-name"),
+      p(mod$description, class = "module-description"),
+      actionButton("goto_lifetable", mod$button_label, class = "ui blue button")
+    )
+  })
+
+  # Render heaping module card dynamically for language switching
+  output$heaping_module_card <- renderUI({
+    i18n <- usei18n_local()
+    # Force reactivity on language change
+    input$selected_language
+
+    # Get the heaping module definition with current language
+    modules <- get_app_modules(i18n)
+    mod <- modules$heaping
+
+    div(
+      class = "module-card",
+      div(
+        class = "module-icon",
+        icon(mod$icon)
+      ),
+      h3(mod$name, class = "module-name"),
+      p(mod$description, class = "module-description"),
+      actionButton("goto_heaping", mod$button_label, class = "ui blue button")
+    )
+  })
+
   modules <- get_app_modules(usei18n_local())
   lapply(modules, function(mod) {
     if (!is.null(mod$server_fun)) {

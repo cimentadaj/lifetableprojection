@@ -65,7 +65,17 @@ app_ui <- function(request) {
   i18n <- usei18n_local()
 
   modules <- get_app_modules(i18n)
-  module_cards <- lapply(modules, function(mod) {
+  module_cards <- lapply(names(modules), function(mod_id) {
+    mod <- modules[[mod_id]]
+    # Make active module cards dynamic for language switching
+    if (mod_id == "lifetable") {
+      return(uiOutput("lifetable_module_card"))
+    }
+    if (mod_id == "heaping") {
+      return(uiOutput("heaping_module_card"))
+    }
+
+    # Keep other cards static
     if (identical(mod$status, "active")) {
       div(
         class = "module-card",
