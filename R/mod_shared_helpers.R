@@ -42,30 +42,50 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
     df <- uploaded_data()
     prev_origin <- data_origin()
     prev_status <- group_selection_passed()
+    cat(sprintf("[DATA_CONTEXT][%s] ========== NEW DATA UPLOAD DETECTED ==========\n", module_id))
     cat(sprintf("[DATA_CONTEXT][%s] upload detected | prev_origin=%s | prev_group_passed=%s | rows=%s | cols=%s\n",
       module_id, prev_origin, prev_status, nrow(df), ncol(df)))
+    cat(sprintf("[DATA_CONTEXT][%s] uploaded file name: %s\n", module_id,
+      if (!is.null(input$file1) && !is.null(input$file1$name)) input$file1$name else "unknown"))
+
+    cat(sprintf("[DATA_CONTEXT][%s] setting raw_data()\n", module_id))
     raw_data(df)
+    cat(sprintf("[DATA_CONTEXT][%s] storing in session$userData[[%s]]\n", module_id, raw_storage_key))
     session$userData[[raw_storage_key]] <- df
+    cat(sprintf("[DATA_CONTEXT][%s] setting data_in() - THIS SHOULD TRIGGER DOWNSTREAM OBSERVERS\n", module_id))
     data_in(df)
+    cat(sprintf("[DATA_CONTEXT][%s] setting data_origin to 'upload'\n", module_id))
     data_origin("upload")
+    cat(sprintf("[DATA_CONTEXT][%s] clearing selected_grouping_vars\n", module_id))
     selected_grouping_vars(character(0))
+    cat(sprintf("[DATA_CONTEXT][%s] setting group_selection_passed(FALSE) to trigger modal\n", module_id))
     group_selection_passed(FALSE) # reset so the grouping modal reopens for new uploads
     cat(sprintf("[DATA_CONTEXT][%s] upload state reset | new_origin=%s | group_passed=%s | selected_vars=%s\n",
       module_id, data_origin(), group_selection_passed(), paste(selected_grouping_vars(), collapse = ",")))
+    cat(sprintf("[DATA_CONTEXT][%s] ========== UPLOAD PROCESSING COMPLETE ==========\n", module_id))
   })
 
   observeEvent(input$use_sample_data, {
+    prev_origin <- data_origin()
+    prev_status <- group_selection_passed()
+    cat(sprintf("[DATA_CONTEXT][%s] ========== SAMPLE DATA BUTTON CLICKED ==========\n", module_id))
+    cat(sprintf("[DATA_CONTEXT][%s] prev_origin=%s | prev_group_passed=%s\n", module_id, prev_origin, prev_status))
+
     sample_df <- sample_data()
     if (is.null(sample_df)) {
-      cat(sprintf("[DATA_CONTEXT][%s] sample data requested but loader returned NULL\n", module_id))
+      cat(sprintf("[DATA_CONTEXT][%s] ERROR: sample data requested but loader returned NULL\n", module_id))
       return()
     }
 
     sample_df <- as.data.frame(sample_df)
+    cat(sprintf("[DATA_CONTEXT][%s] sample_df loaded | rows=%s | cols=%s\n", module_id, nrow(sample_df), ncol(sample_df)))
+
     if (!".id" %in% names(sample_df)) {
+      cat(sprintf("[DATA_CONTEXT][%s] adding .id column with value 1L\n", module_id))
       sample_df$.id <- 1L
     }
     if (!".id_label" %in% names(sample_df)) {
+      cat(sprintf("[DATA_CONTEXT][%s] adding .id_label column\n", module_id))
       sample_df$.id_label <- i18n$t("Sample dataset")
     }
 
@@ -74,17 +94,25 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
       module_id, nrow(sample_df), ncol(sample_df), paste(unique(sample_df$.id), collapse = ", ")
     ))
 
+    cat(sprintf("[DATA_CONTEXT][%s] setting group_selection_passed(TRUE) - sample data pre-approved\n", module_id))
     group_selection_passed(TRUE)
+    cat(sprintf("[DATA_CONTEXT][%s] clearing selected_grouping_vars\n", module_id))
     selected_grouping_vars(character(0))
     cat(sprintf("[DATA_CONTEXT][%s] sample data applied | group_passed=%s | selected_vars=%s\n",
       module_id, group_selection_passed(), paste(selected_grouping_vars(), collapse = ",")))
 
+    cat(sprintf("[DATA_CONTEXT][%s] setting raw_data()\n", module_id))
     raw_data(sample_df)
+    cat(sprintf("[DATA_CONTEXT][%s] storing in session$userData[[%s]]\n", module_id, raw_storage_key))
     session$userData[[raw_storage_key]] <- sample_df
+    cat(sprintf("[DATA_CONTEXT][%s] setting data_in() - THIS SHOULD TRIGGER DOWNSTREAM OBSERVERS\n", module_id))
     data_in(sample_df)
+    cat(sprintf("[DATA_CONTEXT][%s] setting data_origin to 'sample'\n", module_id))
     data_origin("sample")
 
+    cat(sprintf("[DATA_CONTEXT][%s] clearing modal UI\n", module_id))
     output$modal_ui <- renderUI(NULL)
+    cat(sprintf("[DATA_CONTEXT][%s] ========== SAMPLE DATA PROCESSING COMPLETE ==========\n", module_id))
   })
 
   output$upload_log <- renderUI({

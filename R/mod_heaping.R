@@ -290,7 +290,7 @@ heaping_module_ui <- function(i18n) {
             ),
             shiny::div(
               class = "heaping-results",
-              DT::dataTableOutput(ns("heaping_table"))
+              shiny::uiOutput(ns("heaping_table_container"))
             ),
             shinyjs::hidden(
               shiny::div(
@@ -407,17 +407,21 @@ heaping_module_server <- function(input, output, session) {
       analysis_step_id <- ns("analysis_step")
 
       session$onFlushed(function() {
-        cat("[HEAPING_MODULE] session onFlushed (initial setup) triggered; hiding analysis step\n")
+        cat("[HEAPING_MODULE] session onFlushed (initial setup) triggered; hiding analysis step and download button\n")
         shinyjs::hide(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').hide();", analysis_step_id))
-        shiny::outputOptions(output, "heaping_table", suspendWhenHidden = FALSE)
         shiny::outputOptions(output, "run_log", suspendWhenHidden = FALSE)
         shiny::outputOptions(output, "grouping_controls", suspendWhenHidden = FALSE)
+        cat("[HEAPING_MODULE] initial setup: hiding download_container\n")
         shinyjs::hide(id = ns("download_container"))
+        cat("[HEAPING_MODULE] initial setup: disabling download_heaping_csv button\n")
         shinyjs::disable(ns("download_heaping_csv"))
+        cat("[HEAPING_MODULE] initial setup complete\n")
       }, once = TRUE)
 
+      cat("[HEAPING_MODULE] setup: pre-hiding download_container\n")
       shinyjs::hide(id = ns("download_container"))
+      cat("[HEAPING_MODULE] setup: pre-disabling download_heaping_csv button\n")
       shinyjs::disable(ns("download_heaping_csv"))
 
       output$run_log <- shiny::renderUI({ NULL })
@@ -467,36 +471,106 @@ heaping_module_server <- function(input, output, session) {
 
       shiny::observeEvent(shared$data(), {
         dims <- if (is.null(shared$data())) "NA" else sprintf("%s x %s", nrow(shared$data()), ncol(shared$data()))
+        cat(sprintf("[HEAPING_MODULE] ========== shared$data() OBSERVER FIRED ==========\n"))
         cat(sprintf("[HEAPING_MODULE] shared$data() observer fired | data_null=%s | dims=%s | group_passed=%s | origin=%s\n",
           is.null(shared$data()), dims, shared$group_selection_passed(), shared$data_origin()))
+        cat(sprintf("[HEAPING_MODULE] RESETTING ANALYSIS STATE: clearing last_result, table, run_log\n"))
+
+        cat(sprintf("[HEAPING_MODULE] showing data_step, hiding analysis_step\n"))
         shinyjs::show(id = data_step_id)
         shinyjs::hide(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
+
+        cat(sprintf("[HEAPING_MODULE] clearing shared$last_result()\n"))
         shared$last_result(NULL)
-        output$heaping_table <- DT::renderDT(NULL)
+
+        cat(sprintf("[HEAPING_MODULE] clearing output$heaping_table_container (removing table from UI)\n"))
+        output$heaping_table_container <- shiny::renderUI({ NULL })
+
+        cat(sprintf("[HEAPING_MODULE] clearing output$run_log\n"))
         output$run_log <- shiny::renderUI({ NULL })
+
+        cat(sprintf("[HEAPING_MODULE] hiding download button container\n"))
         shinyjs::hide(id = ns("download_container"))
+        shinyjs::runjs(sprintf("$('#%s').hide();", ns("download_container")))
+
+        cat(sprintf("[HEAPING_MODULE] disabling download button\n"))
         shinyjs::disable(ns("download_heaping_csv"))
+
+        cat(sprintf("[HEAPING_MODULE] ========== DATA RESET COMPLETE ==========\n"))
       }, ignoreNULL = TRUE)
 
+      # Additional safety net: observe data_origin() changes to catch data source switches
+      shiny::observeEvent(shared$data_origin(), {
+        origin <- shared$data_origin()
+        cat(sprintf("[HEAPING_MODULE] ========== data_origin() OBSERVER FIRED ==========\n"))
+        cat(sprintf("[HEAPING_MODULE] data_origin changed to: %s\n", origin))
+
+        if (origin %in% c("upload", "sample")) {
+          cat(sprintf("[HEAPING_MODULE] NEW DATA SOURCE DETECTED (%s) - forcing reset\n", origin))
+          cat(sprintf("[HEAPING_MODULE] showing data_step, hiding analysis_step\n"))
+          shinyjs::show(id = data_step_id)
+          shinyjs::hide(id = analysis_step_id)
+          shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
+
+          cat(sprintf("[HEAPING_MODULE] clearing shared$last_result()\n"))
+          shared$last_result(NULL)
+
+          cat(sprintf("[HEAPING_MODULE] clearing output$heaping_table_container (removing table from UI)\n"))
+          output$heaping_table_container <- shiny::renderUI({ NULL })
+
+          cat(sprintf("[HEAPING_MODULE] clearing output$run_log\n"))
+          output$run_log <- shiny::renderUI({ NULL })
+
+          cat(sprintf("[HEAPING_MODULE] hiding download button container\n"))
+          shinyjs::hide(id = ns("download_container"))
+          shinyjs::runjs(sprintf("$('#%s').hide();", ns("download_container")))
+
+          cat(sprintf("[HEAPING_MODULE] disabling download button\n"))
+          shinyjs::disable(ns("download_heaping_csv"))
+
+          cat(sprintf("[HEAPING_MODULE] ========== DATA ORIGIN RESET COMPLETE ==========\n"))
+        } else {
+          cat(sprintf("[HEAPING_MODULE] data_origin is '%s' - no reset needed\n", origin))
+        }
+      }, ignoreNULL = TRUE, ignoreInit = TRUE)
+
       shiny::observeEvent(input$go_to_analysis, {
+        cat(sprintf("[HEAPING_MODULE] ========== GO TO ANALYSIS CLICKED ==========\n"))
         message("[HEAPING_MODULE] Continuing to analysis view")
         cat(sprintf("[HEAPING_MODULE] go_to_analysis clicked | data_available=%s | last_result_null=%s | group_passed=%s\n",
           !is.null(shared$data()), is.null(shared$last_result()), shared$group_selection_passed()))
+        cat(sprintf("[HEAPING_MODULE] current data_origin: %s\n", shared$data_origin()))
+        cat(sprintf("[HEAPING_MODULE] data dimensions: %s\n",
+          if (is.null(shared$data())) "NULL" else sprintf("%s x %s", nrow(shared$data()), ncol(shared$data()))))
+
+        cat(sprintf("[HEAPING_MODULE] hiding data_step_id: %s\n", data_step_id))
         shinyjs::hide(id = data_step_id)
+        cat(sprintf("[HEAPING_MODULE] showing analysis_step_id: %s\n", analysis_step_id))
         shinyjs::show(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').hide(); $('#%s').show();", data_step_id, analysis_step_id))
+        cat(sprintf("[HEAPING_MODULE] ========== TRANSITION TO ANALYSIS COMPLETE ==========\n"))
       })
 
       shiny::observeEvent(input$back_to_upload, {
+        cat(sprintf("[HEAPING_MODULE] ========== BACK TO UPLOAD CLICKED ==========\n"))
         message("[HEAPING_MODULE] Returning to upload view")
         cat(sprintf("[HEAPING_MODULE] back_to_upload clicked | data_origin=%s | group_passed=%s\n",
           shared$data_origin(), shared$group_selection_passed()))
+        cat(sprintf("[HEAPING_MODULE] last_result_null=%s\n", is.null(shared$last_result())))
+
+        cat(sprintf("[HEAPING_MODULE] showing data_step_id: %s\n", data_step_id))
         shinyjs::show(id = data_step_id)
+        cat(sprintf("[HEAPING_MODULE] hiding analysis_step_id: %s\n", analysis_step_id))
         shinyjs::hide(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
+
+        cat(sprintf("[HEAPING_MODULE] hiding download button container\n"))
         shinyjs::hide(id = ns("download_container"))
+        shinyjs::runjs(sprintf("$('#%s').hide();", ns("download_container")))
+        cat(sprintf("[HEAPING_MODULE] disabling download button\n"))
         shinyjs::disable(ns("download_heaping_csv"))
+        cat(sprintf("[HEAPING_MODULE] ========== BACK TO UPLOAD COMPLETE ==========\n"))
       })
 
       observeEvent(input$download_heaping_csv, {
@@ -507,93 +581,161 @@ heaping_module_server <- function(input, output, session) {
       shared
     },
     prepare = function(input, shared, i18n) {
+      cat(sprintf("[HEAPING_MODULE] ========== PREPARE CALLBACK ==========\n"))
       variable <- input$heaping_variable
+      cat(sprintf("[HEAPING_MODULE] heaping_variable input: %s\n", if (is.null(variable)) "NULL" else variable))
       if (is.null(variable) || !nzchar(variable)) {
+        cat(sprintf("[HEAPING_MODULE] variable is null/empty, defaulting to 'Deaths'\n"))
         variable <- "Deaths"
       }
+      cat(sprintf("[HEAPING_MODULE] prepare returning | variable=%s\n", variable))
       list(variable = variable)
     },
     run = function(shared, params, input, i18n) {
+      cat(sprintf("[HEAPING_MODULE] ========== RUN CALLBACK ==========\n"))
+      cat(sprintf("[HEAPING_MODULE] checking data availability\n"))
+
       if (is.null(shared$data()) || is.null(shared$data())) {
+        cat(sprintf("[HEAPING_MODULE] ERROR: No data available\n"))
         return(list(error = i18n$t("No data available. Please upload a dataset first.")))
       }
+      cat(sprintf("[HEAPING_MODULE] data is available | dims=%s x %s\n", nrow(shared$data()), ncol(shared$data())))
 
+      cat(sprintf("[HEAPING_MODULE] checking group_selection_passed status\n"))
       if (!isTRUE(shared$group_selection_passed())) {
+        cat(sprintf("[HEAPING_MODULE] ERROR: grouping not confirmed | status=%s\n", shared$group_selection_passed()))
         return(list(error = i18n$t("Please confirm the grouping modal before running the analysis.")))
       }
+      cat(sprintf("[HEAPING_MODULE] group selection passed\n"))
 
+      cat(sprintf("[HEAPING_MODULE] retrieving filtered_data()\n"))
       data_subset <- shared$filtered_data()
       cat(sprintf("[HEAPING_MODULE] filtered subset -> rows: %s | cols: %s\n", nrow(data_subset), ncol(data_subset)))
       if (nrow(data_subset) > 0) {
+        cat(sprintf("[HEAPING_MODULE] preview of filtered data (first 3 rows):\n"))
         capture.output(print(head(data_subset, 3))) |> cat(sep = "\n")
       }
+
       if (is.null(data_subset) || nrow(data_subset) == 0) {
+        cat(sprintf("[HEAPING_MODULE] ERROR: filtered data is empty\n"))
         return(list(error = i18n$t("The selected group returned no rows to analyse.")))
       }
 
+      cat(sprintf("[HEAPING_MODULE] checking if variable '%s' exists in data\n", params$variable))
       if (!params$variable %in% names(data_subset)) {
+        cat(sprintf("[HEAPING_MODULE] ERROR: variable '%s' not found | available columns: %s\n",
+          params$variable, paste(names(data_subset), collapse = ", ")))
         return(list(error = sprintf(i18n$t("Column '%s' is missing from the dataset."), params$variable)))
       }
 
-      cat(sprintf("[HEAPING_MODULE] variable selected: %s\n", params$variable))
+      cat(sprintf("[HEAPING_MODULE] running heaping analysis | variable=%s\n", params$variable))
       analysis <- tryCatch({
         ODAPbackend::check_heaping_general(data_subset, params$variable)
       }, error = function(e) {
+        cat(sprintf("[HEAPING_MODULE] ERROR during check_heaping_general: %s\n", e$message))
         list(error = i18n$t("Heaping diagnostics failed. Check input data validity."))
       })
 
       if (!is.data.frame(analysis)) {
+        cat(sprintf("[HEAPING_MODULE] analysis result is not a data.frame | has_error=%s\n", !is.null(analysis$error)))
         if (!is.null(analysis$error)) {
           return(analysis)
         }
         return(list(error = i18n$t("Heaping diagnostics failed. Check input data validity.")))
       }
 
+      cat(sprintf("[HEAPING_MODULE] analysis successful | result_rows=%s | result_cols=%s\n",
+        nrow(analysis), ncol(analysis)))
+
       gid <- shared$active_group_id()
+      cat(sprintf("[HEAPING_MODULE] active_group_id: %s\n", as.character(gid)))
+
       label_df <- tryCatch(shared$labels_df(), error = function(e) NULL)
       group_label <- gid
       if (!is.null(label_df) && ".id" %in% names(label_df) && ".id_label" %in% names(label_df)) {
         match_idx <- which(label_df$.id == gid)
         if (length(match_idx) > 0) {
           group_label <- label_df$.id_label[match_idx][1]
+          cat(sprintf("[HEAPING_MODULE] found label for group %s: %s\n", as.character(gid), group_label))
         }
       }
 
-      list(
+      cat(sprintf("[HEAPING_MODULE] preparing result object\n"))
+      result <- list(
         table = analysis,
         group_label = group_label,
         variable = params$variable
       )
+      cat(sprintf("[HEAPING_MODULE] ========== RUN CALLBACK COMPLETE ==========\n"))
+      result
     },
     render = function(result, output, shared, input, i18n) {
+      cat(sprintf("[HEAPING_MODULE] ========== RENDER CALLBACK ==========\n"))
+      cat(sprintf("[HEAPING_MODULE] checking result status | result_null=%s | has_error=%s\n",
+        is.null(result), !is.null(result$error)))
+
       if (is.null(result) || !is.null(result$error)) {
         msg <- if (!is.null(result$error)) result$error else i18n$t("No diagnostics computed yet.")
+        cat(sprintf("[HEAPING_MODULE] ERROR in result, displaying error message: %s\n", msg))
+
+        cat(sprintf("[HEAPING_MODULE] rendering error in run_log\n"))
         output$run_log <- shiny::renderUI({
           shiny::span(class = "heaping-run-log error", msg)
         })
-        output$heaping_table <- DT::renderDT(NULL)
+
+        cat(sprintf("[HEAPING_MODULE] clearing heaping_table_container\n"))
+        output$heaping_table_container <- shiny::renderUI({ NULL })
+
+        cat(sprintf("[HEAPING_MODULE] hiding download button container\n"))
         shinyjs::hide(id = session$ns("download_container"))
+        shinyjs::runjs(sprintf("$('#%s').hide();", session$ns("download_container")))
+
+        cat(sprintf("[HEAPING_MODULE] disabling download button\n"))
         shinyjs::disable(session$ns("download_heaping_csv"))
+
+        cat(sprintf("[HEAPING_MODULE] ========== RENDER ERROR COMPLETE ==========\n"))
         return()
       }
 
+      cat(sprintf("[HEAPING_MODULE] result is valid, saving to shared$last_result()\n"))
       shared$last_result(result)
 
+      cat(sprintf("[HEAPING_MODULE] clearing run_log (success)\n"))
       output$run_log <- shiny::renderUI({ NULL })
 
+      cat(sprintf("[HEAPING_MODULE] showing download button container\n"))
       shinyjs::show(id = session$ns("download_container"))
+      shinyjs::runjs(sprintf("$('#%s').show();", session$ns("download_container")))
+
+      cat(sprintf("[HEAPING_MODULE] enabling download button\n"))
       shinyjs::enable(session$ns("download_heaping_csv"))
 
-      output$heaping_table <- DT::renderDT({
-        tbl <- result$table
+      cat(sprintf("[HEAPING_MODULE] rendering heaping_table | table_rows=%s | table_cols=%s\n",
+        nrow(result$table), ncol(result$table)))
+
+      # Render the table container with the table inside it
+      output$heaping_table_container <- shiny::renderUI({
+        cat(sprintf("[HEAPING_MODULE] [inside heaping_table_container renderUI] checking for result\n"))
+
+        # Get the current result
+        current_result <- shared$last_result()
+        if (is.null(current_result)) {
+          cat(sprintf("[HEAPING_MODULE] [inside heaping_table_container renderUI] no result, returning NULL\n"))
+          return(NULL)
+        }
+
+        cat(sprintf("[HEAPING_MODULE] [inside heaping_table_container renderUI] result exists, preparing table\n"))
+        tbl <- current_result$table
         display_tbl <- tbl
         color_map <- NULL
 
         if ("color" %in% names(tbl)) {
+          cat(sprintf("[HEAPING_MODULE] color column found, extracting color map\n"))
           color_map <- stats::setNames(unique(tbl$color), unique(tbl$level))
           display_tbl$color <- NULL
         }
 
+        cat(sprintf("[HEAPING_MODULE] creating DT::datatable widget\n"))
         widget <- DT::datatable(
           display_tbl,
           rownames = FALSE,
@@ -606,6 +748,7 @@ heaping_module_server <- function(input, output, session) {
         )
 
         if (!is.null(color_map)) {
+          cat(sprintf("[HEAPING_MODULE] applying color formatting | color_levels=%s\n", length(color_map)))
           widget <- DT::formatStyle(
             widget,
             "level",
@@ -615,8 +758,11 @@ heaping_module_server <- function(input, output, session) {
           )
         }
 
+        cat(sprintf("[HEAPING_MODULE] table widget created successfully, returning to UI\n"))
         widget
       })
+
+      cat(sprintf("[HEAPING_MODULE] ========== RENDER SUCCESS COMPLETE ==========\n"))
     },
     register_downloads = NULL
   ))

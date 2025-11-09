@@ -436,15 +436,37 @@ mod_simple_module_server <- function(id, callbacks) {
     }
 
     observeEvent(input$run_analysis, {
+      cat(sprintf("[SIMPLE_MODULE][%s] ========== RUN ANALYSIS BUTTON CLICKED ==========\n", id))
+      cat(sprintf("[SIMPLE_MODULE][%s] run_analysis event triggered | click_count=%s\n", id, input$run_analysis))
+
+      cat(sprintf("[SIMPLE_MODULE][%s] calling prepare callback\n", id))
       params <- callbacks$prepare(input, shared, i18n)
+      cat(sprintf("[SIMPLE_MODULE][%s] prepare callback returned | param_count=%s\n", id, length(params)))
+      if (length(params) > 0) {
+        cat(sprintf("[SIMPLE_MODULE][%s] params: %s\n", id, paste(names(params), collapse = ", ")))
+      }
 
+      cat(sprintf("[SIMPLE_MODULE][%s] calling run callback\n", id))
       result <- callbacks$run(shared, params, input, i18n)
+      cat(sprintf("[SIMPLE_MODULE][%s] run callback completed | result_is_null=%s\n", id, is.null(result)))
+      if (!is.null(result) && is.list(result)) {
+        cat(sprintf("[SIMPLE_MODULE][%s] result is list | has_error=%s | components=%s\n",
+          id, !is.null(result$error), paste(names(result), collapse = ", ")))
+      }
 
+      cat(sprintf("[SIMPLE_MODULE][%s] calling render callback\n", id))
       callbacks$render(result, output, shared, input, i18n)
+      cat(sprintf("[SIMPLE_MODULE][%s] render callback completed\n", id))
 
       if (is.function(callbacks$register_downloads)) {
+        cat(sprintf("[SIMPLE_MODULE][%s] calling register_downloads callback\n", id))
         callbacks$register_downloads(result, output, session, shared, i18n)
+        cat(sprintf("[SIMPLE_MODULE][%s] register_downloads callback completed\n", id))
+      } else {
+        cat(sprintf("[SIMPLE_MODULE][%s] no register_downloads callback defined\n", id))
       }
+
+      cat(sprintf("[SIMPLE_MODULE][%s] ========== RUN ANALYSIS COMPLETE ==========\n", id))
     }, ignoreNULL = TRUE)
   })
 }
