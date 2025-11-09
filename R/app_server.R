@@ -433,6 +433,83 @@ lifetable_server <- function(input, output, session) {
   outputOptions(output, "lifetable_landing_features", suspendWhenHidden = FALSE)
   outputOptions(output, "lifetable_landing_action", suspendWhenHidden = FALSE)
 
+  # Reactive UI for upload page
+  output$upload_page_back_button <- renderUI({
+    # Force reactivity to language changes
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+
+    div(
+      style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
+      actionButton("back_to_lifetable_landing", i18n$t("← Previous"), class = "ui grey button")
+    )
+  })
+
+  output$upload_page_info_box <- renderUI({
+    # Force reactivity to language changes
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+
+    tags$div(
+      class = "info-box",
+      h1(i18n$t("Data upload and validation")),
+      p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:")),
+      br(),
+      div(
+        style = "display: flex; gap: 5px;",
+        div(
+          style = "",
+          rHandsontableOutput("data_table")
+        ),
+        div(
+          TooltipHost(
+            content = textOutput("exposures_tooltip_text"),
+            delay = 0,
+            Image(
+              src = "www/info.png",
+              width = "20px",
+              shouldStartVisible = TRUE
+            )
+          )
+        )
+      ),
+      br(),
+      strong(h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
+      br(),
+      action_button("upload_instructions", i18n$t("Instructions"), class = "ui blue button")
+    )
+  })
+
+  output$upload_page_file_buttons <- renderUI({
+    # Force reactivity to language changes
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+
+    div(
+      br(),
+      div(
+        class = "button-container-file",
+        style = "display: flex; gap: 10px;",
+        div(id = "file-input", file_input("file1", "", type = "flex-override")),
+        uiOutput("modal_ui"),
+        action_button(
+          "continue_no_data",
+          i18n$t("Use sample data"),
+          class = "ui blue button",
+          style = "height: 4%;"
+        )
+      )
+    )
+  })
+
+  # Set upload page outputs to render even when hidden
+  outputOptions(output, "upload_page_back_button", suspendWhenHidden = FALSE)
+  outputOptions(output, "upload_page_info_box", suspendWhenHidden = FALSE)
+  outputOptions(output, "upload_page_file_buttons", suspendWhenHidden = FALSE)
+
   # At the beginning of app_server
   current_tab <- reactiveVal()
 

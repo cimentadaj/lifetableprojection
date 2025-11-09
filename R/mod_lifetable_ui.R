@@ -462,57 +462,16 @@ lifetable_module_ui <- function(i18n) {
       hidden(
         div(
           id = "landing_page",
-          div(
-            style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
-            actionButton("back_to_lifetable_landing", i18n$t("← Previous"), class = "ui grey button")
-          ),
-          tags$div(
-            class = "info-box",
-            h1(i18n$t("Data upload and validation")),
-            p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:")),
-            br(),
-            div(
-              style = "display: flex; gap: 5px;",
-              div(
-                style = "",
-                rHandsontableOutput("data_table")
-              ),
-              div(
-                TooltipHost(
-                  content = textOutput("exposures_tooltip_text"),
-                  delay = 0,
-                  Image(
-                    src = "www/info.png",
-                    width = "20px",
-                    shouldStartVisible = TRUE
-                  )
-                )
-              )
-            ),
-            br(),
-            strong(h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
-            br(),
-            action_button("upload_instructions", i18n$t("Instructions"), class = "ui blue button")
-          ),
+          # Dynamic UI elements that update with language changes
+          uiOutput("upload_page_back_button"),
+          uiOutput("upload_page_info_box"),
           tags$script(HTML("
             $(document).ready(function() {
               $('div.ui.left.action.input.ui-ss-input').css('display', 'flex');
             });
           ")),
+          uiOutput("upload_page_file_buttons"),
           div(
-            br(),
-            div(
-              class = "button-container-file",
-              style = "display: flex; gap: 10px;",
-              div(id = "file-input", file_input("file1", "", type = "flex-override")),
-              uiOutput("modal_ui"),
-              action_button(
-                "continue_no_data",
-                i18n$t("Use sample data"),
-                class = "ui blue button",
-                style = "height: 4%;"
-              )
-            ),
             br(),
             div(
               class = "validation-results",
