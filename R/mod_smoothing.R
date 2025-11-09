@@ -198,7 +198,8 @@ smoothing_module_ui <- function(i18n) {
                     style = "justify-content: flex-end; margin-top: 1rem;",
                     shiny::uiOutput(ns("smoothing_download_button"))
                   )
-                )
+                ),
+                shiny::uiOutput(ns("download_modal_ui"))
               )
             )
           )  # Close analysis_step div
@@ -237,6 +238,7 @@ smoothing_module_server <- function(input, output, session) {
         sample_loader = smoothing_sample_loader
       )
       shared$last_result <- shiny::reactiveVal(NULL)
+      download_scope_choice <- shiny::reactiveVal("single")
 
       ns <- session$ns
       data_step_id <- ns("data_step")
@@ -407,78 +409,340 @@ smoothing_module_server <- function(input, output, session) {
       })
       outputOptions(output, "smoothing_group_selectors", suspendWhenHidden = FALSE)
 
-      # Download button
+      # Download button - triggers modal if grouped data
       output$smoothing_download_button <- shiny::renderUI({
         if (!is.null(session$userData$language_version)) {
           session$userData$language_version()
         }
-        shiny::downloadButton(
-          ns("download_smoothing_csv"),
-          i18n$t("Download results"),
-          class = "ui primary button"
-        )
+
+        df <- shared$data()
+        is_grouped <- !is.null(df) && ".id" %in% names(df) && length(unique(df$.id)) > 1
+
+        if (is_grouped) {
+          # Show button that opens modal
+          shiny::actionButton(
+            ns("open_download_modal"),
+            i18n$t("Download results"),
+            class = "ui primary button"
+          )
+        } else {
+          # Direct download button for single group
+          shiny::downloadButton(
+            ns("download_smoothing_csv"),
+            i18n$t("Download results"),
+            class = "ui primary button"
+          )
+        }
       })
       outputOptions(output, "smoothing_download_button", suspendWhenHidden = FALSE)
 
-      # Download handler - ZIP with CSV + plot
-      output$download_smoothing_csv <- shiny::downloadHandler(
-        filename = function() {
-          timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-          sprintf("smoothing_results_%s.zip", timestamp)
-        },
-        content = function(file) {
-          latest <- shared$last_result()
-          shiny::req(latest)
+      # Download options modal
+      output$download_modal_ui <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
 
-          df <- shared$data()
-          shiny::req(df)
-          variable <- latest$variable %||% "Deaths"
+        modal_id <- ns("download_modal")
 
-          # Create temporary directory
-          temp_dir <- tempdir()
-          temp_files <- c()
+        shiny.semantic::modal(
+          id = modal_id,
+          header = i18n$t("Download Options"),
+          content = shiny::div(
+            style = "padding: 1rem;",
+            shiny::p(i18n$t("Your data contains multiple groups. How would you like to download?")),
+            shiny::br(),
+            shiny::div(
+              class = "ui form",
+              shiny::div(
+                class = "grouped fields",
+                shiny::div(
+                  class = "field",
+                  shiny::div(
+                    class = "ui radio checkbox",
+                    id = "radio_single",
+                    shiny::tags$input(
+                      type = "radio",
+                      name = "download_scope_radio",
+                      value = "single",
+                      checked = "checked"
+                    ),
+                    shiny::tags$label(i18n$t("Current group only"))
+                  )
+                ),
+                shiny::div(
+                  class = "field",
+                  shiny::div(
+                    class = "ui radio checkbox",
+                    id = "radio_all",
+                    shiny::tags$input(
+                      type = "radio",
+                      name = "download_scope_radio",
+                      value = "all"
+                    ),
+                    shiny::tags$label(i18n$t("All groups (parallel processing)"))
+                  )
+                )
+              ),
+              # Hidden input that Shiny can read
+              shiny::tags$input(
+                id = ns("download_scope"),
+                type = "hidden",
+                value = "single"
+              )
+            ),
+            shiny::br(),
+            shiny::p(
+              style = "font-size: 0.9em; color: #666;",
+              i18n$t("Note: Downloading all groups will process each group in parallel and create a combined ZIP file with all results.")
+            ),
+            shiny::tags$script(shiny::HTML(sprintf("
+              $(document).ready(function() {
+                $('.ui.radio.checkbox').checkbox();
 
-          # 1. Create CSV with original + smoothed data
-          csv_file <- file.path(temp_dir, "smoothing_results.csv")
+                // Update hidden input and send to Shiny when radio changes
+                $('input[name=\"download_scope_radio\"]').on('change', function() {
+                  var selectedValue = $('input[name=\"download_scope_radio\"]:checked').val();
+                  $('#%s').val(selectedValue).trigger('change');
+                  console.log('[MODAL] Radio changed to:', selectedValue);
 
-          # Get smoothed data from the result
-          smoothed_data <- latest$result$data_out
-          shiny::req(smoothed_data)
+                  // Send custom message to Shiny
+                  Shiny.setInputValue('%s', selectedValue, {priority: 'event'});
+                });
+              });
+            ", ns("download_scope"), ns("download_scope_js"))))
+          ),
+          footer = shiny::tagList(
+            shiny::actionButton(ns("cancel_download"), i18n$t("Cancel"), class = "ui button"),
+            shiny::downloadButton(ns("confirm_download"), i18n$t("Download"), class = "ui primary button")
+          )
+        )
+      })
+      outputOptions(output, "download_modal_ui", suspendWhenHidden = FALSE)
 
-          # Rename smoothed variable to distinguish from original
+      # Open modal observer
+      shiny::observeEvent(input$open_download_modal, {
+        modal_id <- ns("download_modal")
+        shiny.semantic::show_modal(modal_id, session = session)
+      })
+
+      # Cancel modal observer
+      shiny::observeEvent(input$cancel_download, {
+        modal_id <- ns("download_modal")
+        shiny.semantic::hide_modal(modal_id, session = session)
+      })
+
+      # Observer to capture radio button selection via JavaScript
+      shiny::observeEvent(input$download_scope_js, {
+        choice <- input$download_scope_js
+        message(sprintf("[SMOOTHING_MODAL] download_scope_js changed to: %s", choice))
+        download_scope_choice(choice)
+      })
+
+      # Debug observer to monitor download_scope changes
+      shiny::observe({
+        scope <- input$download_scope
+        message(sprintf("[SMOOTHING_MODAL] download_scope input changed to: %s", scope))
+      })
+
+      # Helper function to download single group
+      download_single_group <- function(file) {
+        latest <- shared$last_result()
+        shiny::req(latest)
+
+        df <- shared$data()
+        shiny::req(df)
+        variable <- latest$variable %||% "Deaths"
+
+        # Create temporary directory
+        temp_dir <- tempdir()
+        temp_files <- c()
+
+        # 1. Create CSV with original + smoothed data
+        csv_file <- file.path(temp_dir, "smoothing_results.csv")
+
+        # Get smoothed data from the result
+        smoothed_data <- latest$result$data_out
+        shiny::req(smoothed_data)
+
+        # Rename smoothed variable to distinguish from original
+        smoothed_col_name <- paste0(variable, "_smoothed")
+        names(smoothed_data)[names(smoothed_data) == variable] <- smoothed_col_name
+
+        # Prepare original data for merging
+        original_data <- df
+        if (".id" %in% names(original_data)) {
+          # Keep original columns including grouping info
+          merge_cols <- c(".id", "Age", variable)
+          if ("Exposures" %in% names(original_data) && variable != "Exposures") {
+            merge_cols <- c(merge_cols, "Exposures")
+          }
+          if ("Deaths" %in% names(original_data) && variable != "Deaths") {
+            merge_cols <- c(merge_cols, "Deaths")
+          }
+          original_subset <- original_data[, intersect(merge_cols, names(original_data)), drop = FALSE]
+
+          # Filter to current group only
+          gid <- shared$active_group_id()
+          original_subset <- original_subset[original_subset$.id == gid, , drop = FALSE]
+
+          # Merge original and smoothed
+          out_data <- merge(original_subset, smoothed_data, by = c(".id", "Age"), all = TRUE)
+
+          # Add labels
+          lbl_df <- tryCatch(shared$labels_df(), error = function(e) NULL)
+          if (!is.null(lbl_df)) {
+            out_data <- merge(out_data, lbl_df, by = ".id", all.x = TRUE)
+          }
+        } else {
+          # No grouping - simple merge
+          original_subset <- df[, c("Age", variable), drop = FALSE]
+          out_data <- merge(original_subset, smoothed_data, by = "Age", all = TRUE)
+        }
+
+        # Reorder columns
+        col_order <- c()
+        if (".id" %in% names(out_data)) col_order <- c(col_order, ".id")
+        if (".id_label" %in% names(out_data)) col_order <- c(col_order, ".id_label")
+        col_order <- c(col_order, "Age")
+        if (variable %in% names(out_data)) col_order <- c(col_order, variable)
+        if (smoothed_col_name %in% names(out_data)) col_order <- c(col_order, smoothed_col_name)
+        remaining_cols <- setdiff(names(out_data), col_order)
+        out_data <- out_data[, c(col_order, remaining_cols), drop = FALSE]
+
+        utils::write.csv(out_data, csv_file, row.names = FALSE)
+        temp_files <- c(temp_files, csv_file)
+
+        # 2. Save plot as PNG
+        plot_file <- file.path(temp_dir, "smoothing_plot.png")
+        group_id_str <- as.character(latest$group_id)
+        plot_data <- latest$result$figures[[group_id_str]]
+
+        if (!is.null(plot_data) && !is.null(plot_data$figure)) {
+          ggplot2::ggsave(
+            plot_file,
+            plot = plot_data$figure,
+            width = 10,
+            height = 6,
+            dpi = 300
+          )
+          temp_files <- c(temp_files, plot_file)
+        }
+
+        # 3. Create ZIP file
+        zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
+      }
+
+      # Helper function to download all groups
+      download_all_groups <- function(file) {
+        df <- shared$data()
+        shiny::req(df)
+
+        latest <- shared$last_result()
+        shiny::req(latest)
+
+        variable <- latest$variable %||% "Deaths"
+        all_ids <- unique(df$.id)
+
+        # Get current parameters from latest result
+        params <- list(
+          variable = latest$variable,
+          fine_method = latest$fine_method,
+          rough_method = latest$rough_method,
+          age_out = latest$age_out,
+          u5m = latest$u5m,
+          constrain_infants = latest$constrain_infants
+        )
+
+        # Run smoothing in parallel for all groups
+        message(sprintf("[SMOOTHING_DOWNLOAD] Processing %d groups in parallel...", length(all_ids)))
+
+        # Use future.apply if available, otherwise lapply
+        if (requireNamespace("future.apply", quietly = TRUE)) {
+          results <- future.apply::future_lapply(all_ids, function(gid) {
+            data_subset <- df[df$.id == gid, , drop = FALSE]
+
+            tryCatch({
+              result <- ODAPbackend::smooth_flexible(
+                data_subset,
+                variable = params$variable,
+                age_out = params$age_out,
+                fine_method = params$fine_method,
+                rough_method = params$rough_method,
+                u5m = params$u5m,
+                constrain_infants = params$constrain_infants,
+                Sex = "t",
+                i18n = i18n
+              )
+              list(group_id = gid, result = result, error = NULL)
+            }, error = function(e) {
+              list(group_id = gid, result = NULL, error = as.character(e))
+            })
+          }, future.seed = TRUE)
+        } else {
+          results <- lapply(all_ids, function(gid) {
+            data_subset <- df[df$.id == gid, , drop = FALSE]
+
+            tryCatch({
+              result <- ODAPbackend::smooth_flexible(
+                data_subset,
+                variable = params$variable,
+                age_out = params$age_out,
+                fine_method = params$fine_method,
+                rough_method = params$rough_method,
+                u5m = params$u5m,
+                constrain_infants = params$constrain_infants,
+                Sex = "t",
+                i18n = i18n
+              )
+              list(group_id = gid, result = result, error = NULL)
+            }, error = function(e) {
+              list(group_id = gid, result = NULL, error = as.character(e))
+            })
+          })
+        }
+
+        # Create temporary directory
+        temp_dir <- tempfile()
+        dir.create(temp_dir)
+        temp_files <- c()
+
+        # Combine all data_out into one CSV
+        all_smoothed_data <- list()
+        for (res in results) {
+          if (!is.null(res$result) && !is.null(res$result$data_out)) {
+            smoothed <- res$result$data_out
+            smoothed$.id <- res$group_id
+            all_smoothed_data[[length(all_smoothed_data) + 1]] <- smoothed
+          }
+        }
+
+        if (length(all_smoothed_data) > 0) {
+          combined_smoothed <- dplyr::bind_rows(all_smoothed_data)
+
+          # Rename smoothed variable
           smoothed_col_name <- paste0(variable, "_smoothed")
-          names(smoothed_data)[names(smoothed_data) == variable] <- smoothed_col_name
+          names(combined_smoothed)[names(combined_smoothed) == variable] <- smoothed_col_name
 
-          # Prepare original data for merging
-          original_data <- df
-          if (".id" %in% names(original_data)) {
-            # Keep original columns including grouping info
-            merge_cols <- c(".id", "Age", variable)
-            if ("Exposures" %in% names(original_data) && variable != "Exposures") {
-              merge_cols <- c(merge_cols, "Exposures")
-            }
-            if ("Deaths" %in% names(original_data) && variable != "Deaths") {
-              merge_cols <- c(merge_cols, "Deaths")
-            }
-            original_subset <- original_data[, intersect(merge_cols, names(original_data)), drop = FALSE]
+          # Merge with original data
+          merge_cols <- c(".id", "Age", variable)
+          if ("Exposures" %in% names(df) && variable != "Exposures") {
+            merge_cols <- c(merge_cols, "Exposures")
+          }
+          if ("Deaths" %in% names(df) && variable != "Deaths") {
+            merge_cols <- c(merge_cols, "Deaths")
+          }
+          original_subset <- df[, intersect(merge_cols, names(df)), drop = FALSE]
 
-            # Merge original and smoothed
-            out_data <- merge(original_subset, smoothed_data, by = c(".id", "Age"), all = TRUE)
+          out_data <- merge(original_subset, combined_smoothed, by = c(".id", "Age"), all = TRUE)
 
-            # Add labels
-            lbl_df <- tryCatch(shared$labels_df(), error = function(e) NULL)
-            if (!is.null(lbl_df)) {
-              out_data <- merge(out_data, lbl_df, by = ".id", all.x = TRUE)
-            }
-          } else {
-            # No grouping - simple merge
-            original_subset <- df[, c("Age", variable), drop = FALSE]
-            out_data <- merge(original_subset, smoothed_data, by = "Age", all = TRUE)
+          # Add labels
+          lbl_df <- tryCatch(shared$labels_df(), error = function(e) NULL)
+          if (!is.null(lbl_df)) {
+            out_data <- merge(out_data, lbl_df, by = ".id", all.x = TRUE)
           }
 
           # Reorder columns
-          col_order <- c()
-          if (".id" %in% names(out_data)) col_order <- c(col_order, ".id")
+          col_order <- c(".id")
           if (".id_label" %in% names(out_data)) col_order <- c(col_order, ".id_label")
           col_order <- c(col_order, "Age")
           if (variable %in% names(out_data)) col_order <- c(col_order, variable)
@@ -486,27 +750,86 @@ smoothing_module_server <- function(input, output, session) {
           remaining_cols <- setdiff(names(out_data), col_order)
           out_data <- out_data[, c(col_order, remaining_cols), drop = FALSE]
 
+          # Write CSV
+          csv_file <- file.path(temp_dir, "smoothing_results_all_groups.csv")
           utils::write.csv(out_data, csv_file, row.names = FALSE)
           temp_files <- c(temp_files, csv_file)
+        }
 
-          # 2. Save plot as PNG
-          plot_file <- file.path(temp_dir, "smoothing_plot.png")
-          group_id_str <- as.character(latest$group_id)
-          plot_data <- latest$result$figures[[group_id_str]]
+        # Save all plots with group labels
+        lbl_df <- tryCatch(shared$labels_df(), error = function(e) NULL)
+        for (res in results) {
+          if (!is.null(res$result) && !is.null(res$result$figures)) {
+            gid_str <- as.character(res$group_id)
+            plot_data <- res$result$figures[[gid_str]]
 
-          if (!is.null(plot_data) && !is.null(plot_data$figure)) {
-            ggplot2::ggsave(
-              plot_file,
-              plot = plot_data$figure,
-              width = 10,
-              height = 6,
-              dpi = 300
-            )
-            temp_files <- c(temp_files, plot_file)
+            if (!is.null(plot_data) && !is.null(plot_data$figure)) {
+              # Get label for filename
+              label <- gid_str
+              if (!is.null(lbl_df)) {
+                matching_label <- lbl_df[lbl_df$.id == res$group_id, ".id_label", drop = TRUE]
+                if (length(matching_label) > 0) {
+                  label <- matching_label[1]
+                  # Sanitize label for filename
+                  label <- gsub("[^a-zA-Z0-9_-]", "_", label)
+                }
+              }
+
+              plot_file <- file.path(temp_dir, sprintf("smoothing_plot_%s.png", label))
+              ggplot2::ggsave(
+                plot_file,
+                plot = plot_data$figure,
+                width = 10,
+                height = 6,
+                dpi = 300
+              )
+              temp_files <- c(temp_files, plot_file)
+            }
           }
+        }
 
-          # 3. Create ZIP file
-          zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
+        # Create ZIP file
+        zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
+
+        # Cleanup
+        unlink(temp_dir, recursive = TRUE)
+      }
+
+      # Download handler for single group (non-grouped data or direct button)
+      output$download_smoothing_csv <- shiny::downloadHandler(
+        filename = function() {
+          timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+          sprintf("smoothing_results_%s.zip", timestamp)
+        },
+        content = download_single_group,
+        contentType = "application/zip"
+      )
+
+      # Download handler for modal confirmation (handles both single and all)
+      output$confirm_download <- shiny::downloadHandler(
+        filename = function() {
+          timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+          scope <- download_scope_choice()
+          message(sprintf("[SMOOTHING_DOWNLOAD] filename: scope = %s", scope))
+          if (scope == "all") {
+            sprintf("smoothing_results_all_groups_%s.zip", timestamp)
+          } else {
+            sprintf("smoothing_results_%s.zip", timestamp)
+          }
+        },
+        content = function(file) {
+          scope <- download_scope_choice()
+          message(sprintf("[SMOOTHING_DOWNLOAD] content: scope = %s", scope))
+          modal_id <- ns("download_modal")
+          shiny.semantic::hide_modal(modal_id, session = session)
+
+          if (scope == "all") {
+            message("[SMOOTHING_DOWNLOAD] Executing download_all_groups")
+            download_all_groups(file)
+          } else {
+            message("[SMOOTHING_DOWNLOAD] Executing download_single_group")
+            download_single_group(file)
+          }
         },
         contentType = "application/zip"
       )

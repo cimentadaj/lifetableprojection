@@ -1429,6 +1429,26 @@
             "en": "No smoothing results yet.",
             "fr": "Aucun résultat de lissage pour le moment.",
             "es": "Aún no hay resultados de suavizado."
+        },
+        {
+            "en": "Your data contains multiple groups. How would you like to download?",
+            "fr": "Vos données contiennent plusieurs groupes. Comment souhaitez-vous télécharger?",
+            "es": "Sus datos contienen múltiples grupos. ¿Cómo desea descargar?"
+        },
+        {
+            "en": "Current group only",
+            "fr": "Groupe actuel uniquement",
+            "es": "Solo grupo actual"
+        },
+        {
+            "en": "All groups (parallel processing)",
+            "fr": "Tous les groupes (traitement parallèle)",
+            "es": "Todos los grupos (procesamiento paralelo)"
+        },
+        {
+            "en": "Note: Downloading all groups will process each group in parallel and create a combined ZIP file with all results.",
+            "fr": "Note : Le téléchargement de tous les groupes traitera chaque groupe en parallèle et créera un fichier ZIP combiné avec tous les résultats.",
+            "es": "Nota: Descargar todos los grupos procesará cada grupo en paralelo y creará un archivo ZIP combinado con todos los resultados."
         }
     ]
 }
