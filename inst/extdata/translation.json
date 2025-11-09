@@ -1084,6 +1084,18 @@
       {
         "en": "Fine-tune mortality graduation methods with configurable infant and sex constraints.",
         "fr": "Affinez les méthodes de graduation de la mortalité avec des contraintes configurables pour les nourrissons et selon le sexe."
+      },
+      {
+        "en": "Active",
+        "fr": "Actif"
+      },
+      {
+        "en": "Upload mortality detail, confirm group columns, and review age heaping checks before continuing your workflow.",
+        "fr": "Téléchargez les détails de mortalité, confirmez les colonnes de groupe et examinez les vérifications d'agrégation d'âge avant de continuer votre flux de travail."
+      },
+      {
+        "en": "The heaping sample contains Age, Deaths, and Exposures observed at single ages.",
+        "fr": "L'échantillon d'agrégation contient l'âge, les décès et les expositions observés aux âges simples."
       }
     ]
 }

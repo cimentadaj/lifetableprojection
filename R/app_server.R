@@ -321,12 +321,17 @@ lifetable_server <- function(input, output, session) {
 
   i18n <- usei18n_local()
 
+  # Create reactive value for language changes to propagate to modules
+  session$userData$language_version <- reactiveVal(0)
+
   # Language change observer
   observeEvent(c(input$selected_language, input$lt_advanced_is_visible), {
 
     # Update language if it changed
     if (!is.null(input$selected_language)) {
       update_lang(input$selected_language)
+      # Increment language version to trigger module UI updates
+      session$userData$language_version(session$userData$language_version() + 1)
 
       # Update the tabSelector dropdown with freshly translated names
       # This preserves internal names as values while showing translated display names

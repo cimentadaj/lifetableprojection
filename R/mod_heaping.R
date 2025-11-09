@@ -190,18 +190,15 @@ heaping_module_ui <- function(i18n) {
             class = "heaping-hero",
             shiny::div(
               style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
-              shiny::actionButton("heaping_back_to_modules", i18n$t("← Previous"), class = "ui grey button")
+              shiny::uiOutput(ns("heaping_back_button"))
             ),
-            shiny::h1(i18n$t("Heaping Diagnostics")),
-            shiny::p(i18n$t("Upload mortality detail, confirm group columns, and review age heaping checks before continuing your workflow."))
+            shiny::uiOutput(ns("heaping_hero_content"))
           ),
           shiny::div(
             class = "info-box",
-            shiny::h1(i18n$t("Data upload and validation")),
-            shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:")),
+            shiny::uiOutput(ns("heaping_info_box_content")),
             rhandsontable::rHandsontableOutput(ns("heaping_sample_table"), width = "100%", height = 210),
-            shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
-            shiny::p(i18n$t("The heaping sample contains Age, Deaths, and Exposures observed at single ages."))
+            shiny::uiOutput(ns("heaping_info_box_instructions"))
           ),
           shiny::tags$script(shiny::HTML("
             $(document).ready(function() {
@@ -220,11 +217,7 @@ heaping_module_ui <- function(i18n) {
               )
             ),
             shiny::uiOutput(ns("modal_ui")),
-            shiny.semantic::action_button(
-              ns("use_sample_data"),
-              i18n$t("Use sample data"),
-              class = "ui blue button"
-            )
+            shiny::uiOutput(ns("heaping_sample_button"))
           ),
           shiny::div(
             class = "heaping-upload-log",
@@ -246,32 +239,17 @@ heaping_module_ui <- function(i18n) {
             class = "heaping-step",
             shiny::div(
               style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
-              shiny::actionButton(ns("back_to_upload"), i18n$t("← Previous"), class = "ui grey button")
+              shiny::uiOutput(ns("heaping_back_to_upload_button"))
             ),
-            shiny::div(
-              class = "info-box",
-              shiny::h1(i18n$t("Heaping Diagnostics")),
-              shiny::p(i18n$t("Analyze data quality and identify potential issues with built-in diagnostic tools"))
-            ),
+            shiny::uiOutput(ns("heaping_analysis_info_box")),
             shiny::div(
               class = "heaping-controls-block",
-              shiny::div(
-                class = "heaping-controls-header",
-                shiny::h3(i18n$t("Controls"))
-              ),
+              shiny::uiOutput(ns("heaping_controls_header")),
               shiny::div(
                 class = "heaping-controls-row",
                 shiny::div(
                   class = "ui form heaping-control-form",
-                  shiny::div(
-                    class = "field",
-                    shiny.semantic::selectInput(
-                      ns("heaping_variable"),
-                      i18n$t("Variable to evaluate"),
-                      choices = c("Deaths", "Exposures"),
-                      selected = "Deaths"
-                    )
-                  )
+                  shiny::uiOutput(ns("heaping_variable_selector"))
                 ),
                 shiny::div(
                   class = "grouping-control-panel",
@@ -281,11 +259,7 @@ heaping_module_ui <- function(i18n) {
             ),
             shiny::div(
               class = "heaping-run-panel",
-              shiny::actionButton(
-                ns("run_analysis"),
-                i18n$t("Run heaping analysis"),
-                class = "ui primary button"
-              ),
+              shiny::uiOutput(ns("heaping_run_button")),
               shiny::uiOutput(ns("run_log"))
             ),
             shiny::div(
@@ -296,11 +270,7 @@ heaping_module_ui <- function(i18n) {
               shiny::div(
                 id = ns("download_container"),
                 class = "button-container heaping-download",
-                shiny::downloadButton(
-                  ns("download_heaping_csv"),
-                  i18n$t("Download results"),
-                  class = "ui primary button"
-                )
+                shiny::uiOutput(ns("heaping_download_button"))
               )
             )
           )
@@ -336,6 +306,120 @@ heaping_module_server <- function(input, output, session) {
         sample_loader = heaping_sample_loader
       )
       shared$last_result <- shiny::reactiveVal(NULL)
+
+      # Reactive UI elements for language switching
+      output$heaping_back_button <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::actionButton("heaping_back_to_modules", i18n$t("← Previous"), class = "ui grey button")
+      })
+
+      output$heaping_hero_content <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::tagList(
+          shiny::h1(i18n$t("Heaping Diagnostics")),
+          shiny::p(i18n$t("Upload mortality detail, confirm group columns, and review age heaping checks before continuing your workflow."))
+        )
+      })
+
+      output$heaping_info_box_content <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::tagList(
+          shiny::h1(i18n$t("Data upload and validation")),
+          shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:"))
+        )
+      })
+
+      output$heaping_info_box_instructions <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::tagList(
+          shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
+          shiny::p(i18n$t("The heaping sample contains Age, Deaths, and Exposures observed at single ages."))
+        )
+      })
+
+      output$heaping_sample_button <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny.semantic::action_button(
+          ns("use_sample_data"),
+          i18n$t("Use sample data"),
+          class = "ui blue button"
+        )
+      })
+
+      output$heaping_back_to_upload_button <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::actionButton(ns("back_to_upload"), i18n$t("← Previous"), class = "ui grey button")
+      })
+
+      output$heaping_analysis_info_box <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::div(
+          class = "info-box",
+          shiny::h1(i18n$t("Heaping Diagnostics")),
+          shiny::p(i18n$t("Analyze data quality and identify potential issues with built-in diagnostic tools"))
+        )
+      })
+
+      output$heaping_controls_header <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::div(
+          class = "heaping-controls-header",
+          shiny::h3(i18n$t("Controls"))
+        )
+      })
+
+      output$heaping_variable_selector <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::div(
+          class = "field",
+          shiny.semantic::selectInput(
+            ns("heaping_variable"),
+            i18n$t("Variable to evaluate"),
+            choices = c("Deaths", "Exposures"),
+            selected = if (!is.null(input$heaping_variable)) input$heaping_variable else "Deaths"
+          )
+        )
+      })
+
+      output$heaping_run_button <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::actionButton(
+          ns("run_analysis"),
+          i18n$t("Run heaping analysis"),
+          class = "ui primary button"
+        )
+      })
+
+      output$heaping_download_button <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::downloadButton(
+          ns("download_heaping_csv"),
+          i18n$t("Download results"),
+          class = "ui primary button"
+        )
+      })
 
       output$download_heaping_csv <- shiny::downloadHandler(
         filename = function() {
@@ -433,6 +517,11 @@ heaping_module_server <- function(input, output, session) {
       })
 
       output$heaping_continue_ui <- shiny::renderUI({
+        # Force reactivity to language changes
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+
         if (!isTRUE(shared$group_selection_passed())) {
           return(NULL)
         }

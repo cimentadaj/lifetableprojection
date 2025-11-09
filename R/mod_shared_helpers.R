@@ -116,6 +116,11 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   })
 
   output$upload_log <- renderUI({
+    # Force reactivity to language changes
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+
     origin <- data_origin()
     if (identical(origin, "none")) return(NULL)
     file_label <- if (!is.null(input$file1) && !is.null(input$file1$name)) {
@@ -150,6 +155,11 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   })
 
   output$validation_summary <- renderUI({
+    # Force reactivity to language changes
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+
     req(group_selection_passed())
     results <- validation_details()
     displayValidationResults(results, i18n)
