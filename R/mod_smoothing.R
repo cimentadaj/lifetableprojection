@@ -872,8 +872,9 @@ smoothing_module_server <- function(input, output, session) {
         shinyjs::show(id = data_step_id)
         shinyjs::hide(id = analysis_step_id)
         shinyjs::runjs(sprintf("$('#%s').show(); $('#%s').hide();", data_step_id, analysis_step_id))
+        shinyjs::hide(id = ns("plot_container"))
         shinyjs::hide(id = ns("download_container"))
-        shinyjs::runjs(sprintf("$('#%s').hide();", ns("download_container")))
+        shinyjs::runjs(sprintf("$('#%s').hide(); $('#%s').hide();", ns("plot_container"), ns("download_container")))
       })
 
       shared
