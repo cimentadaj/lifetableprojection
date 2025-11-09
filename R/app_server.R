@@ -360,10 +360,8 @@ lifetable_server <- function(input, output, session) {
 
   # Reactive UI for lifetable landing page
   output$lifetable_landing_hero <- renderUI({
-    # Force reactivity to language changes
-    if (!is.null(session$userData$language_version)) {
-      session$userData$language_version()
-    }
+    i18n <- usei18n_local()
+    input$selected_language
 
     div(
       class = "hero-section",
@@ -378,10 +376,8 @@ lifetable_server <- function(input, output, session) {
   })
 
   output$lifetable_landing_features <- renderUI({
-    # Force reactivity to language changes
-    if (!is.null(session$userData$language_version)) {
-      session$userData$language_version()
-    }
+    i18n <- usei18n_local()
+    input$selected_language
 
     div(
       class = "features-grid",
@@ -417,10 +413,8 @@ lifetable_server <- function(input, output, session) {
   })
 
   output$lifetable_landing_action <- renderUI({
-    # Force reactivity to language changes
-    if (!is.null(session$userData$language_version)) {
-      session$userData$language_version()
-    }
+    i18n <- usei18n_local()
+    input$selected_language
 
     div(
       class = "action-section",
@@ -435,10 +429,8 @@ lifetable_server <- function(input, output, session) {
 
   # Reactive UI for upload page
   output$upload_page_back_button <- renderUI({
-    # Force reactivity to language changes
-    if (!is.null(session$userData$language_version)) {
-      session$userData$language_version()
-    }
+    i18n <- usei18n_local()
+    input$selected_language
 
     div(
       style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
@@ -447,10 +439,8 @@ lifetable_server <- function(input, output, session) {
   })
 
   output$upload_page_info_box <- renderUI({
-    # Force reactivity to language changes
-    if (!is.null(session$userData$language_version)) {
-      session$userData$language_version()
-    }
+    i18n <- usei18n_local()
+    input$selected_language
 
     tags$div(
       class = "info-box",
@@ -483,10 +473,8 @@ lifetable_server <- function(input, output, session) {
   })
 
   output$upload_page_file_buttons <- renderUI({
-    # Force reactivity to language changes
-    if (!is.null(session$userData$language_version)) {
-      session$userData$language_version()
-    }
+    i18n <- usei18n_local()
+    input$selected_language
 
     div(
       br(),
@@ -509,6 +497,39 @@ lifetable_server <- function(input, output, session) {
   outputOptions(output, "upload_page_back_button", suspendWhenHidden = FALSE)
   outputOptions(output, "upload_page_info_box", suspendWhenHidden = FALSE)
   outputOptions(output, "upload_page_file_buttons", suspendWhenHidden = FALSE)
+
+  # Reactive UI for preprocessing page buttons
+  output$preprocessing_buttons <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+
+    div(
+      class = "button-group",
+      action_button("back_to_diagnostics", i18n$t("← Previous"), class = "ui grey button"),
+      action_button("preprocessing_instructions", i18n$t("Instructions"), class = "ui blue button"),
+      action_button("forward_to_lifetable", i18n$t("Next →"), class = "ui blue button")
+    )
+  })
+
+  # Reactive UI for lifetable page buttons
+  output$lifetable_buttons <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+
+    div(
+      class = "button-container-forecast",
+      style = "display: flex; gap: 10px;",
+      action_button("back_to_adjustment", i18n$t("← Previous"), class = "ui grey button"),
+      action_button("lifetable_instructions", i18n$t("Instructions"), class = "ui blue button"),
+      action_button("calculate_lt", i18n$t("Calculate"), class = "ui blue button"),
+      action_button("reset_lt", i18n$t("Reset Options"), class = "ui blue button"),
+      uiOutput("download_button")
+    )
+  })
+
+  # Set preprocessing and lifetable button outputs to render even when hidden
+  outputOptions(output, "preprocessing_buttons", suspendWhenHidden = FALSE)
+  outputOptions(output, "lifetable_buttons", suspendWhenHidden = FALSE)
 
   # At the beginning of app_server
   current_tab <- reactiveVal()
@@ -1709,6 +1730,8 @@ lifetable_server <- function(input, output, session) {
 
   # Add tooltip text handler
   output$exposures_tooltip_text <- renderText({
+    i18n <- usei18n_local()
+    input$selected_language
     i18n$t("Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.")
   })
 }

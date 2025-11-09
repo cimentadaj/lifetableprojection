@@ -493,12 +493,7 @@ lifetable_module_ui <- function(i18n) {
         div(
           class = "button-container-adjustment",
           div(id = "pill-container", class = "pill-container", create_pills_ui()),
-          div(
-            class = "button-group",
-            action_button("back_to_diagnostics", i18n$t("← Previous"), class = "ui grey button"),
-            action_button("preprocessing_instructions", i18n$t("Instructions"), class = "ui blue button"),
-            action_button("forward_to_lifetable", i18n$t("Next →"), class = "ui blue button")
-          )
+          uiOutput("preprocessing_buttons")
         ),
         tabset(
           id = "adjustment_tabs",
@@ -514,15 +509,7 @@ lifetable_module_ui <- function(i18n) {
     hidden(
       div(
         id = "step_input",
-        div(
-          class = "button-container-forecast",
-          style = "display: flex; gap: 10px;",
-          action_button("back_to_adjustment", i18n$t("← Previous"), class = "ui grey button"),
-          action_button("lifetable_instructions", i18n$t("Instructions"), class = "ui blue button"),
-          action_button("calculate_lt", i18n$t("Calculate"), class = "ui blue button"),
-          action_button("reset_lt", i18n$t("Reset Options"), class = "ui blue button"),
-          uiOutput("download_button")
-        ),
+        uiOutput("lifetable_buttons"),
         br(),
         uiOutput("download_modal"),
         div(

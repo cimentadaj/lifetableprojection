@@ -95,9 +95,17 @@ validate_data_after_group_selection <- function(input, output, data_in, group_se
   observe({
     if (group_selection_passed()) {
       check_results <- validate_data(data_in)
-      output$validation_results <- renderUI(displayValidationResults(check_results(), i18n))
+
+      output$validation_results <- renderUI({
+        i18n <- usei18n_local()
+        input$selected_language
+        displayValidationResults(check_results(), i18n)
+      })
 
       output$forward_step2 <- renderUI({
+        i18n <- usei18n_local()
+        input$selected_language
+
         if (all(check_results()$pass == "Pass")) {
           div(
             action_button("diagnostics", i18n$t("Diagnostics"), class = "ui blue button"),
