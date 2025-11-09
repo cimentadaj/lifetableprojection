@@ -12,7 +12,7 @@ smoothing_module_ui <- function(i18n) {
       shiny::tags$head(
         shiny::tags$style(shiny::HTML("
           .smoothing-main {
-            max-width: 900px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2.5rem 1.5rem 3rem;
           }
@@ -177,16 +177,18 @@ smoothing_module_ui <- function(i18n) {
                 children = shiny::div(
                   class = "ui form",
                   shiny::uiOutput(ns("smoothing_controls"))
-                )
+                ),
+                width = 3  # Narrower sidebar (default is 4)
               ),
               # RIGHT MAIN: Plot area
               shiny::div(
+                style = "flex: 1; min-width: 0;",  # Allow flex grow and prevent overflow
                 shiny::uiOutput(ns("smoothing_group_selectors")),
                 shiny::div(
                   id = ns("plot_container"),
                   style = "display: none;",  # Hidden until results available
                   shinycssloaders::withSpinner(
-                    plotly::plotlyOutput(ns("smoothing_plot"), height = "500px")
+                    plotly::plotlyOutput(ns("smoothing_plot"), height = "600px", width = "100%")
                   )
                 ),
                 shiny::br(),
@@ -419,11 +421,11 @@ smoothing_module_server <- function(input, output, session) {
       })
       outputOptions(output, "smoothing_download_button", suspendWhenHidden = FALSE)
 
-      # Download handler
+      # Download handler - ZIP with CSV + plot
       output$download_smoothing_csv <- shiny::downloadHandler(
         filename = function() {
           timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-          sprintf("smoothing_results_%s.csv", timestamp)
+          sprintf("smoothing_results_%s.zip", timestamp)
         },
         content = function(file) {
           latest <- shared$last_result()
@@ -433,40 +435,81 @@ smoothing_module_server <- function(input, output, session) {
           shiny::req(df)
           variable <- latest$variable %||% "Deaths"
 
-          # Run smoothing for all groups
-          if (!".id" %in% names(df)) {
-            result_smooth <- ODAPbackend::smooth_flexible(
-              df, variable, latest$age_out, latest$fine_method,
-              latest$rough_method, latest$u5m, latest$constrain_infants,
-              Sex = "t", i18n = i18n
-            )
-            out_data <- result_smooth$data_out
-          } else {
-            # Process all groups
-            group_ids <- unique(df$.id)
-            pieces <- lapply(group_ids, function(gid) {
-              subset <- df[df$.id == gid, , drop = FALSE]
-              result_smooth <- ODAPbackend::smooth_flexible(
-                subset, variable, latest$age_out, latest$fine_method,
-                latest$rough_method, latest$u5m, latest$constrain_infants,
-                Sex = "t", i18n = i18n
-              )
-              result_smooth$data_out
-            })
-            out_data <- do.call(rbind, pieces)
-          }
+          # Create temporary directory
+          temp_dir <- tempdir()
+          temp_files <- c()
 
-          # Add labels
-          if (".id" %in% names(out_data)) {
+          # 1. Create CSV with original + smoothed data
+          csv_file <- file.path(temp_dir, "smoothing_results.csv")
+
+          # Get smoothed data from the result
+          smoothed_data <- latest$result$data_out
+          shiny::req(smoothed_data)
+
+          # Rename smoothed variable to distinguish from original
+          smoothed_col_name <- paste0(variable, "_smoothed")
+          names(smoothed_data)[names(smoothed_data) == variable] <- smoothed_col_name
+
+          # Prepare original data for merging
+          original_data <- df
+          if (".id" %in% names(original_data)) {
+            # Keep original columns including grouping info
+            merge_cols <- c(".id", "Age", variable)
+            if ("Exposures" %in% names(original_data) && variable != "Exposures") {
+              merge_cols <- c(merge_cols, "Exposures")
+            }
+            if ("Deaths" %in% names(original_data) && variable != "Deaths") {
+              merge_cols <- c(merge_cols, "Deaths")
+            }
+            original_subset <- original_data[, intersect(merge_cols, names(original_data)), drop = FALSE]
+
+            # Merge original and smoothed
+            out_data <- merge(original_subset, smoothed_data, by = c(".id", "Age"), all = TRUE)
+
+            # Add labels
             lbl_df <- tryCatch(shared$labels_df(), error = function(e) NULL)
             if (!is.null(lbl_df)) {
               out_data <- merge(out_data, lbl_df, by = ".id", all.x = TRUE)
             }
+          } else {
+            # No grouping - simple merge
+            original_subset <- df[, c("Age", variable), drop = FALSE]
+            out_data <- merge(original_subset, smoothed_data, by = "Age", all = TRUE)
           }
 
-          utils::write.csv(out_data, file, row.names = FALSE)
+          # Reorder columns
+          col_order <- c()
+          if (".id" %in% names(out_data)) col_order <- c(col_order, ".id")
+          if (".id_label" %in% names(out_data)) col_order <- c(col_order, ".id_label")
+          col_order <- c(col_order, "Age")
+          if (variable %in% names(out_data)) col_order <- c(col_order, variable)
+          if (smoothed_col_name %in% names(out_data)) col_order <- c(col_order, smoothed_col_name)
+          remaining_cols <- setdiff(names(out_data), col_order)
+          out_data <- out_data[, c(col_order, remaining_cols), drop = FALSE]
+
+          utils::write.csv(out_data, csv_file, row.names = FALSE)
+          temp_files <- c(temp_files, csv_file)
+
+          # 2. Save plot as PNG
+          plot_file <- file.path(temp_dir, "smoothing_plot.png")
+          group_id_str <- as.character(latest$group_id)
+          plot_data <- latest$result$figures[[group_id_str]]
+
+          if (!is.null(plot_data) && !is.null(plot_data$figure)) {
+            ggplot2::ggsave(
+              plot_file,
+              plot = plot_data$figure,
+              width = 10,
+              height = 6,
+              dpi = 300
+            )
+            temp_files <- c(temp_files, plot_file)
+          }
+
+          # 3. Create ZIP file
+          zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
         },
-        contentType = "text/csv"
+        contentType = "application/zip"
       )
 
       # State management: hide analysis on init
