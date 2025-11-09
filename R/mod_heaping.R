@@ -11,7 +11,7 @@ heaping_module_ui <- function(i18n) {
       shiny::tags$head(
         shiny::tags$style(shiny::HTML("
           .heaping-main {
-            max-width: 900px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2.5rem 1.5rem 3rem;
           }
