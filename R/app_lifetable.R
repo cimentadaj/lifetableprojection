@@ -79,6 +79,8 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames_int
   })
 
   output$lt_group_select_ui <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
     req(input$calculate_lt)
     div(
       class = "grouping-dropdowns-container",
@@ -102,6 +104,8 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames_int
     extrap_age = extrap_age,
     ages_data = ages_data,
     extrap_from = renderUI({
+      i18n <- usei18n_local()
+      input$selected_language
       create_field_set(
         "",
         i18n$t("Extrap. Jump-off Age"),
@@ -111,6 +115,8 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames_int
       )
     }),
     ages_to_use = renderUI({
+      i18n <- usei18n_local()
+      input$selected_language
       req(ages_data())
       slider_widget <- sliderInput(
         "slider_ages_to_use",
@@ -131,6 +137,8 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames_int
       )
     }),
     sex_to_use = renderUI({
+      i18n <- usei18n_local()
+      input$selected_language
       sex_widget <- create_field_set("", "Sex", "input_sex", c("Total", "Female", "Male"), "Total")
       if ("sex" %in% tolower(names(data_in()))) {
         sex_widget <- div()
@@ -143,6 +151,12 @@ create_life_table_input_ui <- function(data_in, grouping_dropdowns, tabNames_int
   output$extrap_from_data <- lt_input$extrap_from
   output$ages_to_use <- lt_input$ages_to_use
   output$sex_to_use <- lt_input$sex_to_use
+
+  # Set outputs to render even when hidden
+  outputOptions(output, "lt_group_select_ui", suspendWhenHidden = FALSE)
+  outputOptions(output, "extrap_from_data", suspendWhenHidden = FALSE)
+  outputOptions(output, "ages_to_use", suspendWhenHidden = FALSE)
+  outputOptions(output, "sex_to_use", suspendWhenHidden = FALSE)
 
   lt_input
 }

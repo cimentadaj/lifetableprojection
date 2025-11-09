@@ -349,7 +349,8 @@ lifetable_server <- function(input, output, session) {
 
     # Update button text based on visibility
     if (!is.null(input$lt_advanced_is_visible)) {
-      new_label <- if (input$lt_advanced_is_visible) i18n$t("Hide Advanced Options") else i18n$t("Show Advanced Options")
+      i18n_current <- usei18n_local()
+      new_label <- if (input$lt_advanced_is_visible) i18n_current$t("Hide Advanced Options") else i18n_current$t("Show Advanced Options")
       updateActionButton(
         session,
         "toggle_advanced",
@@ -530,6 +531,50 @@ lifetable_server <- function(input, output, session) {
   # Set preprocessing and lifetable button outputs to render even when hidden
   outputOptions(output, "preprocessing_buttons", suspendWhenHidden = FALSE)
   outputOptions(output, "lifetable_buttons", suspendWhenHidden = FALSE)
+
+  # Reactive UI for lifetable input page
+  output$lifetable_input_page <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+
+    div(
+      class = "ui form",
+      # Basic Inputs as in initial setup
+      create_field_set("", i18n$t("Desired Open Age Group"), "input_oanew", seq(70, 100, by = 5), 100),
+      create_field_set("", i18n$t("Output Age Classes"), "input_age_out", c("single", "abridged"), "single"),
+      uiOutput("sex_to_use"),
+      uiOutput("ages_to_use"),
+      uiOutput("extrap_from_data"),
+      br(),
+      # Advanced Inputs - Initially Hidden
+      div(
+        id = "advanced_inputs",
+        style = "display: none;",
+        div(
+          class = "ui two column grid",
+          div(
+            class = "column",
+            create_field_set("", i18n$t("Extrapolation Law"), "input_extrapLaw", EXTRAP_LAWS, EXTRAP_LAWS[1]),
+            create_field_set("", i18n$t("Lifetable Radix"), "input_radix", input_selected = 100000, numeric_input = TRUE)
+          ),
+          div(
+            class = "column",
+            create_field_set("", i18n$t("Sex Ratio at Birth"), "input_srb", input_selected = 1.05, numeric_input = TRUE),
+            create_field_set("", i18n$t("a(0) Rule"), "input_a0rule", c("Andreev-Kingkade", "Coale-Demeny"), "Andreev-Kingkade"),
+            create_field_set("", i18n$t("a(x) Method"), "input_axmethod", c("UN (Greville)", "PASEX"), "UN (Greville)")
+          )
+        )
+      ),
+      # Dropdown to toggle Advanced Inputs
+      action_button("toggle_advanced", i18n$t("Show Advanced Options"), class = "ui button"),
+      br(),
+      br(),
+      uiOutput("download_buttons")
+    )
+  })
+
+  # Set lifetable input page to render even when hidden
+  outputOptions(output, "lifetable_input_page", suspendWhenHidden = FALSE)
 
   # At the beginning of app_server
   current_tab <- reactiveVal()
@@ -762,6 +807,13 @@ lifetable_server <- function(input, output, session) {
 
       # Render input UI
       output[[paste0(step_name, "_inputs")]] <- renderUI(step$input_ui(i18n))
+
+      # Render execute button with fresh i18n
+      output[[paste0("execute_button_", step_name)]] <- renderUI({
+        i18n <- usei18n_local()
+        input$selected_language
+        action_button(paste0("execute_", step_name), i18n$t("Execute"), class = "ui blue button")
+      })
 
       # Create reactive expression for the function call
       step_func_calls[[step_name]] <- reactive({

@@ -514,7 +514,7 @@ lifetable_module_ui <- function(i18n) {
         uiOutput("download_modal"),
         div(
           sidebar_layout_responsive(
-            list(children = div(input_page(i18n))),
+            list(children = uiOutput("lifetable_input_page")),
             div(
               id = "tabContent",
               uiOutput("lt_group_select_ui"),
@@ -543,7 +543,7 @@ create_adjustment_tab <- function(tab_name, input_id, plot_id, i18n) {
         children = div(
           uiOutput(input_id),
           br(),
-          action_button(paste0("execute_", tab_name), i18n$t("Execute"), class = "ui blue button")
+          uiOutput(paste0("execute_button_", tab_name))
         )
       ),
       div(
