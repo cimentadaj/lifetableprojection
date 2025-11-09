@@ -196,6 +196,13 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   setup_grouping_dropdown_observers(input, selected_grouping_vars)
 
   output$grouping_controls <- renderUI({
+    # Force reactivity to language changes
+    tryCatch({
+      if (!is.null(session$userData$language_version)) {
+        lang_ver <- session$userData$language_version()
+      }
+    }, error = function(e) NULL)
+
     status <- group_selection_passed()
     cat(sprintf("[GROUPING_UI][%s] render request | group_selection_passed=%s\n", module_id, status))
     req(status)

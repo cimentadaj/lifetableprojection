@@ -1574,6 +1574,17 @@ translate_text <- function(text, i18n = NULL) {
 }
 
 app_server <- function(input, output, session) {
+  # Create reactive value for language changes to propagate to modules
+  # Initialize to 1 so initial render works
+  session$userData$language_version <- reactiveVal(1)
+
+  # Observe language changes to update version
+  observeEvent(input$selected_language, {
+    if (!is.null(input$selected_language)) {
+      session$userData$language_version(session$userData$language_version() + 1)
+    }
+  }, ignoreNULL = FALSE, ignoreInit = FALSE)
+
   # Render lifetable module card dynamically for language switching
   output$lifetable_module_card <- renderUI({
     i18n <- usei18n_local()

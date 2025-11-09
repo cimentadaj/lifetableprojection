@@ -309,9 +309,16 @@ heaping_module_server <- function(input, output, session) {
 
       # Reactive UI elements for language switching
       output$heaping_back_button <- shiny::renderUI({
-        if (!is.null(session$userData$language_version)) {
-          session$userData$language_version()
-        }
+        tryCatch({
+          if (!is.null(session$userData$language_version)) {
+            lang_ver <- session$userData$language_version()
+            cat(sprintf("[HEAPING_UI] heaping_back_button render | lang_ver=%s\n", lang_ver))
+          } else {
+            cat("[HEAPING_UI] heaping_back_button render | language_version is NULL\n")
+          }
+        }, error = function(e) {
+          cat(sprintf("[HEAPING_UI] heaping_back_button render ERROR: %s\n", e$message))
+        })
         shiny::actionButton("heaping_back_to_modules", i18n$t("← Previous"), class = "ui grey button")
       })
 
@@ -496,6 +503,13 @@ heaping_module_server <- function(input, output, session) {
         shinyjs::runjs(sprintf("$('#%s').hide();", analysis_step_id))
         shiny::outputOptions(output, "run_log", suspendWhenHidden = FALSE)
         shiny::outputOptions(output, "grouping_controls", suspendWhenHidden = FALSE)
+        # Make analysis page UI elements render even when hidden
+        shiny::outputOptions(output, "heaping_back_to_upload_button", suspendWhenHidden = FALSE)
+        shiny::outputOptions(output, "heaping_analysis_info_box", suspendWhenHidden = FALSE)
+        shiny::outputOptions(output, "heaping_controls_header", suspendWhenHidden = FALSE)
+        shiny::outputOptions(output, "heaping_variable_selector", suspendWhenHidden = FALSE)
+        shiny::outputOptions(output, "heaping_run_button", suspendWhenHidden = FALSE)
+        shiny::outputOptions(output, "heaping_download_button", suspendWhenHidden = FALSE)
         cat("[HEAPING_MODULE] initial setup: hiding download_container\n")
         shinyjs::hide(id = ns("download_container"))
         cat("[HEAPING_MODULE] initial setup: disabling download_heaping_csv button\n")
