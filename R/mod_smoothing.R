@@ -177,8 +177,7 @@ smoothing_module_ui <- function(i18n) {
                 children = shiny::div(
                   class = "ui form",
                   shiny::uiOutput(ns("smoothing_controls"))
-                ),
-                width = 3  # Narrower sidebar (default is 4)
+                )
               ),
               # RIGHT MAIN: Plot area
               shiny::div(
