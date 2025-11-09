@@ -358,6 +358,81 @@ lifetable_server <- function(input, output, session) {
     }
   })
 
+  # Reactive UI for lifetable landing page
+  output$lifetable_landing_hero <- renderUI({
+    # Force reactivity to language changes
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+
+    div(
+      class = "hero-section",
+      div(
+        style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
+        actionButton("back_to_modules", i18n$t('← Previous'), class = "ui grey button")
+      ),
+      h1(i18n$t("Life Table Analysis Platform"), class = "hero-title"),
+      p(i18n$t("Transform mortality data into comprehensive life table analyses with just a few clicks"),
+        class = "hero-subtitle")
+    )
+  })
+
+  output$lifetable_landing_features <- renderUI({
+    # Force reactivity to language changes
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+
+    div(
+      class = "features-grid",
+      # Upload Feature
+      div(
+        class = "feature-card",
+        icon("upload"),
+        h3(i18n$t("Upload Your Data")),
+        p(i18n$t("Import your mortality data in CSV format containing Age, Deaths, and Exposures"))
+      ),
+      # Diagnostics Feature
+      div(
+        class = "feature-card",
+        icon("chart line"),
+        h3(i18n$t("Run Diagnostics")),
+        p(i18n$t("Analyze data quality and identify potential issues with built-in diagnostic tools"))
+      ),
+      # Transform Feature
+      div(
+        class = "feature-card",
+        icon("magic"),
+        h3(i18n$t("Transform Data")),
+        p(i18n$t("Apply sophisticated smoothing and adjustments by groups"))
+      ),
+      # Results Feature
+      div(
+        class = "feature-card",
+        icon("table"),
+        h3(i18n$t("Get Results")),
+        p(i18n$t("Download complete life table results and visualizations"))
+      )
+    )
+  })
+
+  output$lifetable_landing_action <- renderUI({
+    # Force reactivity to language changes
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+
+    div(
+      class = "action-section",
+      actionButton("lifetable_start_button", i18n$t("Start"), class = "ui blue button")
+    )
+  })
+
+  # Set landing page outputs to render even when hidden
+  outputOptions(output, "lifetable_landing_hero", suspendWhenHidden = FALSE)
+  outputOptions(output, "lifetable_landing_features", suspendWhenHidden = FALSE)
+  outputOptions(output, "lifetable_landing_action", suspendWhenHidden = FALSE)
+
   # At the beginning of app_server
   current_tab <- reactiveVal()
 

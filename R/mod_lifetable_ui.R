@@ -450,53 +450,10 @@ lifetable_module_ui <- function(i18n) {
       hidden(
         div(
           id = "lifetable_landing_page",
-          # Hero Section
-          div(
-            class = "hero-section",
-            div(
-              style = "display: flex; justify-content: flex-start; margin-bottom: 20px;",
-              actionButton("back_to_modules", i18n$t('← Previous'), class = "ui grey button")
-            ),
-            h1(i18n$t("Life Table Analysis Platform"), class = "hero-title"),
-            p(i18n$t("Transform mortality data into comprehensive life table analyses with just a few clicks"),
-              class = "hero-subtitle"
-            )
-          ),
-          div(
-            class = "features-grid",
-            # Upload Feature
-            div(
-              class = "feature-card",
-              icon("upload"),
-              h3(i18n$t("Upload Your Data")),
-              p(i18n$t("Import your mortality data in CSV format containing Age, Deaths, and Exposures"))
-            ),
-            # Diagnostics Feature
-            div(
-              class = "feature-card",
-              icon("chart line"),
-              h3(i18n$t("Run Diagnostics")),
-              p(i18n$t("Analyze data quality and identify potential issues with built-in diagnostic tools"))
-            ),
-            # Transform Feature
-            div(
-              class = "feature-card",
-              icon("magic"),
-              h3(i18n$t("Transform Data")),
-              p(i18n$t("Apply sophisticated smoothing and adjustments by groups"))
-            ),
-            # Results Feature
-            div(
-              class = "feature-card",
-              icon("table"),
-              h3(i18n$t("Get Results")),
-              p(i18n$t("Download complete life table results and visualizations"))
-            )
-          ),
-          div(
-            class = "action-section",
-            actionButton("lifetable_start_button", i18n$t("Start"), class = "ui blue button")
-          )
+          # Dynamic UI elements that update with language changes
+          uiOutput("lifetable_landing_hero"),
+          uiOutput("lifetable_landing_features"),
+          uiOutput("lifetable_landing_action")
         )
       )
     ),
