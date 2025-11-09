@@ -303,29 +303,22 @@ smoothing_module_server <- function(input, output, session) {
           session$userData$language_version()
         }
 
-        message("[SMOOTHING] smoothing_continue_ui rendering...")
-
         # Require group selection to be complete
-        group_passed <- shared$group_selection_passed()
-        message("[SMOOTHING] group_selection_passed = ", group_passed)
-        req(group_passed)
+        req(shared$group_selection_passed())
 
         # Try to get validation details
         details <- tryCatch(shared$validation_details(), error = function(e) NULL)
-        message("[SMOOTHING] validation_details: ", !is.null(details))
 
         # If we have details, check if they pass
         if (!is.null(details) && is.data.frame(details)) {
           if (!all(details$pass == "Pass")) {
-            message("[SMOOTHING] Validation failed - not showing button")
             return(NULL)  # Validation failed, don't show button
           }
         }
 
         # Show button if: validation passed OR no validation details available (assume OK)
-        message("[SMOOTHING] Creating continue button with ID: ", ns("go_to_analysis"))
         shiny::actionButton(
-          ns("go_to_analysis"),  # YES use ns() - heaping does this too!
+          ns("go_to_analysis"),
           i18n$t("Continue"),
           class = "ui blue button"
         )
@@ -342,11 +335,9 @@ smoothing_module_server <- function(input, output, session) {
 
       # Controls panel
       output$smoothing_controls <- shiny::renderUI({
-        message("[SMOOTHING] Rendering smoothing_controls...")
         if (!is.null(session$userData$language_version)) {
           session$userData$language_version()
         }
-        message("[SMOOTHING] Creating control inputs...")
         shiny::tagList(
           shiny.semantic::selectInput(
             ns("smoothing_variable"),
@@ -505,21 +496,11 @@ smoothing_module_server <- function(input, output, session) {
       }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
       # Navigation: Step 1 → Step 2
-      message("[SMOOTHING] Setting up go_to_analysis observer...")
       shiny::observeEvent(input$go_to_analysis, {
-        message("[SMOOTHING] ========== GO_TO_ANALYSIS CLICKED ==========")
-        message("[SMOOTHING] input$go_to_analysis value: ", input$go_to_analysis)
-        message("[SMOOTHING] data_step_id: ", data_step_id)
-        message("[SMOOTHING] analysis_step_id: ", analysis_step_id)
-        message("[SMOOTHING] Calling hide on data_step...")
         shinyjs::hide(id = data_step_id)
-        message("[SMOOTHING] Calling show on analysis_step...")
         shinyjs::show(id = analysis_step_id)
-        # Also use jQuery like heaping does
         shinyjs::runjs(sprintf("$('#%s').hide(); $('#%s').show();", data_step_id, analysis_step_id))
-        message("[SMOOTHING] ========== NAVIGATION COMPLETE ==========")
       }, ignoreNULL = TRUE, ignoreInit = TRUE)
-      message("[SMOOTHING] go_to_analysis observer registered")
 
       # Navigation: Step 2 → Step 1
       shiny::observeEvent(input$back_to_upload, {

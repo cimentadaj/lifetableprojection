@@ -74,6 +74,9 @@ app_ui <- function(request) {
     if (mod_id == "heaping") {
       return(uiOutput("heaping_module_card"))
     }
+    if (mod_id == "smoothing") {
+      return(uiOutput("smoothing_module_card"))
+    }
 
     # Keep other cards static
     if (identical(mod$status, "active")) {
