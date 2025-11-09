@@ -32,11 +32,11 @@ get_app_modules <- function(i18n) {
       name = i18n$t("Smoothing Preview"),
       description = i18n$t("Preview mortality smoothing options before integrating them into your workflow."),
       icon = "wave square",
-      status = "coming_soon",
-      button_label = NULL,
-      status_label = i18n$t("Coming Soon"),
-      ui = NULL,
-      server_fun = NULL
+      status = "active",
+      button_label = i18n$t("Go to module"),
+      status_label = i18n$t("Active"),
+      ui = smoothing_module_ui(i18n),
+      server_fun = smoothing_module_server
     ),
     graduation = list(
       id = "graduation",

@@ -1374,6 +1374,61 @@
             "en": "The heaping sample contains Age, Deaths, and Exposures observed at single ages.",
             "fr": "L'échantillon d'agrégation contient l'âge, les décès et les expositions observés aux âges simples.",
             "es": "La muestra de agrupamiento contiene Edad, Muertes y Exposiciones observadas en edades simples."
+        },
+        {
+            "en": "Preview mortality smoothing methods before integrating them into your workflow.",
+            "fr": "Prévisualisez les méthodes de lissage de mortalité avant de les intégrer à votre flux de travail.",
+            "es": "Previsualice métodos de suavizado de mortalidad antes de integrarlos en su flujo de trabajo."
+        },
+        {
+            "en": "Variable to smooth",
+            "fr": "Variable à lisser",
+            "es": "Variable a suavizar"
+        },
+        {
+            "en": "Fine Method",
+            "fr": "Méthode fine",
+            "es": "Método fino"
+        },
+        {
+            "en": "Rough Method",
+            "fr": "Méthode grossière",
+            "es": "Método grueso"
+        },
+        {
+            "en": "Constrain Infants",
+            "fr": "Contraindre les nourrissons",
+            "es": "Restringir bebés"
+        },
+        {
+            "en": "Under-5 Mortality (optional)",
+            "fr": "Mortalité des moins de 5 ans (facultatif)",
+            "es": "Mortalidad menor de 5 años (opcional)"
+        },
+        {
+            "en": "Run Smoothing",
+            "fr": "Exécuter le lissage",
+            "es": "Ejecutar suavizado"
+        },
+        {
+            "en": "The smoothing sample contains Age, Deaths, and Exposures observed at single ages.",
+            "fr": "L'échantillon de lissage contient l'âge, les décès et les expositions observés aux âges simples.",
+            "es": "La muestra de suavizado contiene Edad, Muertes y Exposiciones observadas en edades simples."
+        },
+        {
+            "en": "Minimum required: Age and one numeric variable to smooth (Deaths, Exposures, or similar counts).",
+            "fr": "Minimum requis : Âge et une variable numérique à lisser (Décès, Expositions ou comptages similaires).",
+            "es": "Mínimo requerido: Edad y una variable numérica para suavizar (Muertes, Exposiciones o conteos similares)."
+        },
+        {
+            "en": "Smoothing failed. Check input data validity.",
+            "fr": "Le lissage a échoué. Vérifiez la validité des données d'entrée.",
+            "es": "El suavizado falló. Verifique la validez de los datos de entrada."
+        },
+        {
+            "en": "No smoothing results yet.",
+            "fr": "Aucun résultat de lissage pour le moment.",
+            "es": "Aún no hay resultados de suavizado."
         }
     ]
 }

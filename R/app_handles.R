@@ -71,6 +71,23 @@ handle_transitions <- function(input, current_tab) {
     show("module_landing_page")
     current_tab("module_landing")
   })
+
+  observeEvent(input$goto_smoothing, {
+    hide("module_landing_page")
+    hide("lifetable_landing_page")
+    hide("landing_page")
+    hide("step_adjustment")
+    hide("step_input")
+    hide("heaping_module_page")
+    show("smoothing_module_page")
+    current_tab("smoothing")
+  })
+
+  observeEvent(input$smoothing_back_to_modules, {
+    hide("smoothing_module_page")
+    show("module_landing_page")
+    current_tab("module_landing")
+  })
 }
 
 
