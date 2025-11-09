@@ -1,1101 +1,1379 @@
 {
-    "languages": ["en", "fr"],
+    "languages": [
+        "en",
+        "fr",
+        "es"
+    ],
     "translation": [
-      {
-        "en": "Mortality Analysis Report",
-        "fr": "Rapport d'Analyse de Mortalité"
-      },
-      {
-        "en": "Executive Summary",
-        "fr": "Résumé Exécutif"
-      },
-      {
-        "en": "This report presents a comprehensive mortality analysis including data quality diagnostics and life table calculations.",
-        "fr": "Ce rapport présente une analyse complète de la mortalité comprenant des diagnostics de qualité des données et des calculs de table de mortalité."
-      },
-      {
-        "en": "Preprocessing Analysis",
-        "fr": "Analyse de Prétraitement"
-      },
-      {
-        "en": "Approximate",
-        "fr": "Approximatif"
-      },
-      {
-        "en": "Highly accurate",
-        "fr": "Très précis"
-      },
-      {
-        "en": "Diagnostic Metrics",
-        "fr": "Métriques de Diagnostic"
-      },
-      {
-        "en": "Diagnostic Metrics for",
-        "fr": "Métriques de Diagnostic pour"
-      },
-      {
-        "en": "Diagnostic Plots",
-        "fr": "Graphiques de Diagnostic"
-      },
-      {
-        "en": "Summary Statistics",
-        "fr": "Statistiques Récapitulatives"
-      },
-      {
-        "en": "Summary Statistics for",
-        "fr": "Statistiques Récapitulatives pour"
-      },
-      {
-        "en": "Mortality Rates (nMx) -",
-        "fr": "Taux de Mortalité (nMx) -"
-      },
-      {
-        "en": "Survival Curve (lx) -",
-        "fr": "Courbe de Survie (lx) -"
-      },
-      {
-        "en": "Death Distribution (ndx) -",
-        "fr": "Distribution des Décès (ndx) -"
-      },
-      {
-        "en": "Death Probabilities",
-        "fr": "Probabilités de Décès"
-      },
-      {
-        "en": "Data Quality Diagnostics",
-        "fr": "Diagnostics de Qualité des Données"
-      },
-      {
-        "en": "Death Probabilities (nqx) -",
-        "fr": "Probabilités de Décès (nqx) -"
-      },
-      {
-        "en": "Description",
-        "fr": "Description"
-      },
-      {
-        "en": "Change language",
-        "fr": "Changer de langue"
-      },
-      {
-        "en": "Demographic Analysis Suite",
-        "fr": "Suite d'Analyse Démographique"
-      },
-      {
-        "en": "Go to module",
-        "fr": "Aller au module"
-      },
-      {
-        "en": "Advanced tools for demographic research and analysis",
-        "fr": "Outils avancés pour la recherche et l'analyse démographique"
-      },
-      {
-        "en": "Life Table Analysis",
-        "fr": "Analyse de Table de Mortalité"
-      },
-      {
-        "en": "Create comprehensive life tables with advanced smoothing capabilities and mortality analysis tools.",
-        "fr": "Créez des tables de mortalité complètes avec des capacités avancées de lissage et des outils d'analyse de mortalité."
-      },
-      {
-        "en": "Demographic Interpolation",
-        "fr": "Interpolation Démographique"
-      },
-      {
-        "en": "Fill data gaps and estimate demographic indicators between time points using advanced interpolation methods.",
-        "fr": "Comblez les lacunes de données et estimez les indicateurs démographiques entre les points temporels à l'aide de méthodes d'interpolation avancées."
-      },
-      {
-        "en": "Coming Soon",
-        "fr": "Bientôt Disponible"
-      },
-      {
-        "en": "Life Table Analysis Platform",
-        "fr": "Plateforme d'Analyse de Table de Mortalité"
-      },
-      {
-        "en": "Transform mortality data into comprehensive life table analyses with just a few clicks",
-        "fr": "Transformez les données de mortalité en analyses complètes de table de mortalité en quelques clics"
-      },
-      {
-        "en": "← Previous",
-        "fr": "← Précédent"
-      },
-      {
-        "en": "Upload Your Data",
-        "fr": "Téléchargez Vos Données"
-      },
-      {
-        "en": "Import your mortality data in CSV format containing Age, Deaths, and Exposures",
-        "fr": "Importez vos données de mortalité au format CSV contenant l'âge, les décès et les expositions"
-      },
-      {
-        "en": "Run Diagnostics",
-        "fr": "Exécuter les Diagnostics"
-      },
-      {
-        "en": "Analyze data quality and identify potential issues with built-in diagnostic tools",
-        "fr": "Analysez la qualité des données et identifiez les problèmes potentiels avec les outils de diagnostic intégrés"
-      },
-      {
-        "en": "Transform Data",
-        "fr": "Transformer les Données"
-      },
-      {
-        "en": "Apply sophisticated smoothing and adjustments by groups",
-        "fr": "Appliquez des lissages sophistiqués et des ajustements par groupes"
-      },
-      {
-        "en": "Get Results",
-        "fr": "Obtenir les Résultats"
-      },
-      {
-        "en": "Download complete life table results and visualizations",
-        "fr": "Téléchargez les résultats complets de la table de mortalité et les visualisations"
-      },
-      {
-        "en": "Start",
-        "fr": "Commencer"
-      },
-      {
-        "en": "Data upload and validation",
-        "fr": "Téléchargement et validation des données"
-      },
-      {
-        "en": "Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:",
-        "fr": "Commencez par télécharger votre fichier CSV. Vous n'êtes pas sûr de votre fichier ? Voici ce que nous recherchons :"
-      },
-      {
-        "en": "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.",
-        "fr": "Les expositions font référence aux années-personnes vécues au cours de la même période où les décès ont été enregistrés. Si les décès font référence à une seule année, la population de milieu d'année peut parfois être utilisée pour approximer les expositions."
-      },
-      {
-        "en": "Ready? Click 'Browse...' to select your file or start with our sample data.",
-        "fr": "Prêt ? Cliquez sur 'Parcourir...' pour sélectionner votre fichier ou commencez avec nos données d'exemple."
-      },
-      {
-        "en": "Instructions",
-        "fr": "Instructions"
-      },
-      {
-        "en": "Use sample data",
-        "fr": "Utiliser les données d'exemple"
-      },
-      {
-        "en": "Show Advanced Options",
-        "fr": "Afficher les Options Avancées"
-      },
-      {
-        "en": "Hide Advanced Options",
-        "fr": "Masquer les Options Avancées"
-      },
-      {
-        "en": "Next →",
-        "fr": "Suivant →"
-      },
-      {
-        "en": "Smoothing",
-        "fr": "Lissage"
-      },
-      {
-        "en": "smoothing",
-        "fr": "lissage"
-      },
-      {
-        "en": "Calculate",
-        "fr": "Calculer"
-      },
-      {
-        "en": "Reset Options",
-        "fr": "Réinitialiser les Options"
-      },
-      {
-        "en": "Execute",
-        "fr": "Exécuter"
-      },
-      {
-        "en": "Ages to fit extrapolation model",
-        "fr": "Âges à ajuster pour le modèle d'extrapolation"
-      },
-      {
-        "en": "Extrap. Jump-off Age",
-        "fr": "Âge de Départ pour l'Extrapolation"
-      },
-      {
-        "en": "Life Table Summary Statistics",
-        "fr": "Statistiques de la Table de Mortalité"
-      },
-      {
-        "en": "Download life table results",
-        "fr": "Télécharger les résultats de la table de mortalité"
-      },
-      {
-        "en": "Download preprocessing results",
-        "fr": "Télécharger les résultats du prétraitement"
-      },
-      {
-        "en": "Download diagnostic results",
-        "fr": "Télécharger les résultats des diagnostics"
-      },
-      {
-        "en": "Download PDF Report",
-        "fr": "Télécharger le Rapport PDF"
-      },
-      {
-        "en": "Download Options",
-        "fr": "Options de Téléchargement"
-      },
-      {
-        "en": "Select an option:",
-        "fr": "Sélectionnez une option :"
-      },
-      {
-        "en": "Cancel",
-        "fr": "Annuler"
-      },
-      {
-        "en": "Download",
-        "fr": "Télécharger"
-      },
-      {
-        "en": "Desired Open Age Group",
-        "fr": "Groupe d'Âge Ouvert Souhaité"
-      },
-      {
-        "en": "Group",
-        "fr": "Groupe"
-      },
-      {
-        "en": "Preparing download... Estimated time:",
-        "fr": "Préparation du téléchargement... Temps estimé :"
-      },
-      {
-        "en": "seconds",
-        "fr": "secondes"
-      },
-      {
-        "en": "minutes",
-        "fr": "minutes"
-      },
-      {
-        "en": "Output Age Classes",
-        "fr": "Classes d'Âge de Sortie"
-      },
-      {
-        "en": "single",
-        "fr": "unique"
-      },
-      {
-        "en": "abridged",
-        "fr": "abrégé"
-      },
-      {
-        "en": "Extrapolation Law",
-        "fr": "Loi d'Extrapolation"
-      },
-      {
-        "en": "Lifetable Radix",
-        "fr": "Radix de la Table de Mortalité"
-      },
-      {
-        "en": "Sex Ratio at Birth",
-        "fr": "Rapport de Masculinité à la Naissance"
-      },
-      {
-        "en": "a(0) Rule",
-        "fr": "Règle a(0)"
-      },
-      {
-        "en": "Andreev-Kingkade",
-        "fr": "Andreev-Kingkade"
-      },
-      {
-        "en": "Coale-Demeny",
-        "fr": "Coale-Demeny"
-      },
-      {
-        "en": "a(x) Method",
-        "fr": "Méthode a(x)"
-      },
-      {
-        "en": "UN (Greville)",
-        "fr": "ONU (Greville)"
-      },
-      {
-        "en": "PASEX",
-        "fr": "PASEX"
-      },
-      {
-        "en": "Language",
-        "fr": "Langue"
-      },
-      {
-        "en": "English",
-        "fr": "Anglais"
-      },
-      {
-        "en": "French",
-        "fr": "Français"
-      },
-      {
-        "en": "Join The Conversation:",
-        "fr": "Rejoignez La Conversation :"
-      },
-      {
-        "en": "Donate",
-        "fr": "Faire un don"
-      },
-      {
-        "en": "Contact",
-        "fr": "Contact"
-      },
-      {
-        "en": "Copyright",
-        "fr": "Droits d'auteur"
-      },
-      {
-        "en": "Fraud Alert",
-        "fr": "Alerte à la fraude"
-      },
-      {
-        "en": "Privacy Notice",
-        "fr": "Avis de confidentialité"
-      },
-      {
-        "en": "Site Index",
-        "fr": "Index du site"
-      },
-      {
-        "en": "Terms of Use",
-        "fr": "Conditions d'utilisation"
-      },
-      {
-        "en": "Column Selection",
-        "fr": "Sélection des Colonnes"
-      },
-      {
-        "en": "If you're analysis needs to be performed by groups (e.g Sex, Province, Region, etc..), please select the columns that group your data. If your data is not group-wise, tick the box below.",
-        "fr": "Si votre analyse doit être effectuée par groupes (par exemple Sexe, Province, Région, etc.), veuillez sélectionner les colonnes qui regroupent vos données. Si vos données ne sont pas groupées, cochez la case ci-dessous."
-      },
-      {
-        "en": "Select Identifier Columns",
-        "fr": "Sélectionner les Colonnes d'Identification"
-      },
-      {
-        "en": "No grouping needed for this analysis",
-        "fr": "Pas de regroupement nécessaire pour cette analyse"
-      },
-      {
-        "en": "Confirm",
-        "fr": "Confirmer"
-      },
-      {
-        "en": "A maximum of 3 grouping variables are allowed.",
-        "fr": "Un maximum de 3 variables de regroupement est autorisé."
-      },
-      {
-        "en": "The specified columns do not identify each row uniquely or we've identified there are grouping columns not specified.",
-        "fr": "Les colonnes spécifiées n'identifient pas chaque ligne de manière unique ou nous avons identifié qu'il y a des colonnes de regroupement non spécifiées."
-      },
-      {
-        "en": "✅ Everything is great, all checks passed!",
-        "fr": "✅ Tout est parfait, tous les contrôles sont passés !"
-      },
-      {
-        "en": "Check Failures:",
-        "fr": "Échecs des contrôles :"
-      },
-      {
-        "en": "Diagnostics",
-        "fr": "Diagnostics"
-      },
-      {
-        "en": "Continue",
-        "fr": "Continuer"
-      },
-      {
-        "en": "Age column not found",
-        "fr": "Colonne âge non trouvée"
-      },
-      {
-        "en": "Type",
-        "fr": "Type"
-      },
-      {
-        "en": "Age Scale",
-        "fr": "Échelle d'Âge"
-      },
-      {
-        "en": "Method",
-        "fr": "Méthode"
-      },
-      {
-        "en": "Result",
-        "fr": "Résultat"
-      },
-      {
-        "en": "Level",
-        "fr": "Niveau"
-      },
-      {
-        "en": "Color",
-        "fr": "Couleur"
-      },
-      {
-        "en": "Deaths column not found",
-        "fr": "Colonne décès non trouvée"
-      },
-      {
-        "en": "Exposures column not found",
-        "fr": "Colonne expositions non trouvée"
-      },
-      {
-        "en": "Duplicate ages found",
-        "fr": "Âges en double trouvés"
-      },
-      {
-        "en": "Negative values found in Deaths",
-        "fr": "Valeurs négatives trouvées dans les décès"
-      },
-      {
-        "en": "Negative values found in Exposures",
-        "fr": "Valeurs négatives trouvées dans les expositions"
-      },
-      {
-        "en": "Zero values found in Exposures",
-        "fr": "Valeurs nulles trouvées dans les expositions"
-      },
-      {
-        "en": "Data Diagnostics",
-        "fr": "Diagnostics des Données"
-      },
-      {
-        "en": "Exposures",
-        "fr": "Expositions"
-      },
-      {
-        "en": "Deaths",
-        "fr": "Décès"
-      },
-      {
-        "en": "Empirical Mx",
-        "fr": "Mx Empirique"
-      },
-      {
-        "en": "The Roughness method measures the average absolute percentage deviation from a smoothed trend through the five-year age group data. The Sawtooth method takes the average of the ratios of the value in each five-year age group (in adult ages) to the average of the two adjacent age groups (age groups below and above). Both of these methods are trying to pick up on a phenomenon known as differential age heaping where digit preference is stronger on zeroes than on fives. This phenomenon can cause an apparent sawtooth pattern in demographic count data.",
-        "fr": "La méthode de Rugosité mesure l'écart absolu moyen en pourcentage par rapport à une tendance lissée à travers les données par groupe d'âge de cinq ans. La méthode en Dents de Scie prend la moyenne des ratios de la valeur dans chaque groupe d'âge de cinq ans (aux âges adultes) par rapport à la moyenne des deux groupes d'âge adjacents (groupes d'âge inférieurs et supérieurs). Ces deux méthodes tentent de détecter un phénomène connu sous le nom d'attraction différentielle des âges où la préférence pour les chiffres est plus forte sur les zéros que sur les cinq. Ce phénomène peut causer un motif apparent en dents de scie dans les données démographiques."
-      },
-      {
-        "en": "The Myers and Bachi indices both measure digit preference for single-age data. If there were no digit preference, then the distribution over terminal digits (0-9) would be roughly uniform. Both of these indices measure the departure from uniformity, with slight variations on the implementation. Higher values indicate digit distributions that are farther from uniform. If these indices are high, but the _roughness_ and _sawtooth_ indices are low, then you might adjust data using one of the _fine_ smoothing methods offered.",
-        "fr": "Les indices de Myers et Bachi mesurent tous deux la préférence pour les chiffres dans les données d'âge simple. S'il n'y avait pas de préférence pour les chiffres, la distribution sur les chiffres terminaux (0-9) serait à peu près uniforme. Ces deux indices mesurent l'écart par rapport à l'uniformité, avec de légères variations dans leur mise en œuvre. Des valeurs plus élevées indiquent des distributions de chiffres plus éloignées de l'uniforme. Si ces indices sont élevés, mais que les indices de _rugosité_ et de _dents de scie_ sont faibles, vous pourriez ajuster les données en utilisant l'une des méthodes de lissage _fin_ proposées."
-      },
-      {
-        "en": "This step simultaneously smooths age patterns in both exposures and deaths.",
-        "fr": "Cette étape lisse simultanément les modèles d'âge dans les expositions et les décès."
-      },
-      {
-        "en": "Exposures Parameters",
-        "fr": "Paramètres des Expositions"
-      },
-      {
-        "en": "Deaths Parameters",
-        "fr": "Paramètres des Décès"
-      },
-      {
-        "en": "Rough Method (Exposures)",
-        "fr": "Méthode Grossière (Expositions)"
-      },
-      {
-        "en": "Rough Method (Deaths)",
-        "fr": "Méthode Grossière (Décès)"
-      },
-      {
-        "en": "Shared Parameters",
-        "fr": "Paramètres Partagés"
-      },
-      {
-        "en": "Age Output",
-        "fr": "Sortie d'Âge"
-      },
-      {
-        "en": "Fine Method (Exposures)",
-        "fr": "Méthode Fine (Expositions)"
-      },
-      {
-        "en": "Fine Method (Deaths)",
-        "fr": "Méthode Fine (Décès)"
-      },
-      {
-        "en": "Under-5 Mortality (optional, Exposures)",
-        "fr": "Mortalité des Moins de 5 Ans (optionnel, Expositions)"
-      },
-      {
-        "en": "Under-5 Mortality (optional, Deaths)",
-        "fr": "Mortalité des Moins de 5 Ans (optionnel, Décès)"
-      },
-      {
-        "en": "Constrain Infants (Exposures)",
-        "fr": "Contraindre les Nourrissons (Expositions)"
-      },
-      {
-        "en": "Constrain Infants (Deaths)",
-        "fr": "Contraindre les Nourrissons (Décès)"
-      },
-      {
-        "en": "If you want to test out the app's functionalty, click here to use a sample dataset. A pop up window will be prompted for the grouping variables that identify your data. Simply tick the no-grouping box and you'll be able to inspect the diagnostics and perform additional preprocessing.",
-        "fr": "Si vous souhaitez tester les fonctionnalités de l'application, cliquez ici pour utiliser un jeu de données d'exemple. Une fenêtre contextuelle s'affichera pour les variables de regroupement qui identifient vos données. Cochez simplement la case sans regroupement et vous pourrez inspecter les diagnostics et effectuer un prétraitement supplémentaire."
-      },
-      {
-        "en": "Alternatively, upload your own data. Make sure your data is cleaned and ready for analysis (no age duplicates, unless by groups), correct column names (we expect at least the basic to be 'Sex', 'Deaths' and 'Exposures'), either single or abridged ages but nothing else.",
-        "fr": "Alternativement, téléchargez vos propres données. Assurez-vous que vos données sont nettoyées et prêtes pour l'analyse (pas de doublons d'âge, sauf par groupes), noms de colonnes corrects (nous attendons au minimum les bases 'Sexe', 'Décès' et 'Expositions'), âges simples ou abrégés mais rien d'autre."
-      },
-      {
-        "en": "These are the tabs for the preprocessing. Every time you click execute from each of the preprocessing it will use the output of the previous preprocessing step.",
-        "fr": "Voici les onglets pour le prétraitement. Chaque fois que vous cliquez sur exécuter depuis chaque prétraitement, il utilisera la sortie de l'étape de prétraitement précédente."
-      },
-      {
-        "en": "In this icon you can see which data is used as input for each preprocessing, whether the initial data or the output of a previous preprocessing step.",
-        "fr": "Dans cette icône, vous pouvez voir quelles données sont utilisées comme entrée pour chaque prétraitement, qu'il s'agisse des données initiales ou de la sortie d'une étape de prétraitement précédente."
-      },
-      {
-        "en": "Once you've implemented all the preprocessing needed, you can click next to use the output of the final preprocessing step as the input to the lifetable. Equally important, if you've applied a preprocessing step, you'll see the sequential order at which they were executed as pills above this button. You can delete any step and the chain of excution will be recalculated.",
-        "fr": "Une fois que vous avez implémenté tous les prétraitements nécessaires, vous pouvez cliquer sur suivant pour utiliser la sortie de l'étape finale de prétraitement comme entrée pour la table de mortalité. Tout aussi important, si vous avez appliqué une étape de prétraitement, vous verrez l'ordre séquentiel dans lequel ils ont été exécutés sous forme de pilules au-dessus de ce bouton. Vous pouvez supprimer n'importe quelle étape et la chaîne d'exécution sera recalculée."
-      },
-      {
-        "en": "Here you can estimate the lifetable using the output of the final step of your preprocessing. After tweaking the parameters below, click here to see the plot and table outputs.",
-        "fr": "Ici, vous pouvez estimer la table de mortalité en utilisant la sortie de l'étape finale de votre prétraitement. Après avoir ajusté les paramètres ci-dessous, cliquez ici pour voir les sorties graphiques et tabulaires."
-      },
-      {
-        "en": "Preparing download:",
-        "fr": "Préparation du téléchargement:"
-      },
-      {
-        "en": "Saving lifetable results... Estimated time:",
-        "fr": "Enregistrement des résultats de la table de mortalité... Temps estimé:"
-      },
-      {
-        "en": "Saving preprocessing results... Estimated time:",
-        "fr": "Enregistrement des résultats du prétraitement... Temps estimé:"
-      },
-      {
-        "en": "Saving diagnostic results... Estimated time:",
-        "fr": "Enregistrement des résultats des diagnostics... Temps estimé:"
-      },
-      {
-        "en": "Preparing diagnostic data...",
-        "fr": "Préparation des données de diagnostic..."
-      },
-      {
-        "en": "Generating PDF report...",
-        "fr": "Génération du rapport PDF..."
-      },
-      {
-        "en": "Creating zip file...",
-        "fr": "Création du fichier zip..."
-      },
-      {
-        "en": "Export",
-        "fr": "Exporter"
-      },
-      {
-        "en": "Welcome to the United Nations",
-        "fr": "Bienvenue aux Nations Unies"
-      },
-      {
-        "en": "Data Portal",
-        "fr": "Portail de Données"
-      },
-      {
-        "en": "Population Division",
-        "fr": "Division de la Population"
-      },
-      {
-        "en": "This step will use the initial uploaded data",
-        "fr": "Cette étape utilisera les données initiales téléchargées"
-      },
-      {
-        "en": "This step uses the initial uploaded data",
-        "fr": "Cette étape utilise les données initiales téléchargées"
-      },
-      {
-        "en": "This step uses the output data from the",
-        "fr": "Cette étape utilise les données de sortie de"
-      },
-      {
-        "en": "step",
-        "fr": "étape"
-      },
-      {
-        "en": "Variable",
-        "fr": "Variable"
-      },
-      {
-        "en": "Mortality Rate",
-        "fr": "Taux de Mortalité"
-      },
-      {
-        "en": "Survival Curve",
-        "fr": "Courbe de Survie"
-      },
-      {
-        "en": "Death Distribution",
-        "fr": "Distribution des Décès"
-      },
-      {
-        "en": "Conditional Death Probabilities",
-        "fr": "Probabilités Conditionnelles de Décès"
-      },
-      {
-        "en": "Lifetable Results",
-        "fr": "Résultats de la Table de Mortalité"
-      },
-      {
-        "en": "Exposures by Age",
-        "fr": "Expositions par Âge"
-      },
-      {
-        "en": "Deaths by Age",
-        "fr": "Décès par Âge"
-      },
-      {
-        "en": "Empirical Mortality Rates (Mx) by Age",
-        "fr": "Taux de Mortalité Empiriques (Mx) par Âge"
-      },
-      {
-        "en": "Age",
-        "fr": "Âge"
-      },
-      {
-        "en": "Value",
-        "fr": "Valeur"
-      },
-      {
-        "en": "Counts",
-        "fr": "Comptages"
-      },
-      {
-        "en": "Rate",
-        "fr": "Taux"
-      },
-      {
-        "en": "Difference Between Empirical Mx and Extrapolated Values on Log10 Scale",
-        "fr": "Différence Entre Mx Empirique et Valeurs Extrapolées sur Échelle Log10"
-      },
-      {
-        "en": "Empirical",
-        "fr": "Empirique"
-      },
-      {
-        "en": "Smoothed",
-        "fr": "Lissé"
-      },
-      {
-        "en": "Extrapolated",
-        "fr": "Extrapolé"
-      },
-      {
-        "en": "Single-Age",
-        "fr": "Âge Unique"
-      },
-      {
-        "en": "Five-Year",
-        "fr": "Cinq Ans"
-      },
-      {
-        "en": "Mortality Rate (log10 scale)",
-        "fr": "Taux de Mortalité (échelle log10)"
-      },
-      {
-        "en": "Ages between: ",
-        "fr": "Âges entre: "
-      },
-      {
-        "en": "Age histogram of ",
-        "fr": "Histogramme d'âge de "
-      },
-      {
-        "en": "nMx (log10 scale)",
-        "fr": "nMx (échelle log10)"
-      },
-      {
-        "en": "nMx (log scale)",
-        "fr": "nMx (échelle log)"
-      },
-      {
-        "en": "Log transformed Age-specific mortality rate",
-        "fr": "Taux de mortalité par âge transformé en logarithme"
-      },
-      {
-        "en": "Survival curve (lx) generated from lifetable nmx values",
-        "fr": "Courbe de survie (lx) générée à partir des valeurs nMx de la table de mortalité"
-      },
-      {
-        "en": "Marked locations on the curve indicate survival quartiles",
-        "fr": "Les emplacements marqués sur la courbe indiquent les quartiles de survie"
-      },
-      {
-        "en": "Life Expectancy",
-        "fr": "Espérance de Vie"
-      },
-      {
-        "en": "Empirical Mx for a given age range on a log10 scale.",
-        "fr": "Mx empirique pour une plage d'âges donnée sur une échelle log10."
-      },
-      {
-        "en": "Original (black) and adjusted (red)",
-        "fr": "Original (noir) et ajusté (rouge)"
-      },
-      {
-        "en": "Rates (Deaths / Exposures)",
-        "fr": "Taux (Décès / Expositions)"
-      },
-      {
-        "en": "Rates",
-        "fr": "Taux"
-      },
-      {
-        "en": "lx",
-        "fr": "lx"
-      },
-      {
-        "en": "dx",
-        "fr": "dx"
-      },
-      {
-        "en": "Death distribution (dx) generated from lifetable nmx values",
-        "fr": "Distribution des décès (dx) générée à partir des valeurs nMx de la table de mortalité"
-      },
-      {
-        "en": "Marked locations on the distribution indicate age-at-death quartiles (grey)\nand life expectancy (red)",
-        "fr": "Les emplacements marqués sur la distribution indiquent les quartiles d'âge à la mort (gris)\n et l'espérance de vie (rouge)"
-      },
-      {
-        "en": "nqx",
-        "fr": "nqx"
-      },
-      {
-        "en": "nqx (log scale)",
-        "fr": "nqx (échelle log)"
-      },
-      {
-        "en": "nMx",
-        "fr": "nMx"
-      },
-      {
-        "en": "Age-specific Mortality",
-        "fr": "Mortalité Spécifique à l'Âge"
-      },
-      {
-        "en": "Comparison of empirical nMx and lifetable nmx values",
-        "fr": "Comparaison des taux de mortalité empiriques et ajustés"
-      },
-      {
-        "en": "Age_value",
-        "fr": "Âge_valeur"
-      },
-      {
-        "en": "Roughness",
-        "fr": "Rugosité"
-      },
-      {
-        "en": "Sawtooth",
-        "fr": "Dents de scie"
-      },
-      {
-        "en": "Very rough",
-        "fr": "Très rugueux"
-      },
-      {
-        "en": "Fairly accurate",
-        "fr": "Assez précis"
-      },
-      {
-        "en": "Rough",
-        "fr": "Grossière"
-      },
-      {
-        "en": "Measure",
-        "fr": "Mesure"
-      },
-      {
-        "en": "Label",
-        "fr": "Étiquette"
-      },
-      {
-        "en": "Message",
-        "fr": "Message"
-      },
-      {
-        "en": "Median",
-        "fr": "Médiane"
-      },
-      {
-        "en": "Mode",
-        "fr": "Mode"
-      },
-      {
-        "en": "Life Expectancy at Birth",
-        "fr": "Espérance de Vie à la Naissance"
-      },
-      {
-        "en": "Median Age at Death",
-        "fr": "Âge Médian au Décès"
-      },
-      {
-        "en": "Modal Age at Death",
-        "fr": "Âge Modal au Décès"
-      },
-      {
-        "en": "Remaining Life Expectancy at Age 65",
-        "fr": "Espérance de Vie Restante à l'Âge de 65 Ans"
-      },
-      {
-        "en": "Lifespan Variation Calculated as Standard Deviation of Age at Death",
-        "fr": "Variation de la Durée de Vie Calculée comme l'Écart-Type de l'Âge au Décès"
-      },
-      {
-        "en": "Standard Deviation of Remaining Lifespan Conditional on Survival to Age 10",
-        "fr": "Écart-Type de la Durée de Vie Restante Conditionnelle à la Survie Jusqu'à l'Âge de 10 Ans"
-      },
-      {
-        "en": "Interquartile Range of Age at Death Distribution",
-        "fr": "Intervalle Interquartile de la Distribution de l'Âge au Décès"
-      },
-      {
-        "en": "Conditional Probability of Death Between Ages 20 and 65",
-        "fr": "Probabilité Conditionnelle de Décès Entre les Âges de 20 et 65 Ans"
-      },
-      {
-        "en": "Generating PDF report... Estimated time:",
-        "fr": "Génération du rapport PDF... Temps estimé:"
-      },
-      {
-        "en": "Heaping Diagnostics",
-        "fr": "Diagnostics de concentration d'âges"
-      },
-      {
-        "en": "Evaluate age heaping patterns for uploaded mortality data.",
-        "fr": "Évaluer les schémas de concentration des âges pour les données de mortalité importées."
-      },
-      {
-        "en": "Compute Bachi, Myers, Roughness, and Sawtooth indices to assess digit preference across ages.",
-        "fr": "Calculez les indices de Bachi, Myers, Rugosité et Dent de scie pour évaluer les préférences de chiffres selon les âges."
-      },
-      {
-        "en": "Upload your CSV, confirm grouping columns when prompted, then choose the variable you wish to evaluate.",
-        "fr": "Téléchargez votre fichier CSV, confirmez les colonnes de regroupement lorsqu'elles sont demandées, puis choisissez la variable à évaluer."
-      },
-      {
-        "en": "Run heaping analysis",
-        "fr": "Lancer l'analyse de concentration"
-      },
-      {
-        "en": "Upload CSV file",
-        "fr": "Télécharger un fichier CSV"
-      },
-      {
-        "en": "← Back to modules",
-        "fr": "← Retour aux modules"
-      },
-      {
-        "en": "Variable to evaluate",
-        "fr": "Variable à évaluer"
-      },
-      {
-        "en": "Controls",
-        "fr": "Contrôles"
-      },
-      {
-        "en": "Group to view",
-        "fr": "Groupe à afficher"
-      },
-      {
-        "en": "Download results",
-        "fr": "Télécharger les résultats"
-      },
-      {
-        "en": "Data source: %s",
-        "fr": "Source des données : %s"
-      },
-      {
-        "en": "Sample dataset",
-        "fr": "Jeu de données d'exemple"
-      },
-      {
-        "en": "Uploaded file",
-        "fr": "Fichier téléversé"
-      },
-      {
-        "en": "No grouping variables selected. Analysis will run on the entire dataset.",
-        "fr": "Aucune variable de regroupement sélectionnée. L'analyse s'exécutera sur l'ensemble du jeu de données."
-      },
-      {
-        "en": "No data available. Please upload a dataset first.",
-        "fr": "Aucune donnée disponible. Veuillez d'abord téléverser un jeu de données."
-      },
-      {
-        "en": "Please confirm the grouping modal before running the analysis.",
-        "fr": "Veuillez confirmer la fenêtre de regroupement avant de lancer l'analyse."
-      },
-      {
-        "en": "The selected group returned no rows to analyse.",
-        "fr": "Le groupe sélectionné ne contient aucune ligne à analyser."
-      },
-      {
-        "en": "Column '%s' is missing from the dataset.",
-        "fr": "La colonne « %s » est absente du jeu de données."
-      },
-      {
-        "en": "Heaping diagnostics failed. Check input data validity.",
-        "fr": "Les diagnostics de concentration ont échoué. Vérifiez la validité des données d'entrée."
-      },
-      {
-        "en": "Heaping diagnostics completed for %s (%s).",
-        "fr": "Diagnostics de concentration terminés pour %s (%s)."
-      },
-      {
-        "en": "Current group: %s",
-        "fr": "Groupe actuel : %s"
-      },
-      {
-        "en": "No diagnostics computed yet.",
-        "fr": "Aucun diagnostic n'a encore été calculé."
-      },
-      {
-        "en": "Identify age heaping patterns using Myers, Bachi, Roughness, and Sawtooth indices.",
-        "fr": "Identifiez les schémas de concentration d'âges à l'aide des indices de Myers, Bachi, Rugosité et Dent de scie."
-      },
-      {
-        "en": "Understand reporting accuracy in seconds",
-        "fr": "Comprenez la précision des déclarations en quelques secondes"
-      },
-      {
-        "en": "Assess age reporting quality",
-        "fr": "Évaluez la qualité de la déclaration d'âge"
-      },
-      {
-        "en": "Upload deaths or exposures and review digit-preference diagnostics before continuing your workflow.",
-        "fr": "Téléversez les décès ou expositions et examinez les diagnostics de préférence pour les chiffres avant de poursuivre votre flux de travail."
-      },
-      {
-        "en": "What you'll need",
-        "fr": "Ce dont vous aurez besoin"
-      },
-      {
-        "en": "Single-age or abridged ages with numeric Deaths and Exposures.",
-        "fr": "Âges simples ou abrégés avec des nombres de décès et d'expositions numériques."
-      },
-      {
-        "en": "Optional grouping columns (e.g. Sex, Region) if you plan to run diagnostics by subgroup.",
-        "fr": "Colonnes de regroupement facultatives (p. ex., sexe, région) si vous souhaitez exécuter les diagnostics par sous-groupe."
-      },
-      {
-        "en": "Select exposures or deaths to reveal digit-preference warnings before you progress into smoothing or graduation.",
-        "fr": "Sélectionnez les expositions ou les décès pour afficher les alertes de préférence de chiffres avant de passer aux étapes de lissage ou de graduation."
-      },
-      {
-        "en": "Single-age and abridged support",
-        "fr": "Prise en charge des âges simples et abrégés"
-      },
-      {
-        "en": "Instant classifications by severity",
-        "fr": "Classements instantanés par niveau de gravité"
-      },
-      {
-        "en": "Quick start checklist",
-        "fr": "Liste de vérification de démarrage rapide"
-      },
-      {
-        "en": "CSV columns must include Age, Deaths, and Exposures.",
-        "fr": "Les colonnes du CSV doivent inclure l'âge, les décès et les expositions."
-      },
-      {
-        "en": "When the modal opens, tick \"No grouping needed\" unless your file contains grouping identifiers.",
-        "fr": "Lorsque la fenêtre s'ouvre, cochez « Aucun regroupement nécessaire » sauf si votre fichier contient des identifiants de regroupement."
-      },
-      {
-        "en": "Use the toggle below to switch between Deaths and Exposures diagnostics.",
-        "fr": "Utilisez le sélecteur ci-dessous pour basculer entre les diagnostics des décès et des expositions."
-      },
-      {
-        "en": "How to prepare your data",
-        "fr": "Comment préparer vos données"
-      },
-      {
-        "en": "Ensure all ages are unique within each group, provide numeric counts, and reserve optional columns like Sex or Region for grouping selections.",
-        "fr": "Assurez-vous que tous les âges sont uniques dans chaque groupe, fournissez des valeurs numériques et réservez les colonnes facultatives telles que le sexe ou la région pour les sélections de regroupement."
-      },
-      {
-        "en": "Required:",
-        "fr": "Obligatoire :"
-      },
-      {
-        "en": "Optional:",
-        "fr": "Facultatif :"
-      },
-      {
-        "en": "Recommended:",
-        "fr": "Recommandé :"
-      },
-      {
-        "en": "Grouping columns (e.g., Sex, Province); leave blank and tick the checkbox if none apply.",
-        "fr": "Colonnes de regroupement (p. ex., sexe, province); laissez vide et cochez la case si aucune ne s'applique."
-      },
-      {
-        "en": "Provide exposures in the same scale as deaths for comparable indices.",
-        "fr": "Fournissez les expositions dans la même échelle que les décès pour des indicateurs comparables."
-      },
-      {
-        "en": "Sample heaping CSV preview",
-        "fr": "Aperçu du CSV de concentration d'âges"
-      },
-      {
-        "en": "Source: ODAPbackend::dat_heap_smooth.csv.gz (single-year age counts).",
-        "fr": "Source : ODAPbackend::dat_heap_smooth.csv.gz (effectifs par âge, par année unique)."
-      },
-      {
-        "en": "Tip: choose \"Deaths\" for Bachi/Myers and \"Exposures\" to inspect denominator quality.",
-        "fr": "Astuce : choisissez « Décès » pour Bachi/Myers et « Expositions » pour examiner la qualité du dénominateur."
-      },
-      {
-        "en": "Current group: awaiting selection",
-        "fr": "Groupe actuel : en attente de sélection"
-      },
-      {
-        "en": "All records",
-        "fr": "Tous les enregistrements"
-      },
-      {
-        "en": "We could not detect any data rows to tag. Please reload your dataset and try again.",
-        "fr": "Nous n’avons détecté aucune ligne de données à marquer. Veuillez recharger votre jeu de données, puis réessayez."
-      },
-      {
-        "en": "Smoothing Preview",
-        "fr": "Aperçu du lissage"
-      },
-      {
-        "en": "Preview mortality smoothing options before integrating them into your workflow.",
-        "fr": "Prévisualisez les options de lissage de la mortalité avant de les intégrer à votre flux de travail."
-      },
-      {
-        "en": "Graduation Tool",
-        "fr": "Outil de graduation"
-      },
-      {
-        "en": "Fine-tune mortality graduation methods with configurable infant and sex constraints.",
-        "fr": "Affinez les méthodes de graduation de la mortalité avec des contraintes configurables pour les nourrissons et selon le sexe."
-      },
-      {
-        "en": "Active",
-        "fr": "Actif"
-      },
-      {
-        "en": "Upload mortality detail, confirm group columns, and review age heaping checks before continuing your workflow.",
-        "fr": "Téléchargez les détails de mortalité, confirmez les colonnes de groupe et examinez les vérifications d'agrégation d'âge avant de continuer votre flux de travail."
-      },
-      {
-        "en": "The heaping sample contains Age, Deaths, and Exposures observed at single ages.",
-        "fr": "L'échantillon d'agrégation contient l'âge, les décès et les expositions observés aux âges simples."
-      }
+        {
+            "en": "Mortality Analysis Report",
+            "fr": "Rapport d'Analyse de Mortalité",
+            "es": "Informe de Análisis de Mortalidad"
+        },
+        {
+            "en": "Executive Summary",
+            "fr": "Résumé Exécutif",
+            "es": "Resumen Ejecutivo"
+        },
+        {
+            "en": "This report presents a comprehensive mortality analysis including data quality diagnostics and life table calculations.",
+            "fr": "Ce rapport présente une analyse complète de la mortalité comprenant des diagnostics de qualité des données et des calculs de table de mortalité.",
+            "es": "Este informe presenta un análisis integral de mortalidad que incluye diagnósticos de calidad de datos y cálculos de tabla de vida."
+        },
+        {
+            "en": "Preprocessing Analysis",
+            "fr": "Analyse de Prétraitement",
+            "es": "Análisis de Preprocesamiento"
+        },
+        {
+            "en": "Approximate",
+            "fr": "Approximatif",
+            "es": "Aproximado"
+        },
+        {
+            "en": "Highly accurate",
+            "fr": "Très précis",
+            "es": "Muy preciso"
+        },
+        {
+            "en": "Diagnostic Metrics",
+            "fr": "Métriques de Diagnostic",
+            "es": "Métricas de Diagnóstico"
+        },
+        {
+            "en": "Diagnostic Metrics for",
+            "fr": "Métriques de Diagnostic pour",
+            "es": "Métricas de Diagnóstico para"
+        },
+        {
+            "en": "Diagnostic Plots",
+            "fr": "Graphiques de Diagnostic",
+            "es": "Gráficos de Diagnóstico"
+        },
+        {
+            "en": "Summary Statistics",
+            "fr": "Statistiques Récapitulatives",
+            "es": "Estadísticas Resumidas"
+        },
+        {
+            "en": "Summary Statistics for",
+            "fr": "Statistiques Récapitulatives pour",
+            "es": "Estadísticas Resumidas para"
+        },
+        {
+            "en": "Mortality Rates (nMx) -",
+            "fr": "Taux de Mortalité (nMx) -",
+            "es": "Tasas de Mortalidad (nMx) -"
+        },
+        {
+            "en": "Survival Curve (lx) -",
+            "fr": "Courbe de Survie (lx) -",
+            "es": "Curva de Supervivencia (lx) -"
+        },
+        {
+            "en": "Death Distribution (ndx) -",
+            "fr": "Distribution des Décès (ndx) -",
+            "es": "Distribución de Muertes (ndx) -"
+        },
+        {
+            "en": "Death Probabilities",
+            "fr": "Probabilités de Décès",
+            "es": "Probabilidades de Muerte"
+        },
+        {
+            "en": "Data Quality Diagnostics",
+            "fr": "Diagnostics de Qualité des Données",
+            "es": "Diagnósticos de Calidad de Datos"
+        },
+        {
+            "en": "Death Probabilities (nqx) -",
+            "fr": "Probabilités de Décès (nqx) -",
+            "es": "Probabilidades de Muerte (nqx) -"
+        },
+        {
+            "en": "Description",
+            "fr": "Description",
+            "es": "Descripción"
+        },
+        {
+            "en": "Change language",
+            "fr": "Changer de langue",
+            "es": "Cambiar idioma"
+        },
+        {
+            "en": "Demographic Analysis Suite",
+            "fr": "Suite d'Analyse Démographique",
+            "es": "Suite de Análisis Demográfico"
+        },
+        {
+            "en": "Go to module",
+            "fr": "Aller au module",
+            "es": "Ir al módulo"
+        },
+        {
+            "en": "Advanced tools for demographic research and analysis",
+            "fr": "Outils avancés pour la recherche et l'analyse démographique",
+            "es": "Herramientas avanzadas para investigación y análisis demográfico"
+        },
+        {
+            "en": "Life Table Analysis",
+            "fr": "Analyse de Table de Mortalité",
+            "es": "Análisis de Tabla de Vida"
+        },
+        {
+            "en": "Create comprehensive life tables with advanced smoothing capabilities and mortality analysis tools.",
+            "fr": "Créez des tables de mortalité complètes avec des capacités avancées de lissage et des outils d'analyse de mortalité.",
+            "es": "Cree tablas de vida integrales con capacidades avanzadas de suavizado y herramientas de análisis de mortalidad."
+        },
+        {
+            "en": "Demographic Interpolation",
+            "fr": "Interpolation Démographique",
+            "es": "Interpolación Demográfica"
+        },
+        {
+            "en": "Fill data gaps and estimate demographic indicators between time points using advanced interpolation methods.",
+            "fr": "Comblez les lacunes de données et estimez les indicateurs démographiques entre les points temporels à l'aide de méthodes d'interpolation avancées.",
+            "es": "Llene vacíos de datos y estime indicadores demográficos entre puntos temporales utilizando métodos avanzados de interpolación."
+        },
+        {
+            "en": "Coming Soon",
+            "fr": "Bientôt Disponible",
+            "es": "Próximamente"
+        },
+        {
+            "en": "Life Table Analysis Platform",
+            "fr": "Plateforme d'Analyse de Table de Mortalité",
+            "es": "Plataforma de Análisis de Tabla de Vida"
+        },
+        {
+            "en": "Transform mortality data into comprehensive life table analyses with just a few clicks",
+            "fr": "Transformez les données de mortalité en analyses complètes de table de mortalité en quelques clics",
+            "es": "Transforme datos de mortalidad en análisis integrales de tabla de vida con solo unos clics"
+        },
+        {
+            "en": "← Previous",
+            "fr": "← Précédent",
+            "es": "← Anterior"
+        },
+        {
+            "en": "Upload Your Data",
+            "fr": "Téléchargez Vos Données",
+            "es": "Cargue Sus Datos"
+        },
+        {
+            "en": "Import your mortality data in CSV format containing Age, Deaths, and Exposures",
+            "fr": "Importez vos données de mortalité au format CSV contenant l'âge, les décès et les expositions",
+            "es": "Importe sus datos de mortalidad en formato CSV que contenga Edad, Muertes y Exposiciones"
+        },
+        {
+            "en": "Run Diagnostics",
+            "fr": "Exécuter les Diagnostics",
+            "es": "Ejecutar Diagnósticos"
+        },
+        {
+            "en": "Analyze data quality and identify potential issues with built-in diagnostic tools",
+            "fr": "Analysez la qualité des données et identifiez les problèmes potentiels avec les outils de diagnostic intégrés",
+            "es": "Analice la calidad de los datos e identifique problemas potenciales con herramientas de diagnóstico integradas"
+        },
+        {
+            "en": "Transform Data",
+            "fr": "Transformer les Données",
+            "es": "Transformar Datos"
+        },
+        {
+            "en": "Apply sophisticated smoothing and adjustments by groups",
+            "fr": "Appliquez des lissages sophistiqués et des ajustements par groupes",
+            "es": "Aplique suavizado sofisticado y ajustes por grupos"
+        },
+        {
+            "en": "Get Results",
+            "fr": "Obtenir les Résultats",
+            "es": "Obtener Resultados"
+        },
+        {
+            "en": "Download complete life table results and visualizations",
+            "fr": "Téléchargez les résultats complets de la table de mortalité et les visualisations",
+            "es": "Descargue resultados completos de tabla de vida y visualizaciones"
+        },
+        {
+            "en": "Start",
+            "fr": "Commencer",
+            "es": "Comenzar"
+        },
+        {
+            "en": "Data upload and validation",
+            "fr": "Téléchargement et validation des données",
+            "es": "Carga y validación de datos"
+        },
+        {
+            "en": "Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:",
+            "fr": "Commencez par télécharger votre fichier CSV. Vous n'êtes pas sûr de votre fichier ? Voici ce que nous recherchons :",
+            "es": "Comience cargando su archivo CSV. ¿No está seguro de su archivo? Esto es lo que buscamos:"
+        },
+        {
+            "en": "Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.",
+            "fr": "Les expositions font référence aux années-personnes vécues au cours de la même période où les décès ont été enregistrés. Si les décès font référence à une seule année, la population de milieu d'année peut parfois être utilisée pour approximer les expositions.",
+            "es": "Las exposiciones se refieren a los años-persona vividos durante el mismo período en que se registraron las muertes. Si las muertes se refieren a un solo año, a veces se puede usar la población de mitad de año para aproximar las exposiciones."
+        },
+        {
+            "en": "Ready? Click 'Browse...' to select your file or start with our sample data.",
+            "fr": "Prêt ? Cliquez sur 'Parcourir...' pour sélectionner votre fichier ou commencez avec nos données d'exemple.",
+            "es": "¿Listo? Haga clic en 'Explorar...' para seleccionar su archivo o comience con nuestros datos de muestra."
+        },
+        {
+            "en": "Instructions",
+            "fr": "Instructions",
+            "es": "Instrucciones"
+        },
+        {
+            "en": "Use sample data",
+            "fr": "Utiliser les données d'exemple",
+            "es": "Usar datos de muestra"
+        },
+        {
+            "en": "Show Advanced Options",
+            "fr": "Afficher les Options Avancées",
+            "es": "Mostrar Opciones Avanzadas"
+        },
+        {
+            "en": "Hide Advanced Options",
+            "fr": "Masquer les Options Avancées",
+            "es": "Ocultar Opciones Avanzadas"
+        },
+        {
+            "en": "Next →",
+            "fr": "Suivant →",
+            "es": "Siguiente →"
+        },
+        {
+            "en": "Smoothing",
+            "fr": "Lissage",
+            "es": "Suavizado"
+        },
+        {
+            "en": "smoothing",
+            "fr": "lissage",
+            "es": "suavizado"
+        },
+        {
+            "en": "Calculate",
+            "fr": "Calculer",
+            "es": "Calcular"
+        },
+        {
+            "en": "Reset Options",
+            "fr": "Réinitialiser les Options",
+            "es": "Restablecer Opciones"
+        },
+        {
+            "en": "Execute",
+            "fr": "Exécuter",
+            "es": "Ejecutar"
+        },
+        {
+            "en": "Ages to fit extrapolation model",
+            "fr": "Âges à ajuster pour le modèle d'extrapolation",
+            "es": "Edades para ajustar el modelo de extrapolación"
+        },
+        {
+            "en": "Extrap. Jump-off Age",
+            "fr": "Âge de Départ pour l'Extrapolation",
+            "es": "Edad de Inicio de Extrapolación"
+        },
+        {
+            "en": "Life Table Summary Statistics",
+            "fr": "Statistiques de la Table de Mortalité",
+            "es": "Estadísticas Resumidas de Tabla de Vida"
+        },
+        {
+            "en": "Download life table results",
+            "fr": "Télécharger les résultats de la table de mortalité",
+            "es": "Descargar resultados de tabla de vida"
+        },
+        {
+            "en": "Download preprocessing results",
+            "fr": "Télécharger les résultats du prétraitement",
+            "es": "Descargar resultados de preprocesamiento"
+        },
+        {
+            "en": "Download diagnostic results",
+            "fr": "Télécharger les résultats des diagnostics",
+            "es": "Descargar resultados de diagnóstico"
+        },
+        {
+            "en": "Download PDF Report",
+            "fr": "Télécharger le Rapport PDF",
+            "es": "Descargar Informe PDF"
+        },
+        {
+            "en": "Download Options",
+            "fr": "Options de Téléchargement",
+            "es": "Opciones de Descarga"
+        },
+        {
+            "en": "Select an option:",
+            "fr": "Sélectionnez une option :",
+            "es": "Seleccione una opción:"
+        },
+        {
+            "en": "Cancel",
+            "fr": "Annuler",
+            "es": "Cancelar"
+        },
+        {
+            "en": "Download",
+            "fr": "Télécharger",
+            "es": "Descargar"
+        },
+        {
+            "en": "Desired Open Age Group",
+            "fr": "Groupe d'Âge Ouvert Souhaité",
+            "es": "Grupo de Edad Abierto Deseado"
+        },
+        {
+            "en": "Group",
+            "fr": "Groupe",
+            "es": "Grupo"
+        },
+        {
+            "en": "Preparing download... Estimated time:",
+            "fr": "Préparation du téléchargement... Temps estimé :",
+            "es": "Preparando descarga... Tiempo estimado:"
+        },
+        {
+            "en": "seconds",
+            "fr": "secondes",
+            "es": "segundos"
+        },
+        {
+            "en": "minutes",
+            "fr": "minutes",
+            "es": "minutos"
+        },
+        {
+            "en": "Output Age Classes",
+            "fr": "Classes d'Âge de Sortie",
+            "es": "Clases de Edad de Salida"
+        },
+        {
+            "en": "single",
+            "fr": "unique",
+            "es": "única"
+        },
+        {
+            "en": "abridged",
+            "fr": "abrégé",
+            "es": "abreviada"
+        },
+        {
+            "en": "Extrapolation Law",
+            "fr": "Loi d'Extrapolation",
+            "es": "Ley de Extrapolación"
+        },
+        {
+            "en": "Lifetable Radix",
+            "fr": "Radix de la Table de Mortalité",
+            "es": "Raíz de Tabla de Vida"
+        },
+        {
+            "en": "Sex Ratio at Birth",
+            "fr": "Rapport de Masculinité à la Naissance",
+            "es": "Razón de Sexo al Nacer"
+        },
+        {
+            "en": "a(0) Rule",
+            "fr": "Règle a(0)",
+            "es": "Regla a(0)"
+        },
+        {
+            "en": "Andreev-Kingkade",
+            "fr": "Andreev-Kingkade",
+            "es": "Andreev-Kingkade"
+        },
+        {
+            "en": "Coale-Demeny",
+            "fr": "Coale-Demeny",
+            "es": "Coale-Demeny"
+        },
+        {
+            "en": "a(x) Method",
+            "fr": "Méthode a(x)",
+            "es": "Método a(x)"
+        },
+        {
+            "en": "UN (Greville)",
+            "fr": "ONU (Greville)",
+            "es": "ONU (Greville)"
+        },
+        {
+            "en": "PASEX",
+            "fr": "PASEX",
+            "es": "PASEX"
+        },
+        {
+            "en": "Language",
+            "fr": "Langue",
+            "es": "Idioma"
+        },
+        {
+            "en": "English",
+            "fr": "Anglais",
+            "es": "Inglés"
+        },
+        {
+            "en": "French",
+            "fr": "Français",
+            "es": "Francés"
+        },
+        {
+            "en": "Join The Conversation:",
+            "fr": "Rejoignez La Conversation :",
+            "es": "Únase a la Conversación:"
+        },
+        {
+            "en": "Donate",
+            "fr": "Faire un don",
+            "es": "Donar"
+        },
+        {
+            "en": "Contact",
+            "fr": "Contact",
+            "es": "Contacto"
+        },
+        {
+            "en": "Copyright",
+            "fr": "Droits d'auteur",
+            "es": "Derechos de autor"
+        },
+        {
+            "en": "Fraud Alert",
+            "fr": "Alerte à la fraude",
+            "es": "Alerta de Fraude"
+        },
+        {
+            "en": "Privacy Notice",
+            "fr": "Avis de confidentialité",
+            "es": "Aviso de Privacidad"
+        },
+        {
+            "en": "Site Index",
+            "fr": "Index du site",
+            "es": "Índice del Sitio"
+        },
+        {
+            "en": "Terms of Use",
+            "fr": "Conditions d'utilisation",
+            "es": "Términos de Uso"
+        },
+        {
+            "en": "Column Selection",
+            "fr": "Sélection des Colonnes",
+            "es": "Selección de Columnas"
+        },
+        {
+            "en": "If you're analysis needs to be performed by groups (e.g Sex, Province, Region, etc..), please select the columns that group your data. If your data is not group-wise, tick the box below.",
+            "fr": "Si votre analyse doit être effectuée par groupes (par exemple Sexe, Province, Région, etc.), veuillez sélectionner les colonnes qui regroupent vos données. Si vos données ne sont pas groupées, cochez la case ci-dessous.",
+            "es": "Si su análisis necesita realizarse por grupos (p. ej., Sexo, Provincia, Región, etc.), seleccione las columnas que agrupan sus datos. Si sus datos no están agrupados, marque la casilla a continuación."
+        },
+        {
+            "en": "Select Identifier Columns",
+            "fr": "Sélectionner les Colonnes d'Identification",
+            "es": "Seleccionar Columnas de Identificación"
+        },
+        {
+            "en": "No grouping needed for this analysis",
+            "fr": "Pas de regroupement nécessaire pour cette analyse",
+            "es": "No se necesita agrupación para este análisis"
+        },
+        {
+            "en": "Confirm",
+            "fr": "Confirmer",
+            "es": "Confirmar"
+        },
+        {
+            "en": "A maximum of 3 grouping variables are allowed.",
+            "fr": "Un maximum de 3 variables de regroupement est autorisé.",
+            "es": "Se permite un máximo de 3 variables de agrupación."
+        },
+        {
+            "en": "The specified columns do not identify each row uniquely or we've identified there are grouping columns not specified.",
+            "fr": "Les colonnes spécifiées n'identifient pas chaque ligne de manière unique ou nous avons identifié qu'il y a des colonnes de regroupement non spécifiées.",
+            "es": "Las columnas especificadas no identifican cada fila de manera única o hemos identificado que hay columnas de agrupación no especificadas."
+        },
+        {
+            "en": "✅ Everything is great, all checks passed!",
+            "fr": "✅ Tout est parfait, tous les contrôles sont passés !",
+            "es": "✅ ¡Todo está perfecto, todas las verificaciones pasaron!"
+        },
+        {
+            "en": "Check Failures:",
+            "fr": "Échecs des contrôles :",
+            "es": "Fallas de Verificación:"
+        },
+        {
+            "en": "Diagnostics",
+            "fr": "Diagnostics",
+            "es": "Diagnósticos"
+        },
+        {
+            "en": "Continue",
+            "fr": "Continuer",
+            "es": "Continuar"
+        },
+        {
+            "en": "Age column not found",
+            "fr": "Colonne âge non trouvée",
+            "es": "Columna de edad no encontrada"
+        },
+        {
+            "en": "Type",
+            "fr": "Type",
+            "es": "Tipo"
+        },
+        {
+            "en": "Age Scale",
+            "fr": "Échelle d'Âge",
+            "es": "Escala de Edad"
+        },
+        {
+            "en": "Method",
+            "fr": "Méthode",
+            "es": "Método"
+        },
+        {
+            "en": "Result",
+            "fr": "Résultat",
+            "es": "Resultado"
+        },
+        {
+            "en": "Level",
+            "fr": "Niveau",
+            "es": "Nivel"
+        },
+        {
+            "en": "Color",
+            "fr": "Couleur",
+            "es": "Color"
+        },
+        {
+            "en": "Deaths column not found",
+            "fr": "Colonne décès non trouvée",
+            "es": "Columna de muertes no encontrada"
+        },
+        {
+            "en": "Exposures column not found",
+            "fr": "Colonne expositions non trouvée",
+            "es": "Columna de exposiciones no encontrada"
+        },
+        {
+            "en": "Duplicate ages found",
+            "fr": "Âges en double trouvés",
+            "es": "Edades duplicadas encontradas"
+        },
+        {
+            "en": "Negative values found in Deaths",
+            "fr": "Valeurs négatives trouvées dans les décès",
+            "es": "Valores negativos encontrados en Muertes"
+        },
+        {
+            "en": "Negative values found in Exposures",
+            "fr": "Valeurs négatives trouvées dans les expositions",
+            "es": "Valores negativos encontrados en Exposiciones"
+        },
+        {
+            "en": "Zero values found in Exposures",
+            "fr": "Valeurs nulles trouvées dans les expositions",
+            "es": "Valores cero encontrados en Exposiciones"
+        },
+        {
+            "en": "Data Diagnostics",
+            "fr": "Diagnostics des Données",
+            "es": "Diagnósticos de Datos"
+        },
+        {
+            "en": "Exposures",
+            "fr": "Expositions",
+            "es": "Exposiciones"
+        },
+        {
+            "en": "Deaths",
+            "fr": "Décès",
+            "es": "Muertes"
+        },
+        {
+            "en": "Empirical Mx",
+            "fr": "Mx Empirique",
+            "es": "Mx Empírico"
+        },
+        {
+            "en": "The Roughness method measures the average absolute percentage deviation from a smoothed trend through the five-year age group data. The Sawtooth method takes the average of the ratios of the value in each five-year age group (in adult ages) to the average of the two adjacent age groups (age groups below and above). Both of these methods are trying to pick up on a phenomenon known as differential age heaping where digit preference is stronger on zeroes than on fives. This phenomenon can cause an apparent sawtooth pattern in demographic count data.",
+            "fr": "La méthode de Rugosité mesure l'écart absolu moyen en pourcentage par rapport à une tendance lissée à travers les données par groupe d'âge de cinq ans. La méthode en Dents de Scie prend la moyenne des ratios de la valeur dans chaque groupe d'âge de cinq ans (aux âges adultes) par rapport à la moyenne des deux groupes d'âge adjacents (groupes d'âge inférieurs et supérieurs). Ces deux méthodes tentent de détecter un phénomène connu sous le nom d'attraction différentielle des âges où la préférence pour les chiffres est plus forte sur les zéros que sur les cinq. Ce phénomène peut causer un motif apparent en dents de scie dans les données démographiques.",
+            "es": "El método de Rugosidad mide la desviación porcentual absoluta promedio de una tendencia suavizada a través de los datos de grupos de edad de cinco años. El método de Dientes de Sierra toma el promedio de las razones del valor en cada grupo de edad de cinco años (en edades adultas) al promedio de los dos grupos de edad adyacentes (grupos de edad inferior y superior). Ambos métodos intentan detectar un fenómeno conocido como agrupamiento diferencial de edad donde la preferencia por dígitos es más fuerte en ceros que en cincos. Este fenómeno puede causar un patrón aparente de dientes de sierra en los datos demográficos de conteo."
+        },
+        {
+            "en": "The Myers and Bachi indices both measure digit preference for single-age data. If there were no digit preference, then the distribution over terminal digits (0-9) would be roughly uniform. Both of these indices measure the departure from uniformity, with slight variations on the implementation. Higher values indicate digit distributions that are farther from uniform. If these indices are high, but the _roughness_ and _sawtooth_ indices are low, then you might adjust data using one of the _fine_ smoothing methods offered.",
+            "fr": "Les indices de Myers et Bachi mesurent tous deux la préférence pour les chiffres dans les données d'âge simple. S'il n'y avait pas de préférence pour les chiffres, la distribution sur les chiffres terminaux (0-9) serait à peu près uniforme. Ces deux indices mesurent l'écart par rapport à l'uniformité, avec de légères variations dans leur mise en œuvre. Des valeurs plus élevées indiquent des distributions de chiffres plus éloignées de l'uniforme. Si ces indices sont élevés, mais que les indices de _rugosité_ et de _dents de scie_ sont faibles, vous pourriez ajuster les données en utilisant l'une des méthodes de lissage _fin_ proposées.",
+            "es": "Los índices de Myers y Bachi miden la preferencia por dígitos en datos de edad simple. Si no hubiera preferencia por dígitos, la distribución sobre dígitos terminales (0-9) sería aproximadamente uniforme. Ambos índices miden la desviación de la uniformidad, con ligeras variaciones en la implementación. Valores más altos indican distribuciones de dígitos más alejadas de lo uniforme. Si estos índices son altos, pero los índices de _rugosidad_ y _dientes de sierra_ son bajos, podría ajustar los datos usando uno de los métodos de suavizado _fino_ ofrecidos."
+        },
+        {
+            "en": "This step simultaneously smooths age patterns in both exposures and deaths.",
+            "fr": "Cette étape lisse simultanément les modèles d'âge dans les expositions et les décès.",
+            "es": "Este paso suaviza simultáneamente los patrones de edad tanto en exposiciones como en muertes."
+        },
+        {
+            "en": "Exposures Parameters",
+            "fr": "Paramètres des Expositions",
+            "es": "Parámetros de Exposiciones"
+        },
+        {
+            "en": "Deaths Parameters",
+            "fr": "Paramètres des Décès",
+            "es": "Parámetros de Muertes"
+        },
+        {
+            "en": "Rough Method (Exposures)",
+            "fr": "Méthode Grossière (Expositions)",
+            "es": "Método Grueso (Exposiciones)"
+        },
+        {
+            "en": "Rough Method (Deaths)",
+            "fr": "Méthode Grossière (Décès)",
+            "es": "Método Grueso (Muertes)"
+        },
+        {
+            "en": "Shared Parameters",
+            "fr": "Paramètres Partagés",
+            "es": "Parámetros Compartidos"
+        },
+        {
+            "en": "Age Output",
+            "fr": "Sortie d'Âge",
+            "es": "Salida de Edad"
+        },
+        {
+            "en": "Fine Method (Exposures)",
+            "fr": "Méthode Fine (Expositions)",
+            "es": "Método Fino (Exposiciones)"
+        },
+        {
+            "en": "Fine Method (Deaths)",
+            "fr": "Méthode Fine (Décès)",
+            "es": "Método Fino (Muertes)"
+        },
+        {
+            "en": "Under-5 Mortality (optional, Exposures)",
+            "fr": "Mortalité des Moins de 5 Ans (optionnel, Expositions)",
+            "es": "Mortalidad Menores de 5 (opcional, Exposiciones)"
+        },
+        {
+            "en": "Under-5 Mortality (optional, Deaths)",
+            "fr": "Mortalité des Moins de 5 Ans (optionnel, Décès)",
+            "es": "Mortalidad Menores de 5 (opcional, Muertes)"
+        },
+        {
+            "en": "Constrain Infants (Exposures)",
+            "fr": "Contraindre les Nourrissons (Expositions)",
+            "es": "Restringir Infantes (Exposiciones)"
+        },
+        {
+            "en": "Constrain Infants (Deaths)",
+            "fr": "Contraindre les Nourrissons (Décès)",
+            "es": "Restringir Infantes (Muertes)"
+        },
+        {
+            "en": "If you want to test out the app's functionalty, click here to use a sample dataset. A pop up window will be prompted for the grouping variables that identify your data. Simply tick the no-grouping box and you'll be able to inspect the diagnostics and perform additional preprocessing.",
+            "fr": "Si vous souhaitez tester les fonctionnalités de l'application, cliquez ici pour utiliser un jeu de données d'exemple. Une fenêtre contextuelle s'affichera pour les variables de regroupement qui identifient vos données. Cochez simplement la case sans regroupement et vous pourrez inspecter les diagnostics et effectuer un prétraitement supplémentaire.",
+            "es": "Si desea probar la funcionalidad de la aplicación, haga clic aquí para usar un conjunto de datos de muestra. Se le solicitará una ventana emergente para las variables de agrupación que identifican sus datos. Simplemente marque la casilla de sin agrupación y podrá inspeccionar los diagnósticos y realizar preprocesamiento adicional."
+        },
+        {
+            "en": "Alternatively, upload your own data. Make sure your data is cleaned and ready for analysis (no age duplicates, unless by groups), correct column names (we expect at least the basic to be 'Sex', 'Deaths' and 'Exposures'), either single or abridged ages but nothing else.",
+            "fr": "Alternativement, téléchargez vos propres données. Assurez-vous que vos données sont nettoyées et prêtes pour l'analyse (pas de doublons d'âge, sauf par groupes), noms de colonnes corrects (nous attendons au minimum les bases 'Sexe', 'Décès' et 'Expositions'), âges simples ou abrégés mais rien d'autre.",
+            "es": "Alternativamente, cargue sus propios datos. Asegúrese de que sus datos estén limpios y listos para el análisis (sin duplicados de edad, a menos que sea por grupos), nombres de columnas correctos (esperamos al menos los básicos 'Sexo', 'Muertes' y 'Exposiciones'), edades simples o abreviadas pero nada más."
+        },
+        {
+            "en": "These are the tabs for the preprocessing. Every time you click execute from each of the preprocessing it will use the output of the previous preprocessing step.",
+            "fr": "Voici les onglets pour le prétraitement. Chaque fois que vous cliquez sur exécuter depuis chaque prétraitement, il utilisera la sortie de l'étape de prétraitement précédente.",
+            "es": "Estas son las pestañas para el preprocesamiento. Cada vez que haga clic en ejecutar desde cada preprocesamiento, usará la salida del paso de preprocesamiento anterior."
+        },
+        {
+            "en": "In this icon you can see which data is used as input for each preprocessing, whether the initial data or the output of a previous preprocessing step.",
+            "fr": "Dans cette icône, vous pouvez voir quelles données sont utilisées comme entrée pour chaque prétraitement, qu'il s'agisse des données initiales ou de la sortie d'une étape de prétraitement précédente.",
+            "es": "En este icono puede ver qué datos se usan como entrada para cada preprocesamiento, ya sean los datos iniciales o la salida de un paso de preprocesamiento anterior."
+        },
+        {
+            "en": "Once you've implemented all the preprocessing needed, you can click next to use the output of the final preprocessing step as the input to the lifetable. Equally important, if you've applied a preprocessing step, you'll see the sequential order at which they were executed as pills above this button. You can delete any step and the chain of excution will be recalculated.",
+            "fr": "Une fois que vous avez implémenté tous les prétraitements nécessaires, vous pouvez cliquer sur suivant pour utiliser la sortie de l'étape finale de prétraitement comme entrée pour la table de mortalité. Tout aussi important, si vous avez appliqué une étape de prétraitement, vous verrez l'ordre séquentiel dans lequel ils ont été exécutés sous forme de pilules au-dessus de ce bouton. Vous pouvez supprimer n'importe quelle étape et la chaîne d'exécution sera recalculée.",
+            "es": "Una vez que haya implementado todo el preprocesamiento necesario, puede hacer clic en siguiente para usar la salida del paso final de preprocesamiento como entrada para la tabla de vida. Igualmente importante, si ha aplicado un paso de preprocesamiento, verá el orden secuencial en que se ejecutaron como píldoras encima de este botón. Puede eliminar cualquier paso y la cadena de ejecución se recalculará."
+        },
+        {
+            "en": "Here you can estimate the lifetable using the output of the final step of your preprocessing. After tweaking the parameters below, click here to see the plot and table outputs.",
+            "fr": "Ici, vous pouvez estimer la table de mortalité en utilisant la sortie de l'étape finale de votre prétraitement. Après avoir ajusté les paramètres ci-dessous, cliquez ici pour voir les sorties graphiques et tabulaires.",
+            "es": "Aquí puede estimar la tabla de vida usando la salida del paso final de su preprocesamiento. Después de ajustar los parámetros a continuación, haga clic aquí para ver las salidas de gráficos y tablas."
+        },
+        {
+            "en": "Preparing download:",
+            "fr": "Préparation du téléchargement:",
+            "es": "Preparando descarga:"
+        },
+        {
+            "en": "Saving lifetable results... Estimated time:",
+            "fr": "Enregistrement des résultats de la table de mortalité... Temps estimé:",
+            "es": "Guardando resultados de tabla de vida... Tiempo estimado:"
+        },
+        {
+            "en": "Saving preprocessing results... Estimated time:",
+            "fr": "Enregistrement des résultats du prétraitement... Temps estimé:",
+            "es": "Guardando resultados de preprocesamiento... Tiempo estimado:"
+        },
+        {
+            "en": "Saving diagnostic results... Estimated time:",
+            "fr": "Enregistrement des résultats des diagnostics... Temps estimé:",
+            "es": "Guardando resultados de diagnóstico... Tiempo estimado:"
+        },
+        {
+            "en": "Preparing diagnostic data...",
+            "fr": "Préparation des données de diagnostic...",
+            "es": "Preparando datos de diagnóstico..."
+        },
+        {
+            "en": "Generating PDF report...",
+            "fr": "Génération du rapport PDF...",
+            "es": "Generando informe PDF..."
+        },
+        {
+            "en": "Creating zip file...",
+            "fr": "Création du fichier zip...",
+            "es": "Creando archivo zip..."
+        },
+        {
+            "en": "Export",
+            "fr": "Exporter",
+            "es": "Exportar"
+        },
+        {
+            "en": "Welcome to the United Nations",
+            "fr": "Bienvenue aux Nations Unies",
+            "es": "Bienvenido a las Naciones Unidas"
+        },
+        {
+            "en": "Data Portal",
+            "fr": "Portail de Données",
+            "es": "Portal de Datos"
+        },
+        {
+            "en": "Population Division",
+            "fr": "Division de la Population",
+            "es": "División de Población"
+        },
+        {
+            "en": "This step will use the initial uploaded data",
+            "fr": "Cette étape utilisera les données initiales téléchargées",
+            "es": "Este paso usará los datos iniciales cargados"
+        },
+        {
+            "en": "This step uses the initial uploaded data",
+            "fr": "Cette étape utilise les données initiales téléchargées",
+            "es": "Este paso usa los datos iniciales cargados"
+        },
+        {
+            "en": "This step uses the output data from the",
+            "fr": "Cette étape utilise les données de sortie de",
+            "es": "Este paso usa los datos de salida del"
+        },
+        {
+            "en": "step",
+            "fr": "étape",
+            "es": "paso"
+        },
+        {
+            "en": "Variable",
+            "fr": "Variable",
+            "es": "Variable"
+        },
+        {
+            "en": "Mortality Rate",
+            "fr": "Taux de Mortalité",
+            "es": "Tasa de Mortalidad"
+        },
+        {
+            "en": "Survival Curve",
+            "fr": "Courbe de Survie",
+            "es": "Curva de Supervivencia"
+        },
+        {
+            "en": "Death Distribution",
+            "fr": "Distribution des Décès",
+            "es": "Distribución de Muertes"
+        },
+        {
+            "en": "Conditional Death Probabilities",
+            "fr": "Probabilités Conditionnelles de Décès",
+            "es": "Probabilidades Condicionales de Muerte"
+        },
+        {
+            "en": "Lifetable Results",
+            "fr": "Résultats de la Table de Mortalité",
+            "es": "Resultados de Tabla de Vida"
+        },
+        {
+            "en": "Exposures by Age",
+            "fr": "Expositions par Âge",
+            "es": "Exposiciones por Edad"
+        },
+        {
+            "en": "Deaths by Age",
+            "fr": "Décès par Âge",
+            "es": "Muertes por Edad"
+        },
+        {
+            "en": "Empirical Mortality Rates (Mx) by Age",
+            "fr": "Taux de Mortalité Empiriques (Mx) par Âge",
+            "es": "Tasas de Mortalidad Empíricas (Mx) por Edad"
+        },
+        {
+            "en": "Age",
+            "fr": "Âge",
+            "es": "Edad"
+        },
+        {
+            "en": "Value",
+            "fr": "Valeur",
+            "es": "Valor"
+        },
+        {
+            "en": "Counts",
+            "fr": "Comptages",
+            "es": "Conteos"
+        },
+        {
+            "en": "Rate",
+            "fr": "Taux",
+            "es": "Tasa"
+        },
+        {
+            "en": "Difference Between Empirical Mx and Extrapolated Values on Log10 Scale",
+            "fr": "Différence Entre Mx Empirique et Valeurs Extrapolées sur Échelle Log10",
+            "es": "Diferencia Entre Mx Empírico y Valores Extrapolados en Escala Log10"
+        },
+        {
+            "en": "Empirical",
+            "fr": "Empirique",
+            "es": "Empírico"
+        },
+        {
+            "en": "Smoothed",
+            "fr": "Lissé",
+            "es": "Suavizado"
+        },
+        {
+            "en": "Extrapolated",
+            "fr": "Extrapolé",
+            "es": "Extrapolado"
+        },
+        {
+            "en": "Single-Age",
+            "fr": "Âge Unique",
+            "es": "Edad Única"
+        },
+        {
+            "en": "Five-Year",
+            "fr": "Cinq Ans",
+            "es": "Cinco Años"
+        },
+        {
+            "en": "Mortality Rate (log10 scale)",
+            "fr": "Taux de Mortalité (échelle log10)",
+            "es": "Tasa de Mortalidad (escala log10)"
+        },
+        {
+            "en": "Ages between: ",
+            "fr": "Âges entre: ",
+            "es": "Edades entre: "
+        },
+        {
+            "en": "Age histogram of ",
+            "fr": "Histogramme d'âge de ",
+            "es": "Histograma de edad de "
+        },
+        {
+            "en": "nMx (log10 scale)",
+            "fr": "nMx (échelle log10)",
+            "es": "nMx (escala log10)"
+        },
+        {
+            "en": "nMx (log scale)",
+            "fr": "nMx (échelle log)",
+            "es": "nMx (escala log)"
+        },
+        {
+            "en": "Log transformed Age-specific mortality rate",
+            "fr": "Taux de mortalité par âge transformé en logarithme",
+            "es": "Tasa de mortalidad específica por edad transformada logarítmicamente"
+        },
+        {
+            "en": "Survival curve (lx) generated from lifetable nmx values",
+            "fr": "Courbe de survie (lx) générée à partir des valeurs nMx de la table de mortalité",
+            "es": "Curva de supervivencia (lx) generada a partir de valores nMx de tabla de vida"
+        },
+        {
+            "en": "Marked locations on the curve indicate survival quartiles",
+            "fr": "Les emplacements marqués sur la courbe indiquent les quartiles de survie",
+            "es": "Las ubicaciones marcadas en la curva indican cuartiles de supervivencia"
+        },
+        {
+            "en": "Life Expectancy",
+            "fr": "Espérance de Vie",
+            "es": "Esperanza de Vida"
+        },
+        {
+            "en": "Empirical Mx for a given age range on a log10 scale.",
+            "fr": "Mx empirique pour une plage d'âges donnée sur une échelle log10.",
+            "es": "Mx empírico para un rango de edad dado en escala log10."
+        },
+        {
+            "en": "Original (black) and adjusted (red)",
+            "fr": "Original (noir) et ajusté (rouge)",
+            "es": "Original (negro) y ajustado (rojo)"
+        },
+        {
+            "en": "Rates (Deaths / Exposures)",
+            "fr": "Taux (Décès / Expositions)",
+            "es": "Tasas (Muertes / Exposiciones)"
+        },
+        {
+            "en": "Rates",
+            "fr": "Taux",
+            "es": "Tasas"
+        },
+        {
+            "en": "lx",
+            "fr": "lx",
+            "es": "lx"
+        },
+        {
+            "en": "dx",
+            "fr": "dx",
+            "es": "dx"
+        },
+        {
+            "en": "Death distribution (dx) generated from lifetable nmx values",
+            "fr": "Distribution des décès (dx) générée à partir des valeurs nMx de la table de mortalité",
+            "es": "Distribución de muertes (dx) generada a partir de valores nMx de tabla de vida"
+        },
+        {
+            "en": "Marked locations on the distribution indicate age-at-death quartiles (grey)\nand life expectancy (red)",
+            "fr": "Les emplacements marqués sur la distribution indiquent les quartiles d'âge à la mort (gris)\n et l'espérance de vie (rouge)",
+            "es": "Las ubicaciones marcadas en la distribución indican cuartiles de edad al morir (gris)\n y esperanza de vida (rojo)"
+        },
+        {
+            "en": "nqx",
+            "fr": "nqx",
+            "es": "nqx"
+        },
+        {
+            "en": "nqx (log scale)",
+            "fr": "nqx (échelle log)",
+            "es": "nqx (escala log)"
+        },
+        {
+            "en": "nMx",
+            "fr": "nMx",
+            "es": "nMx"
+        },
+        {
+            "en": "Age-specific Mortality",
+            "fr": "Mortalité Spécifique à l'Âge",
+            "es": "Mortalidad Específica por Edad"
+        },
+        {
+            "en": "Comparison of empirical nMx and lifetable nmx values",
+            "fr": "Comparaison des taux de mortalité empiriques et ajustés",
+            "es": "Comparación de tasas de mortalidad empíricas y ajustadas"
+        },
+        {
+            "en": "Age_value",
+            "fr": "Âge_valeur",
+            "es": "Valor_edad"
+        },
+        {
+            "en": "Roughness",
+            "fr": "Rugosité",
+            "es": "Rugosidad"
+        },
+        {
+            "en": "Sawtooth",
+            "fr": "Dents de scie",
+            "es": "Dientes de sierra"
+        },
+        {
+            "en": "Very rough",
+            "fr": "Très rugueux",
+            "es": "Muy rugoso"
+        },
+        {
+            "en": "Fairly accurate",
+            "fr": "Assez précis",
+            "es": "Bastante preciso"
+        },
+        {
+            "en": "Rough",
+            "fr": "Grossière",
+            "es": "Grueso"
+        },
+        {
+            "en": "Measure",
+            "fr": "Mesure",
+            "es": "Medida"
+        },
+        {
+            "en": "Label",
+            "fr": "Étiquette",
+            "es": "Etiqueta"
+        },
+        {
+            "en": "Message",
+            "fr": "Message",
+            "es": "Mensaje"
+        },
+        {
+            "en": "Median",
+            "fr": "Médiane",
+            "es": "Mediana"
+        },
+        {
+            "en": "Mode",
+            "fr": "Mode",
+            "es": "Moda"
+        },
+        {
+            "en": "Life Expectancy at Birth",
+            "fr": "Espérance de Vie à la Naissance",
+            "es": "Esperanza de Vida al Nacer"
+        },
+        {
+            "en": "Median Age at Death",
+            "fr": "Âge Médian au Décès",
+            "es": "Edad Mediana al Morir"
+        },
+        {
+            "en": "Modal Age at Death",
+            "fr": "Âge Modal au Décès",
+            "es": "Edad Modal al Morir"
+        },
+        {
+            "en": "Remaining Life Expectancy at Age 65",
+            "fr": "Espérance de Vie Restante à l'Âge de 65 Ans",
+            "es": "Esperanza de Vida Restante a los 65 Años"
+        },
+        {
+            "en": "Lifespan Variation Calculated as Standard Deviation of Age at Death",
+            "fr": "Variation de la Durée de Vie Calculée comme l'Écart-Type de l'Âge au Décès",
+            "es": "Variación de Duración de Vida Calculada como Desviación Estándar de Edad al Morir"
+        },
+        {
+            "en": "Standard Deviation of Remaining Lifespan Conditional on Survival to Age 10",
+            "fr": "Écart-Type de la Durée de Vie Restante Conditionnelle à la Survie Jusqu'à l'Âge de 10 Ans",
+            "es": "Desviación Estándar de Duración de Vida Restante Condicional a Supervivencia hasta los 10 Años"
+        },
+        {
+            "en": "Interquartile Range of Age at Death Distribution",
+            "fr": "Intervalle Interquartile de la Distribution de l'Âge au Décès",
+            "es": "Rango Intercuartil de Distribución de Edad al Morir"
+        },
+        {
+            "en": "Conditional Probability of Death Between Ages 20 and 65",
+            "fr": "Probabilité Conditionnelle de Décès Entre les Âges de 20 et 65 Ans",
+            "es": "Probabilidad Condicional de Muerte Entre Edades 20 y 65"
+        },
+        {
+            "en": "Generating PDF report... Estimated time:",
+            "fr": "Génération du rapport PDF... Temps estimé:",
+            "es": "Generando informe PDF... Tiempo estimado:"
+        },
+        {
+            "en": "Heaping Diagnostics",
+            "fr": "Diagnostics de concentration d'âges",
+            "es": "Diagnósticos de Agrupamiento de Edad"
+        },
+        {
+            "en": "Evaluate age heaping patterns for uploaded mortality data.",
+            "fr": "Évaluer les schémas de concentration des âges pour les données de mortalité importées.",
+            "es": "Evalúe patrones de agrupamiento de edad para datos de mortalidad cargados."
+        },
+        {
+            "en": "Compute Bachi, Myers, Roughness, and Sawtooth indices to assess digit preference across ages.",
+            "fr": "Calculez les indices de Bachi, Myers, Rugosité et Dent de scie pour évaluer les préférences de chiffres selon les âges.",
+            "es": "Calcule índices de Bachi, Myers, Rugosidad y Dientes de Sierra para evaluar preferencia de dígitos a través de edades."
+        },
+        {
+            "en": "Upload your CSV, confirm grouping columns when prompted, then choose the variable you wish to evaluate.",
+            "fr": "Téléchargez votre fichier CSV, confirmez les colonnes de regroupement lorsqu'elles sont demandées, puis choisissez la variable à évaluer.",
+            "es": "Cargue su CSV, confirme las columnas de agrupación cuando se le solicite, luego elija la variable que desea evaluar."
+        },
+        {
+            "en": "Run heaping analysis",
+            "fr": "Lancer l'analyse de concentration",
+            "es": "Ejecutar análisis de agrupamiento"
+        },
+        {
+            "en": "Upload CSV file",
+            "fr": "Télécharger un fichier CSV",
+            "es": "Cargar archivo CSV"
+        },
+        {
+            "en": "← Back to modules",
+            "fr": "← Retour aux modules",
+            "es": "← Volver a módulos"
+        },
+        {
+            "en": "Variable to evaluate",
+            "fr": "Variable à évaluer",
+            "es": "Variable a evaluar"
+        },
+        {
+            "en": "Controls",
+            "fr": "Contrôles",
+            "es": "Controles"
+        },
+        {
+            "en": "Group to view",
+            "fr": "Groupe à afficher",
+            "es": "Grupo a ver"
+        },
+        {
+            "en": "Download results",
+            "fr": "Télécharger les résultats",
+            "es": "Descargar resultados"
+        },
+        {
+            "en": "Data source: %s",
+            "fr": "Source des données : %s",
+            "es": "Fuente de datos: %s"
+        },
+        {
+            "en": "Sample dataset",
+            "fr": "Jeu de données d'exemple",
+            "es": "Conjunto de datos de muestra"
+        },
+        {
+            "en": "Uploaded file",
+            "fr": "Fichier téléversé",
+            "es": "Archivo cargado"
+        },
+        {
+            "en": "No grouping variables selected. Analysis will run on the entire dataset.",
+            "fr": "Aucune variable de regroupement sélectionnée. L'analyse s'exécutera sur l'ensemble du jeu de données.",
+            "es": "No se seleccionaron variables de agrupación. El análisis se ejecutará en todo el conjunto de datos."
+        },
+        {
+            "en": "No data available. Please upload a dataset first.",
+            "fr": "Aucune donnée disponible. Veuillez d'abord téléverser un jeu de données.",
+            "es": "No hay datos disponibles. Por favor, cargue un conjunto de datos primero."
+        },
+        {
+            "en": "Please confirm the grouping modal before running the analysis.",
+            "fr": "Veuillez confirmer la fenêtre de regroupement avant de lancer l'analyse.",
+            "es": "Por favor, confirme el modal de agrupación antes de ejecutar el análisis."
+        },
+        {
+            "en": "The selected group returned no rows to analyse.",
+            "fr": "Le groupe sélectionné ne contient aucune ligne à analyser.",
+            "es": "El grupo seleccionado no devolvió filas para analizar."
+        },
+        {
+            "en": "Column '%s' is missing from the dataset.",
+            "fr": "La colonne « %s » est absente du jeu de données.",
+            "es": "La columna '%s' falta en el conjunto de datos."
+        },
+        {
+            "en": "Heaping diagnostics failed. Check input data validity.",
+            "fr": "Les diagnostics de concentration ont échoué. Vérifiez la validité des données d'entrée.",
+            "es": "Los diagnósticos de agrupamiento fallaron. Verifique la validez de los datos de entrada."
+        },
+        {
+            "en": "Heaping diagnostics completed for %s (%s).",
+            "fr": "Diagnostics de concentration terminés pour %s (%s).",
+            "es": "Diagnósticos de agrupamiento completados para %s (%s)."
+        },
+        {
+            "en": "Current group: %s",
+            "fr": "Groupe actuel : %s",
+            "es": "Grupo actual: %s"
+        },
+        {
+            "en": "No diagnostics computed yet.",
+            "fr": "Aucun diagnostic n'a encore été calculé.",
+            "es": "Aún no se han calculado diagnósticos."
+        },
+        {
+            "en": "Identify age heaping patterns using Myers, Bachi, Roughness, and Sawtooth indices.",
+            "fr": "Identifiez les schémas de concentration d'âges à l'aide des indices de Myers, Bachi, Rugosité et Dent de scie.",
+            "es": "Identifique patrones de agrupamiento de edad usando índices de Myers, Bachi, Rugosidad y Dientes de Sierra."
+        },
+        {
+            "en": "Understand reporting accuracy in seconds",
+            "fr": "Comprenez la précision des déclarations en quelques secondes",
+            "es": "Comprenda la precisión de informes en segundos"
+        },
+        {
+            "en": "Assess age reporting quality",
+            "fr": "Évaluez la qualité de la déclaration d'âge",
+            "es": "Evalúe la calidad de informes de edad"
+        },
+        {
+            "en": "Upload deaths or exposures and review digit-preference diagnostics before continuing your workflow.",
+            "fr": "Téléversez les décès ou expositions et examinez les diagnostics de préférence pour les chiffres avant de poursuivre votre flux de travail.",
+            "es": "Cargue muertes o exposiciones y revise diagnósticos de preferencia de dígitos antes de continuar su flujo de trabajo."
+        },
+        {
+            "en": "What you'll need",
+            "fr": "Ce dont vous aurez besoin",
+            "es": "Lo que necesitará"
+        },
+        {
+            "en": "Single-age or abridged ages with numeric Deaths and Exposures.",
+            "fr": "Âges simples ou abrégés avec des nombres de décès et d'expositions numériques.",
+            "es": "Edades simples o abreviadas con Muertes y Exposiciones numéricas."
+        },
+        {
+            "en": "Optional grouping columns (e.g. Sex, Region) if you plan to run diagnostics by subgroup.",
+            "fr": "Colonnes de regroupement facultatives (p. ex., sexe, région) si vous souhaitez exécuter les diagnostics par sous-groupe.",
+            "es": "Columnas de agrupación opcionales (p. ej., Sexo, Región) si planea ejecutar diagnósticos por subgrupo."
+        },
+        {
+            "en": "Select exposures or deaths to reveal digit-preference warnings before you progress into smoothing or graduation.",
+            "fr": "Sélectionnez les expositions ou les décès pour afficher les alertes de préférence de chiffres avant de passer aux étapes de lissage ou de graduation.",
+            "es": "Seleccione exposiciones o muertes para revelar advertencias de preferencia de dígitos antes de progresar al suavizado o graduación."
+        },
+        {
+            "en": "Single-age and abridged support",
+            "fr": "Prise en charge des âges simples et abrégés",
+            "es": "Soporte de edad simple y abreviada"
+        },
+        {
+            "en": "Instant classifications by severity",
+            "fr": "Classements instantanés par niveau de gravité",
+            "es": "Clasificaciones instantáneas por gravedad"
+        },
+        {
+            "en": "Quick start checklist",
+            "fr": "Liste de vérification de démarrage rapide",
+            "es": "Lista de verificación de inicio rápido"
+        },
+        {
+            "en": "CSV columns must include Age, Deaths, and Exposures.",
+            "fr": "Les colonnes du CSV doivent inclure l'âge, les décès et les expositions.",
+            "es": "Las columnas del CSV deben incluir Edad, Muertes y Exposiciones."
+        },
+        {
+            "en": "When the modal opens, tick \"No grouping needed\" unless your file contains grouping identifiers.",
+            "fr": "Lorsque la fenêtre s'ouvre, cochez « Aucun regroupement nécessaire » sauf si votre fichier contient des identifiants de regroupement.",
+            "es": "Cuando se abra el modal, marque \"No se necesita agrupación\" a menos que su archivo contenga identificadores de agrupación."
+        },
+        {
+            "en": "Use the toggle below to switch between Deaths and Exposures diagnostics.",
+            "fr": "Utilisez le sélecteur ci-dessous pour basculer entre les diagnostics des décès et des expositions.",
+            "es": "Use el botón de alternancia a continuación para cambiar entre diagnósticos de Muertes y Exposiciones."
+        },
+        {
+            "en": "How to prepare your data",
+            "fr": "Comment préparer vos données",
+            "es": "Cómo preparar sus datos"
+        },
+        {
+            "en": "Ensure all ages are unique within each group, provide numeric counts, and reserve optional columns like Sex or Region for grouping selections.",
+            "fr": "Assurez-vous que tous les âges sont uniques dans chaque groupe, fournissez des valeurs numériques et réservez les colonnes facultatives telles que le sexe ou la région pour les sélections de regroupement.",
+            "es": "Asegúrese de que todas las edades sean únicas dentro de cada grupo, proporcione conteos numéricos y reserve columnas opcionales como Sexo o Región para selecciones de agrupación."
+        },
+        {
+            "en": "Required:",
+            "fr": "Obligatoire :",
+            "es": "Requerido:"
+        },
+        {
+            "en": "Optional:",
+            "fr": "Facultatif :",
+            "es": "Opcional:"
+        },
+        {
+            "en": "Recommended:",
+            "fr": "Recommandé :",
+            "es": "Recomendado:"
+        },
+        {
+            "en": "Grouping columns (e.g., Sex, Province); leave blank and tick the checkbox if none apply.",
+            "fr": "Colonnes de regroupement (p. ex., sexe, province); laissez vide et cochez la case si aucune ne s'applique.",
+            "es": "Columnas de agrupación (p. ej., Sexo, Provincia); deje en blanco y marque la casilla si no aplica ninguna."
+        },
+        {
+            "en": "Provide exposures in the same scale as deaths for comparable indices.",
+            "fr": "Fournissez les expositions dans la même échelle que les décès pour des indicateurs comparables.",
+            "es": "Proporcione exposiciones en la misma escala que las muertes para índices comparables."
+        },
+        {
+            "en": "Sample heaping CSV preview",
+            "fr": "Aperçu du CSV de concentration d'âges",
+            "es": "Vista previa de CSV de agrupamiento de muestra"
+        },
+        {
+            "en": "Source: ODAPbackend::dat_heap_smooth.csv.gz (single-year age counts).",
+            "fr": "Source : ODAPbackend::dat_heap_smooth.csv.gz (effectifs par âge, par année unique).",
+            "es": "Fuente: ODAPbackend::dat_heap_smooth.csv.gz (conteos de edad de un solo año)."
+        },
+        {
+            "en": "Tip: choose \"Deaths\" for Bachi/Myers and \"Exposures\" to inspect denominator quality.",
+            "fr": "Astuce : choisissez « Décès » pour Bachi/Myers et « Expositions » pour examiner la qualité du dénominateur.",
+            "es": "Consejo: elija \"Muertes\" para Bachi/Myers y \"Exposiciones\" para inspeccionar la calidad del denominador."
+        },
+        {
+            "en": "Current group: awaiting selection",
+            "fr": "Groupe actuel : en attente de sélection",
+            "es": "Grupo actual: esperando selección"
+        },
+        {
+            "en": "All records",
+            "fr": "Tous les enregistrements",
+            "es": "Todos los registros"
+        },
+        {
+            "en": "We could not detect any data rows to tag. Please reload your dataset and try again.",
+            "fr": "Nous n’avons détecté aucune ligne de données à marquer. Veuillez recharger votre jeu de données, puis réessayez.",
+            "es": "No pudimos detectar filas de datos para etiquetar. Recargue su conjunto de datos e intente nuevamente."
+        },
+        {
+            "en": "Smoothing Preview",
+            "fr": "Aperçu du lissage",
+            "es": "Vista Previa de Suavizado"
+        },
+        {
+            "en": "Preview mortality smoothing options before integrating them into your workflow.",
+            "fr": "Prévisualisez les options de lissage de la mortalité avant de les intégrer à votre flux de travail.",
+            "es": "Previsualice opciones de suavizado de mortalidad antes de integrarlas en su flujo de trabajo."
+        },
+        {
+            "en": "Graduation Tool",
+            "fr": "Outil de graduation",
+            "es": "Herramienta de Graduación"
+        },
+        {
+            "en": "Fine-tune mortality graduation methods with configurable infant and sex constraints.",
+            "fr": "Affinez les méthodes de graduation de la mortalité avec des contraintes configurables pour les nourrissons et selon le sexe.",
+            "es": "Ajuste finamente los métodos de graduación de mortalidad con restricciones configurables de infantes y sexo."
+        },
+        {
+            "en": "Active",
+            "fr": "Actif",
+            "es": "Activo"
+        },
+        {
+            "en": "Upload mortality detail, confirm group columns, and review age heaping checks before continuing your workflow.",
+            "fr": "Téléchargez les détails de mortalité, confirmez les colonnes de groupe et examinez les vérifications d'agrégation d'âge avant de continuer votre flux de travail.",
+            "es": "Cargue detalles de mortalidad, confirme columnas de grupo y revise verificaciones de agrupamiento de edad antes de continuar su flujo de trabajo."
+        },
+        {
+            "en": "The heaping sample contains Age, Deaths, and Exposures observed at single ages.",
+            "fr": "L'échantillon d'agrégation contient l'âge, les décès et les expositions observés aux âges simples.",
+            "es": "La muestra de agrupamiento contiene Edad, Muertes y Exposiciones observadas en edades simples."
+        }
     ]
 }
