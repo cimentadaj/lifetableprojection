@@ -77,6 +77,9 @@ app_ui <- function(request) {
     if (mod_id == "smoothing") {
       return(uiOutput("smoothing_module_card"))
     }
+    if (mod_id == "graduation") {
+      return(uiOutput("graduation_module_card"))
+    }
 
     # Keep other cards static
     if (identical(mod$status, "active")) {

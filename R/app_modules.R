@@ -41,13 +41,13 @@ get_app_modules <- function(i18n) {
     graduation = list(
       id = "graduation",
       name = i18n$t("Graduation Tool"),
-      description = i18n$t("Fine-tune mortality graduation methods with configurable infant and sex constraints."),
+      description = i18n$t("Fine-tune mortality graduation with configurable infant constraints."),
       icon = "sliders horizontal",
-      status = "coming_soon",
-      button_label = NULL,
-      status_label = i18n$t("Coming Soon"),
-      ui = NULL,
-      server_fun = NULL
+      status = "active",
+      button_label = i18n$t("Go to module"),
+      status_label = i18n$t("Active"),
+      ui = graduation_module_ui(i18n),
+      server_fun = graduation_module_server
     )
   )
 }

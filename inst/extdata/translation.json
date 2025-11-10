@@ -1449,6 +1449,36 @@
             "en": "Note: Downloading all groups will process each group in parallel and create a combined ZIP file with all results.",
             "fr": "Note : Le téléchargement de tous les groupes traitera chaque groupe en parallèle et créera un fichier ZIP combiné avec tous les résultats.",
             "es": "Nota: Descargar todos los grupos procesará cada grupo en paralelo y creará un archivo ZIP combinado con todos los resultados."
+        },
+        {
+            "en": "Variable to graduate",
+            "fr": "Variable à graduer",
+            "es": "Variable a graduar"
+        },
+        {
+            "en": "Run Graduation",
+            "fr": "Exécuter la Graduation",
+            "es": "Ejecutar Graduación"
+        },
+        {
+            "en": "The graduation sample contains Age, Deaths, and Exposures.",
+            "fr": "L'échantillon de graduation contient Âge, Décès et Expositions.",
+            "es": "La muestra de graduación contiene Edad, Muertes y Exposiciones."
+        },
+        {
+            "en": "Minimum required: Age and one numeric variable to graduate (Deaths, Exposures, or similar counts).",
+            "fr": "Minimum requis : Âge et une variable numérique à graduer (Décès, Expositions ou comptages similaires).",
+            "es": "Mínimo requerido: Edad y una variable numérica para graduar (Muertes, Exposiciones o conteos similares)."
+        },
+        {
+            "en": "Graduation failed. Check input data validity.",
+            "fr": "La graduation a échoué. Vérifiez la validité des données d'entrée.",
+            "es": "La graduación falló. Verifique la validez de los datos de entrada."
+        },
+        {
+            "en": "No graduation results yet.",
+            "fr": "Aucun résultat de graduation pour le moment.",
+            "es": "Aún no hay resultados de graduación."
         }
     ]
 }

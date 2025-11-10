@@ -1878,6 +1878,27 @@ app_server <- function(input, output, session) {
     )
   })
 
+  output$graduation_module_card <- renderUI({
+    i18n <- usei18n_local()
+    # Force reactivity on language change
+    input$selected_language
+
+    # Get the graduation module definition with current language
+    modules <- get_app_modules(i18n)
+    mod <- modules$graduation
+
+    div(
+      class = "module-card",
+      div(
+        class = "module-icon",
+        icon(mod$icon)
+      ),
+      h3(mod$name, class = "module-name"),
+      p(mod$description, class = "module-description"),
+      actionButton("goto_graduation", mod$button_label, class = "ui blue button")
+    )
+  })
+
   modules <- get_app_modules(usei18n_local())
   lapply(modules, function(mod) {
     if (!is.null(mod$server_fun)) {
