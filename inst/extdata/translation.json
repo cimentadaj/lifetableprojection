@@ -1564,6 +1564,16 @@
             "en": "Redistributed",
             "fr": "Redistribué",
             "es": "Redistribuido"
+        },
+        {
+            "en": "Graduated",
+            "fr": "Gradué",
+            "es": "Graduado"
+        },
+        {
+            "en": "Graduation",
+            "fr": "Graduation",
+            "es": "Graduación"
         }
     ]
 }

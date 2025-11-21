@@ -893,56 +893,12 @@ graduation_module_server <- function(input, output, session) {
         return(list(error = sprintf(i18n$t("Column '%s' is missing from the dataset."), params$variable)))
       }
 
-      result <- tryCatch({
-        ODAPbackend::graduate_auto(
-          data_subset,
-          variable = params$variable,
-          age_out = params$age_out,
-          u5m = params$u5m,
-          constrain_infants = params$constrain_infants,
-          Sex = "t"
-        )
-      }, error = function(e) {
-        list(error = i18n$t("Graduation failed. Check input data validity."))
-      })
-
-      if (!is.null(result$error)) {
-        return(result)
-      }
-
-      # Add .id back to graduated data (graduate_auto doesn't preserve it)
       gid <- shared$active_group_id()
-      if (!is.null(result$data_out)) {
-        result$data_out$.id <- gid
-      }
 
-      # Create plot manually (graduate_auto doesn't return plots)
-      original_data <- data_subset
-      graduated_data <- result$data_out
-
-      plot_data <- data.frame(
-        Age = c(original_data$Age, graduated_data$Age),
-        Value = c(original_data[[params$variable]], graduated_data[[params$variable]]),
-        Type = c(rep("Original", nrow(original_data)), rep("Graduated", nrow(graduated_data)))
-      )
-
-      plot_obj <- ggplot2::ggplot(plot_data, ggplot2::aes(x = Age, y = Value, color = Type, linetype = Type)) +
-        ggplot2::geom_line(linewidth = 1) +
-        ggplot2::geom_point(data = subset(plot_data, Type == "Original"), size = 2) +
-        ggplot2::scale_color_manual(values = c("Original" = "black", "Graduated" = "blue")) +
-        ggplot2::scale_linetype_manual(values = c("Original" = "solid", "Graduated" = "solid")) +
-        ggplot2::theme_minimal() +
-        ggplot2::labs(
-          title = paste("Graduation:", params$variable),
-          x = "Age",
-          y = params$variable,
-          color = "Data Type",
-          linetype = "Data Type"
-        )
-
+      # Return parameters and data for render callback to use
+      # Heavy computation will happen in renderPlotly for spinner to show
       list(
-        result = result,
-        plot = plot_obj,
+        data_subset = data_subset,
         group_id = gid,
         variable = params$variable,
         age_out = params$age_out,
@@ -960,19 +916,59 @@ graduation_module_server <- function(input, output, session) {
         return()
       }
 
-      shared$last_result(result)
+      # Extract parameters from result (no computation happened yet)
+      data_subset <- result$data_subset
+      group_id <- result$group_id
+      variable <- result$variable
+      age_out <- result$age_out
+      u5m <- result$u5m
+      constrain_infants <- result$constrain_infants
 
-      # Use the manually created plot
-      plot_obj <- result$plot
-
-      if (is.null(plot_obj)) {
-        output$graduation_plot <- plotly::renderPlotly(NULL)
-        shinyjs::hide(id = session$ns("plot_container"))
-        return()
-      }
-
-      # Render plot
+      # THE KEY: Heavy computation happens INSIDE renderPlotly
+      # This makes withSpinner show during the full computation!
       output$graduation_plot <- plotly::renderPlotly({
+        # Heavy computation happens HERE during rendering
+        grad_result <- tryCatch({
+          ODAPbackend::graduate_auto(
+            data_subset,
+            variable = variable,
+            age_out = age_out,
+            u5m = u5m,
+            constrain_infants = constrain_infants,
+            Sex = "t",
+            i18n = i18n
+          )
+        }, error = function(e) {
+          cat(sprintf("[GRADUATION_RENDER] Backend error: %s\n", e$message))
+          list(error = paste0(i18n$t("Graduation failed: "), e$message))
+        })
+
+        if (!is.null(grad_result$error)) {
+          return(NULL)
+        }
+
+        # Add .id back to graduated data (graduate_auto doesn't preserve it)
+        if (!is.null(grad_result$data_out)) {
+          grad_result$data_out$.id <- group_id
+        }
+
+        # Save result for download handlers
+        result_with_computation <- list(
+          result = grad_result,
+          group_id = group_id,
+          variable = variable,
+          age_out = age_out,
+          u5m = u5m,
+          constrain_infants = constrain_infants
+        )
+        shared$last_result(result_with_computation)
+
+        # Extract and render plot
+        plot_obj <- grad_result$plot
+        if (is.null(plot_obj)) {
+          return(NULL)
+        }
+
         plotly::ggplotly(plot_obj) |>
           plotly::config(displayModeBar = FALSE)
       })
