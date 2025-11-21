@@ -944,7 +944,28 @@ odap_module_server <- function(input, output, session) {
         })
 
         if (!is.null(odap_result$error)) {
-          return(NULL)
+          # Create error visualization plot
+          error_msg <- odap_result$error
+          error_plot <- plotly::plot_ly() |>
+            plotly::add_annotations(
+              text = paste0("<b>", i18n$t("Error"), ":</b><br><br>", error_msg),
+              x = 0.5,
+              y = 0.5,
+              xref = "paper",
+              yref = "paper",
+              showarrow = FALSE,
+              font = list(size = 16, color = "red"),
+              xanchor = "center",
+              yanchor = "middle"
+            ) |>
+            plotly::layout(
+              xaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE),
+              yaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE),
+              plot_bgcolor = "#f8f9fa",
+              paper_bgcolor = "#f8f9fa"
+            ) |>
+            plotly::config(displayModeBar = FALSE)
+          return(error_plot)
         }
 
         # Save result for download handlers

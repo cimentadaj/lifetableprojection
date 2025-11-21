@@ -1579,6 +1579,21 @@
             "en": "Fine-tune mortality graduation with configurable infant constraints.",
             "fr": "Affinez la graduation de la mortalité avec des contraintes infantiles configurables.",
             "es": "Ajuste fino de la graduación de mortalidad con restricciones infantiles configurables."
+        },
+        {
+            "en": "Error",
+            "fr": "Erreur",
+            "es": "Error"
+        },
+        {
+            "en": "Redistribution failed: ",
+            "fr": "Échec de la redistribution : ",
+            "es": "Falló la redistribución: "
+        },
+        {
+            "en": "Graduation failed: ",
+            "fr": "Échec de la graduation : ",
+            "es": "Falló la graduación: "
         }
     ]
 }
