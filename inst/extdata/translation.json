@@ -1574,6 +1574,11 @@
             "en": "Graduation",
             "fr": "Graduation",
             "es": "Graduación"
+        },
+        {
+            "en": "Fine-tune mortality graduation with configurable infant constraints.",
+            "fr": "Affinez la graduation de la mortalité avec des contraintes infantiles configurables.",
+            "es": "Ajuste fino de la graduación de mortalidad con restricciones infantiles configurables."
         }
     ]
 }
