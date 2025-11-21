@@ -452,6 +452,9 @@ mod_simple_module_server <- function(id, callbacks) {
       if (!is.null(result) && is.list(result)) {
         cat(sprintf("[SIMPLE_MODULE][%s] result is list | has_error=%s | components=%s\n",
           id, !is.null(result$error), paste(names(result), collapse = ", ")))
+        if (!is.null(result$error)) {
+          cat(sprintf("[SIMPLE_MODULE][%s] *** ERROR DETECTED ***: %s\n", id, result$error))
+        }
       }
 
       cat(sprintf("[SIMPLE_MODULE][%s] calling render callback\n", id))

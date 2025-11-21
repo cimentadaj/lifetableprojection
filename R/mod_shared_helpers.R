@@ -11,13 +11,14 @@
 #' @param i18n Translator helper.
 #' @param sample_loader Optional function returning a data.frame used when the
 #'   user clicks the sample data button. Defaults to the lifetable sample data.
+#' @param validation_function Optional function for data validation. Defaults to validateData.
 #' @return A list containing shared reactive values (data, grouping metadata,
 #'   validation details, etc.).
 #' @importFrom shiny reactiveVal reactive observeEvent observe isolate renderUI span
 #' @importFrom dplyr distinct filter
 #' @importFrom DT renderDT datatable dataTableOutput
 #' @noRd
-create_shared_data_context <- function(module_id, input, output, session, i18n, sample_loader = NULL) {
+create_shared_data_context <- function(module_id, input, output, session, i18n, sample_loader = NULL, validation_function = NULL) {
   ns <- session$ns
 
   data_in <- reactiveVal(NULL)
@@ -149,9 +150,11 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   )
 
   # Validation
+  validate_func <- if (!is.null(validation_function)) validation_function else validateData
+
   validation_details <- reactive({
     req(data_in())
-    validateData(data_in(), i18n)
+    validate_func(data_in(), i18n)
   })
 
   output$validation_summary <- renderUI({

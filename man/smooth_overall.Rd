@@ -14,10 +14,13 @@ smooth_overall(
   fine_deaths,
   constraint_deaths,
   u5m_deaths,
-  age_out
+  age_out,
+  i18n
 )
 }
 \arguments{
+\item{i18n}{An optional i18n object for translation.}
+
 \item{output}{Shiny output object.}
 
 \item{plots}{List of reactive expressions for plots.}

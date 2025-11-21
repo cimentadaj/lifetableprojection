@@ -106,6 +106,25 @@ handle_transitions <- function(input, current_tab) {
     show("module_landing_page")
     current_tab("module_landing")
   })
+
+  observeEvent(input$goto_odap, {
+    hide("module_landing_page")
+    hide("lifetable_landing_page")
+    hide("landing_page")
+    hide("step_adjustment")
+    hide("step_input")
+    hide("heaping_module_page")
+    hide("smoothing_module_page")
+    hide("graduation_module_page")
+    show("odap_module_page")
+    current_tab("odap")
+  })
+
+  observeEvent(input$odap_back_to_modules, {
+    hide("odap_module_page")
+    show("module_landing_page")
+    current_tab("module_landing")
+  })
 }
 
 

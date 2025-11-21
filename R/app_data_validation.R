@@ -30,6 +30,18 @@ validateData <- function(data, i18n) {
   check_data(data)
 }
 
+#' Validate ODAP Population Data
+#'
+#' Validates ODAP population data using ODAP-specific criteria.
+#'
+#' @param data Data frame to be validated (must contain Age and pop columns).
+#' @param i18n Translator object for internationalization
+#' @return Data frame containing validation results.
+#' @export
+validateData_opag <- function(data, i18n) {
+  ODAPbackend::check_data_opag(data)
+}
+
 #' Render Data Table
 #'
 #' Creates a read-only handsontable UI component for displaying data.

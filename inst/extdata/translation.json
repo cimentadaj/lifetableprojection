@@ -1479,6 +1479,71 @@
             "en": "No graduation results yet.",
             "fr": "Aucun résultat de graduation pour le moment.",
             "es": "Aún no hay resultados de graduación."
+        },
+        {
+            "en": "Old-Age Population Redistribution",
+            "fr": "Redistribution de la Population des Âges Élevés",
+            "es": "Redistribución de Población de Edades Avanzadas"
+        },
+        {
+            "en": "Redistribute population in older ages using stable population methods and mortality data.",
+            "fr": "Redistribuer la population aux âges élevés en utilisant des méthodes de population stable et des données de mortalité.",
+            "es": "Redistribuir la población en edades avanzadas utilizando métodos de población estable y datos de mortalidad."
+        },
+        {
+            "en": "Apply old-age population redistribution based on stable population patterns fitted to observed data.",
+            "fr": "Appliquer la redistribution de population aux âges élevés basée sur des modèles de population stable ajustés aux données observées.",
+            "es": "Aplicar redistribución de población en edades avanzadas basada en patrones de población estable ajustados a datos observados."
+        },
+        {
+            "en": "The ODAP sample contains Age and population counts for India (1971, Males).",
+            "fr": "L'échantillon ODAP contient l'âge et les comptes de population pour l'Inde (1971, Hommes).",
+            "es": "La muestra ODAP contiene edad y recuentos de población para India (1971, Hombres)."
+        },
+        {
+            "en": "Minimum required: Age and pop (population counts). Optional: name, sex, year, country_code, nLx (mortality data).",
+            "fr": "Minimum requis : Age et pop (comptes de population). Optionnel : name, sex, year, country_code, nLx (données de mortalité).",
+            "es": "Mínimo requerido: Age y pop (recuentos de población). Opcional: name, sex, year, country_code, nLx (datos de mortalidad)."
+        },
+        {
+            "en": "Redistribution method",
+            "fr": "Méthode de redistribution",
+            "es": "Método de redistribución"
+        },
+        {
+            "en": "Redistribute from age",
+            "fr": "Redistribuer à partir de l'âge",
+            "es": "Redistribuir desde edad"
+        },
+        {
+            "en": "New open age group",
+            "fr": "Nouveau groupe d'âge ouvert",
+            "es": "Nuevo grupo de edad abierto"
+        },
+        {
+            "en": "Fitting age range start",
+            "fr": "Début de plage d'âge d'ajustement",
+            "es": "Inicio de rango de edad de ajuste"
+        },
+        {
+            "en": "Fitting age range end",
+            "fr": "Fin de plage d'âge d'ajustement",
+            "es": "Fin de rango de edad de ajuste"
+        },
+        {
+            "en": "Run Redistribution",
+            "fr": "Exécuter la Redistribution",
+            "es": "Ejecutar Redistribución"
+        },
+        {
+            "en": "Redistribution failed. Check input data validity.",
+            "fr": "La redistribution a échoué. Vérifiez la validité des données d'entrée.",
+            "es": "La redistribución falló. Verifique la validez de los datos de entrada."
+        },
+        {
+            "en": "No redistribution results yet.",
+            "fr": "Aucun résultat de redistribution pour le moment.",
+            "es": "Aún no hay resultados de redistribución."
         }
     ]
 }

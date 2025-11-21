@@ -4,12 +4,14 @@
 \alias{generate_diagnostics_text}
 \title{Generate Diagnostics Text}
 \usage{
-generate_diagnostics_text(data_in, i18n)
+generate_diagnostics_text(data_in, i18n, selected_language = NULL)
 }
 \arguments{
 \item{data_in}{Reactive expression containing the input data}
 
 \item{i18n}{Translator object for internationalization}
+
+\item{selected_language}{Reactive value for current language selection}
 }
 \value{
 Reactive expression containing diagnostics text

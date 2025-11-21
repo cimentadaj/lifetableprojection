@@ -4,7 +4,7 @@
 \alias{setup_grouping_dropdowns}
 \title{Setup Grouping Dropdowns}
 \usage{
-setup_grouping_dropdowns(selected_grouping_vars, data_in)
+setup_grouping_dropdowns(selected_grouping_vars, data_in, ns = function(x) x)
 }
 \arguments{
 \item{selected_grouping_vars}{Reactive value containing selected grouping variables}

@@ -48,6 +48,17 @@ get_app_modules <- function(i18n) {
       status_label = i18n$t("Active"),
       ui = graduation_module_ui(i18n),
       server_fun = graduation_module_server
+    ),
+    odap = list(
+      id = "odap",
+      name = i18n$t("Old-Age Population Redistribution"),
+      description = i18n$t("Redistribute population in older ages using stable population methods and mortality data."),
+      icon = "users",
+      status = "active",
+      button_label = i18n$t("Go to module"),
+      status_label = i18n$t("Active"),
+      ui = odap_module_ui(i18n),
+      server_fun = odap_module_server
     )
   )
 }

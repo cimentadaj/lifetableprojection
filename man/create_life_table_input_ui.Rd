@@ -7,7 +7,7 @@
 create_life_table_input_ui(
   data_in,
   grouping_dropdowns,
-  tabNames,
+  tabNames_internal,
   input,
   output,
   i18n
@@ -18,7 +18,7 @@ create_life_table_input_ui(
 
 \item{grouping_dropdowns}{Reactive with widgets for all grouping variabels}
 
-\item{tabNames}{Vector with the tab names}
+\item{tabNames_internal}{Vector with internal fixed tab names (English)}
 
 \item{input}{Internal shiny input list}
 

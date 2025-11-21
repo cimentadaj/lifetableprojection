@@ -8,7 +8,8 @@ generate_analysis_report(
   lt_results = NULL,
   diagnostic_results = NULL,
   preprocessing_results = NULL,
-  group_labels = NULL
+  group_labels = NULL,
+  i18n = NULL
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ generate_analysis_report(
 \item{preprocessing_results}{List containing preprocessing steps results and plots}
 
 \item{group_labels}{Named vector mapping group IDs to their full labels}
+
+\item{i18n}{An i18n object for translations}
 }
 \value{
 Path to the generated PDF file

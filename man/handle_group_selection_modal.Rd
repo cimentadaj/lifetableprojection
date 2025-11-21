@@ -11,7 +11,9 @@ handle_group_selection_modal(
   data,
   group_selection_passed,
   selected_grouping_vars,
-  i18n
+  i18n,
+  data_raw = NULL,
+  raw_key = NULL
 )
 }
 \arguments{
