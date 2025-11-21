@@ -946,7 +946,8 @@ odap_module_server <- function(input, output, session) {
         if (!is.null(odap_result$error)) {
           # Create error visualization plot
           error_msg <- odap_result$error
-          error_plot <- plotly::plot_ly() |>
+          error_plot <- plotly::plot_ly(x = 0, y = 0, type = "scatter", mode = "markers",
+                                         marker = list(size = 0, opacity = 0)) |>
             plotly::add_annotations(
               text = paste0("<b>", i18n$t("Error"), ":</b><br><br>", error_msg),
               x = 0.5,
@@ -959,10 +960,11 @@ odap_module_server <- function(input, output, session) {
               yanchor = "middle"
             ) |>
             plotly::layout(
-              xaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE),
-              yaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE),
+              xaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE, range = c(-1, 1)),
+              yaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE, range = c(-1, 1)),
               plot_bgcolor = "#f8f9fa",
-              paper_bgcolor = "#f8f9fa"
+              paper_bgcolor = "#f8f9fa",
+              showlegend = FALSE
             ) |>
             plotly::config(displayModeBar = FALSE)
           return(error_plot)
