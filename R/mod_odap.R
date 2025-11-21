@@ -639,7 +639,8 @@ odap_module_server <- function(input, output, session) {
                 Redistribute_from = params$redistribute_from,
                 OAnew = params$oanew,
                 method = params$method,
-                nLx = NULL
+                nLx = NULL,
+                i18n = i18n
               )
               list(group_id = gid, result = result, error = NULL)
             }, error = function(e) {
@@ -658,7 +659,8 @@ odap_module_server <- function(input, output, session) {
                 Redistribute_from = params$redistribute_from,
                 OAnew = params$oanew,
                 method = params$method,
-                nLx = NULL
+                nLx = NULL,
+                i18n = i18n
               )
               list(group_id = gid, result = result, error = NULL)
             }, error = function(e) {
@@ -933,7 +935,8 @@ odap_module_server <- function(input, output, session) {
             Redistribute_from = redistribute_from,
             OAnew = oanew,
             method = method,
-            nLx = NULL
+            nLx = NULL,
+            i18n = i18n
           )
         }, error = function(e) {
           cat(sprintf("[ODAP_RENDER] Backend error: %s\n", e$message))

@@ -1544,6 +1544,26 @@
             "en": "No redistribution results yet.",
             "fr": "Aucun résultat de redistribution pour le moment.",
             "es": "Aún no hay resultados de redistribución."
+        },
+        {
+            "en": "Population Redistribution (OPAG Method)",
+            "fr": "Redistribution de la Population (Méthode OPAG)",
+            "es": "Redistribución de Población (Método OPAG)"
+        },
+        {
+            "en": "Population",
+            "fr": "Population",
+            "es": "Población"
+        },
+        {
+            "en": "Original",
+            "fr": "Original",
+            "es": "Original"
+        },
+        {
+            "en": "Redistributed",
+            "fr": "Redistribué",
+            "es": "Redistribuido"
         }
     ]
 }
