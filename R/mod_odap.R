@@ -438,7 +438,7 @@ odap_module_server <- function(input, output, session) {
             shiny::tagList(
               shiny::hr(),
               shiny::h4(i18n$t("WPP Mortality Data Selection")),
-              shiny::p(i18n$t("Your data doesn't include nLx or grouping columns. Select which WPP mortality data to use:")),
+              shiny::p(i18n$t("Your data doesn't include nLx. Select which WPP mortality data to use:")),
               shiny.semantic::selectInput(
                 ns("wpp_country"),
                 i18n$t("Country"),
