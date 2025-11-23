@@ -1,3 +1,40 @@
+#' Get Country Code from Country Name
+#'
+#' @param country_name Character. Name of the country.
+#' @return Numeric country code or NULL if not found.
+#' @noRd
+get_country_code <- function(country_name) {
+  # Subset of common countries - can be expanded as needed
+  codes <- c(
+    "India" = 356,
+    "Brazil" = 76,
+    "China" = 156,
+    "United States of America" = 840,
+    "Nigeria" = 566,
+    "Japan" = 392,
+    "Mexico" = 484,
+    "Germany" = 276,
+    "France" = 250,
+    "United Kingdom" = 826,
+    "South Africa" = 710,
+    "Australia" = 36,
+    "Canada" = 124,
+    "Russia" = 643,
+    "Spain" = 724,
+    "Italy" = 380,
+    "Argentina" = 32,
+    "Egypt" = 818,
+    "Pakistan" = 586,
+    "Bangladesh" = 50,
+    "Indonesia" = 360,
+    "Turkey" = 792,
+    "Kenya" = 404,
+    "Ethiopia" = 231
+  )
+  codes[[country_name]]
+}
+
+
 #' Old-Age Population Redistribution Module UI
 #'
 #' @param i18n Translator helper used for labels.
@@ -215,7 +252,6 @@ odap_module_ui <- function(i18n) {
 #' @param session Shiny session.
 #' @noRd
 odap_module_server <- function(input, output, session) {
-  message("[ODAP_MODULE] server initialised")
 
   mod_simple_module_server("odap", list(
     setup = function(input, output, session, i18n) {
@@ -223,8 +259,7 @@ odap_module_server <- function(input, output, session) {
       odap_sample_loader <- function() {
         path <- system.file("extdata", "odap_sample.csv", package = "lifetableprojection")
         df <- readr::read_csv(path, show_col_types = FALSE)
-        df <- df |>
-          dplyr::select(Age, pop, name, country_code, sex, year)
+        # New sample has Age, pop, nLx, name
         df <- df[order(df$Age), , drop = FALSE]
         df
       }
@@ -238,6 +273,9 @@ odap_module_server <- function(input, output, session) {
       )
       shared$last_result <- shiny::reactiveVal(NULL)
       download_scope_choice <- shiny::reactiveVal("single")
+
+      # Store parameters when button is clicked to prevent auto-trigger on input changes
+      shared$button_click_count <- shiny::reactiveVal(0)
 
       ns <- session$ns
       data_step_id <- ns("data_step")
@@ -276,9 +314,16 @@ odap_module_server <- function(input, output, session) {
           session$userData$language_version()
         }
         shiny::tagList(
-          shiny::p(i18n$t("Minimum required: Age and pop (population counts). Optional: name, sex, year, country_code, nLx (mortality data).")),
+          shiny::p(i18n$t("Required columns: Age and pop (population counts). Age can be single-year (0-100) or abridged (5 or 10-year intervals).")),
+          shiny::p(i18n$t("How to provide mortality data:")),
+          shiny::tags$ul(
+            shiny::tags$li(i18n$t("Include 'nLx' column (custom mortality life table)")),
+            shiny::tags$li(i18n$t("Include name, sex, year, country_code columns (uses WPP mortality for that group)")),
+            shiny::tags$li(i18n$t("Provide only Age + pop (select WPP mortality using dropdowns in the analysis step)"))
+          ),
+          shiny::p(shiny::tags$strong(i18n$t("Important: If grouping by name, sex, year, or country_code, you must provide nLx. Without nLx, WPP mortality selection applies to ALL groups."))),
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
-          shiny::p(i18n$t("The ODAP sample contains Age and population counts for India (1971, Males)."))
+          shiny::p(i18n$t("Sample data includes Age, pop, and nLx (custom mortality)."))
         )
       })
 
@@ -336,6 +381,18 @@ odap_module_server <- function(input, output, session) {
         if (!is.null(session$userData$language_version)) {
           session$userData$language_version()
         }
+
+        # Check if we need WPP selection inputs
+        df <- shared$data()
+        needs_wpp <- FALSE
+        if (!is.null(df)) {
+          # Check case-insensitively since backend will lowercase column names
+          col_names_lower <- tolower(names(df))
+          has_nlx <- "nlx" %in% col_names_lower
+          has_grouping <- all(c("name", "sex", "year") %in% col_names_lower)
+          needs_wpp <- !has_nlx && !has_grouping
+        }
+
         shiny::tagList(
           shiny.semantic::selectInput(
             ns("method"),
@@ -346,7 +403,7 @@ odap_module_server <- function(input, output, session) {
           shiny::numericInput(
             ns("redistribute_from"),
             i18n$t("Redistribute from age"),
-            value = 80,
+            value = if (!is.null(input$redistribute_from)) input$redistribute_from else 80,
             min = 50,
             max = 100,
             step = 5
@@ -354,7 +411,7 @@ odap_module_server <- function(input, output, session) {
           shiny::numericInput(
             ns("oanew"),
             i18n$t("New open age group"),
-            value = 100,
+            value = if (!is.null(input$oanew)) input$oanew else 100,
             min = 80,
             max = 110,
             step = 5
@@ -362,7 +419,7 @@ odap_module_server <- function(input, output, session) {
           shiny::numericInput(
             ns("age_fit_start"),
             i18n$t("Fitting age range start"),
-            value = 60,
+            value = if (!is.null(input$age_fit_start)) input$age_fit_start else 60,
             min = 40,
             max = 80,
             step = 5
@@ -370,11 +427,45 @@ odap_module_server <- function(input, output, session) {
           shiny::numericInput(
             ns("age_fit_end"),
             i18n$t("Fitting age range end"),
-            value = 70,
+            value = if (!is.null(input$age_fit_end)) input$age_fit_end else 70,
             min = 50,
             max = 90,
             step = 5
           ),
+
+          # CONDITIONAL WPP INPUTS
+          if (needs_wpp) {
+            shiny::tagList(
+              shiny::hr(),
+              shiny::h4(i18n$t("WPP Mortality Data Selection")),
+              shiny::p(i18n$t("Your data doesn't include nLx or grouping columns. Select which WPP mortality data to use:")),
+              shiny.semantic::selectInput(
+                ns("wpp_country"),
+                i18n$t("Country"),
+                choices = c("India", "Brazil", "China", "United States of America", "Nigeria",
+                           "Japan", "Mexico", "Germany", "France", "United Kingdom",
+                           "South Africa", "Australia", "Canada", "Russia", "Spain",
+                           "Italy", "Argentina", "Egypt", "Pakistan", "Bangladesh",
+                           "Indonesia", "Turkey", "Kenya", "Ethiopia"),
+                selected = if (!is.null(input$wpp_country)) input$wpp_country else "India"
+              ),
+              shiny.semantic::selectInput(
+                ns("wpp_sex"),
+                i18n$t("Sex"),
+                choices = c("Male" = "M", "Female" = "F"),
+                selected = if (!is.null(input$wpp_sex)) input$wpp_sex else "M"
+              ),
+              shiny::numericInput(
+                ns("wpp_year"),
+                i18n$t("Year"),
+                value = if (!is.null(input$wpp_year)) input$wpp_year else 2020,
+                min = 1950,
+                max = 2024,
+                step = 1
+              )
+            )
+          },
+
           shiny::br(),
           shiny::actionButton(
             ns("run_analysis"),
@@ -528,14 +619,12 @@ odap_module_server <- function(input, output, session) {
       # Observer to capture radio button selection
       shiny::observeEvent(input$download_scope_js, {
         choice <- input$download_scope_js
-        message(sprintf("[ODAP_MODAL] download_scope_js changed to: %s", choice))
         download_scope_choice(choice)
       })
 
       # Debug observer
       shiny::observe({
         scope <- input$download_scope
-        message(sprintf("[ODAP_MODAL] download_scope input changed to: %s", scope))
       })
 
       # Helper function to download single group
@@ -625,7 +714,6 @@ odap_module_server <- function(input, output, session) {
         )
 
         # Run ODAP in parallel for all groups
-        message(sprintf("[ODAP_DOWNLOAD] Processing %d groups in parallel...", length(all_ids)))
 
         if (requireNamespace("future.apply", quietly = TRUE)) {
           results <- future.apply::future_lapply(all_ids, function(gid) {
@@ -787,7 +875,6 @@ odap_module_server <- function(input, output, session) {
         filename = function() {
           timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
           scope <- download_scope_choice()
-          message(sprintf("[ODAP_DOWNLOAD] filename: scope = %s", scope))
           if (scope == "all") {
             sprintf("odap_results_all_groups_%s.zip", timestamp)
           } else {
@@ -796,15 +883,12 @@ odap_module_server <- function(input, output, session) {
         },
         content = function(file) {
           scope <- download_scope_choice()
-          message(sprintf("[ODAP_DOWNLOAD] content: scope = %s", scope))
           modal_id <- ns("download_modal")
           shiny.semantic::hide_modal(modal_id, session = session)
 
           if (scope == "all") {
-            message("[ODAP_DOWNLOAD] Executing download_all_groups")
             download_all_groups(file)
           } else {
-            message("[ODAP_DOWNLOAD] Executing download_single_group")
             download_single_group(file)
           }
         },
@@ -863,107 +947,108 @@ odap_module_server <- function(input, output, session) {
         redistribute_from = input$redistribute_from %||% 80,
         oanew = input$oanew %||% 100,
         age_fit_start = input$age_fit_start %||% 60,
-        age_fit_end = input$age_fit_end %||% 70
+        age_fit_end = input$age_fit_end %||% 70,
+        # Include WPP inputs as reactive dependencies
+        wpp_country = input$wpp_country,
+        wpp_sex = input$wpp_sex,
+        wpp_year = input$wpp_year
       )
     },
 
     run = function(shared, params, input, i18n) {
-      data_subset <- shared$filtered_data()
-      shiny::req(data_subset)
+      # Increment button click count to trigger renderPlotly
+      shared$button_click_count(shared$button_click_count() + 1)
 
-      if (nrow(data_subset) == 0) {
-        return(list(error = i18n$t("The selected group returned no rows to analyse.")))
-      }
-
-      if (!"pop" %in% names(data_subset)) {
-        return(list(error = i18n$t("Column 'pop' is missing from the dataset.")))
-      }
-
-      if (!"Age" %in% names(data_subset)) {
-        return(list(error = i18n$t("Column 'Age' is missing from the dataset.")))
-      }
-
-      # Build Age_fit parameter
-      age_fit <- c(params$age_fit_start, params$age_fit_end)
-      ageint_fit <- c(
-        params$age_fit_end - params$age_fit_start,
-        params$age_fit_end - params$age_fit_start
-      )
-
-      gid <- shared$active_group_id()
-
-      # Return parameters and data for render callback to use
-      # Heavy computation will happen in renderPlotly for spinner to show
-      list(
-        data_subset = data_subset,
-        group_id = gid,
-        method = params$method,
-        redistribute_from = params$redistribute_from,
-        oanew = params$oanew,
-        age_fit = age_fit,
-        ageint_fit = ageint_fit
-      )
+      # Just return params - computation will happen in renderPlotly for spinner
+      # But renderPlotly will use isolate() to read inputs, preventing auto-trigger
+      NULL
     },
 
     render = function(result, output, shared, input, i18n) {
-      if (is.null(result) || !is.null(result$error)) {
-        msg <- if (!is.null(result$error)) result$error else i18n$t("No redistribution results yet.")
-        output$odap_plot <- plotly::renderPlotly(NULL)
-        shinyjs::hide(id = session$ns("plot_container"))
-        shinyjs::hide(id = session$ns("download_container"))
-        return()
-      }
-
-      # Extract parameters from result (no computation happened yet)
-      data_subset <- result$data_subset
-      group_id <- result$group_id
-      method <- result$method
-      redistribute_from <- result$redistribute_from
-      oanew <- result$oanew
-      age_fit <- result$age_fit
-      ageint_fit <- result$ageint_fit
-
-      # THE KEY: Heavy computation happens INSIDE renderPlotly
-      # This makes withSpinner show during the full computation!
+      # THE KEY: Computation happens inside renderPlotly for spinner
+      # But we use button_click_count + isolate() to prevent auto-trigger on inputs
       output$odap_plot <- plotly::renderPlotly({
-        # Heavy computation happens HERE during rendering
+        # Make reactive to button clicks AND group selection
+        shared$button_click_count()  # Triggers on button click
+        current_gid <- shared$active_group_id()  # Triggers on group change
+
+        # Use isolate() to read ALL inputs without creating dependencies
+        data_full <- isolate(shared$data())
+        method <- isolate(input$method %||% "mono")
+        redistribute_from <- isolate(input$redistribute_from %||% 80)
+        oanew <- isolate(input$oanew %||% 100)
+        age_fit_start <- isolate(input$age_fit_start %||% 60)
+        age_fit_end <- isolate(input$age_fit_end %||% 70)
+
+        # Validate data
+        if (is.null(data_full) || nrow(data_full) == 0) {
+          return(NULL)
+        }
+
+        if (!"pop" %in% names(data_full) || !"Age" %in% names(data_full)) {
+          return(NULL)
+        }
+
+        # Build Age_fit parameter
+        age_fit <- c(age_fit_start, age_fit_end)
+        ageint_fit <- c(age_fit_end - age_fit_start, age_fit_end - age_fit_start)
+
+        # Determine WPP parameters from data structure
+        col_names_lower <- tolower(names(data_full))
+        has_nlx <- "nlx" %in% col_names_lower
+        has_grouping <- all(c("name", "sex", "year") %in% col_names_lower)
+
+        wpp_name <- NULL
+        wpp_sex <- NULL
+        wpp_year <- NULL
+        wpp_country_code <- NULL
+
+        # Only use WPP inputs if data doesn't have nLx or grouping columns
+        # ISOLATE these too!
+        if (!has_nlx && !has_grouping) {
+          wpp_name <- isolate(input$wpp_country)
+          wpp_sex <- isolate(input$wpp_sex)
+          wpp_year <- isolate(input$wpp_year)
+          wpp_country_code <- if (!is.null(wpp_name)) get_country_code(wpp_name) else NULL
+        }
+
+        # Run the HEAVY computation HERE (inside renderPlotly for spinner)
         odap_result <- tryCatch({
           ODAPbackend::odap_opag(
-            data_in = data_subset,
+            data_in = data_full,
             Age_fit = age_fit,
             AgeInt_fit = ageint_fit,
             Redistribute_from = redistribute_from,
             OAnew = oanew,
             method = method,
             nLx = NULL,
+            name = wpp_name,
+            sex = wpp_sex,
+            year = wpp_year,
+            country_code = wpp_country_code,
             i18n = i18n
           )
         }, error = function(e) {
-          cat(sprintf("[ODAP_RENDER] Backend error: %s\n", e$message))
           list(error = paste0(i18n$t("Redistribution failed: "), e$message))
         })
 
+        # Handle errors
         if (!is.null(odap_result$error)) {
-          # Create error visualization plot
           error_msg <- odap_result$error
           error_plot <- plotly::plot_ly(x = 0, y = 0, type = "scatter", mode = "markers",
                                          marker = list(size = 0, opacity = 0)) |>
             plotly::add_annotations(
               text = paste0("<b>", i18n$t("Error"), ":</b><br><br>", error_msg),
-              x = 0.5,
-              y = 0.5,
-              xref = "paper",
-              yref = "paper",
+              x = 0.5, y = 0.5,
+              xref = "paper", yref = "paper",
               showarrow = FALSE,
               font = list(size = 16, color = "red"),
-              xanchor = "center",
-              yanchor = "middle"
+              xanchor = "center", yanchor = "middle"
             ) |>
             plotly::layout(
               xaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE, range = c(-1, 1)),
               yaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE, range = c(-1, 1)),
-              plot_bgcolor = "#f8f9fa",
-              paper_bgcolor = "#f8f9fa",
+              plot_bgcolor = "#f8f9fa", paper_bgcolor = "#f8f9fa",
               showlegend = FALSE
             ) |>
             plotly::config(displayModeBar = FALSE)
@@ -973,7 +1058,7 @@ odap_module_server <- function(input, output, session) {
         # Save result for download handlers
         result_with_computation <- list(
           result = odap_result,
-          group_id = group_id,
+          group_id = current_gid,
           method = method,
           redistribute_from = redistribute_from,
           oanew = oanew,
@@ -981,13 +1066,13 @@ odap_module_server <- function(input, output, session) {
         )
         shared$last_result(result_with_computation)
 
-        # Extract plot using .id_label
+        # Extract plot for current selected group using .id_label
         labels_df <- shared$labels_df()
         if (is.null(labels_df) || nrow(labels_df) == 0) {
           return(NULL)
         }
 
-        group_label <- labels_df$.id_label[labels_df$.id == group_id]
+        group_label <- labels_df$.id_label[labels_df$.id == current_gid]
         if (length(group_label) == 0 || is.na(group_label)) {
           return(NULL)
         }
