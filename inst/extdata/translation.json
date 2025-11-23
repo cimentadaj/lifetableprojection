@@ -1611,19 +1611,14 @@
             "es": "Incluir columna 'nLx' (tabla de mortalidad personalizada)"
         },
         {
-            "en": "Include name, sex, year, country_code columns (uses WPP mortality for that group)",
-            "fr": "Inclure les colonnes name, sex, year, country_code (utilise la mortalité WPP pour ce groupe)",
-            "es": "Incluir columnas name, sex, year, country_code (usa mortalidad WPP para ese grupo)"
-        },
-        {
             "en": "Provide only Age + pop (select WPP mortality using dropdowns in the analysis step)",
             "fr": "Fournir uniquement Age + pop (sélectionner la mortalité WPP via les menus déroulants à l'étape d'analyse)",
             "es": "Proporcionar solo Age + pop (seleccionar mortalidad WPP usando menús desplegables en el paso de análisis)"
         },
         {
-            "en": "Important: If grouping by name, sex, year, or country_code, you must provide nLx. Without nLx, WPP mortality selection applies to ALL groups.",
-            "fr": "Important : Si vous groupez par name, sex, year ou country_code, vous devez fournir nLx. Sans nLx, la sélection de mortalité WPP s'applique à TOUS les groupes.",
-            "es": "Importante: Si agrupa por name, sex, year o country_code, debe proporcionar nLx. Sin nLx, la selección de mortalidad WPP se aplica a TODOS los grupos."
+            "en": "Important: If you want to do the analysis by groups, you must provide nLx. Without nLx, WPP mortality selection applies to ALL groups.",
+            "fr": "Important : Si vous souhaitez faire l'analyse par groupes, vous devez fournir nLx. Sans nLx, la sélection de mortalité WPP s'applique à TOUS les groupes.",
+            "es": "Importante: Si desea hacer el análisis por grupos, debe proporcionar nLx. Sin nLx, la selección de mortalidad WPP se aplica a TODOS los grupos."
         },
         {
             "en": "Sample data includes Age, pop, and nLx (custom mortality).",

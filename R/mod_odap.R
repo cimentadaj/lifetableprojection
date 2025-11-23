@@ -318,10 +318,9 @@ odap_module_server <- function(input, output, session) {
           shiny::p(i18n$t("How to provide mortality data:")),
           shiny::tags$ul(
             shiny::tags$li(i18n$t("Include 'nLx' column (custom mortality life table)")),
-            shiny::tags$li(i18n$t("Include name, sex, year, country_code columns (uses WPP mortality for that group)")),
             shiny::tags$li(i18n$t("Provide only Age + pop (select WPP mortality using dropdowns in the analysis step)"))
           ),
-          shiny::p(shiny::tags$strong(i18n$t("Important: If grouping by name, sex, year, or country_code, you must provide nLx. Without nLx, WPP mortality selection applies to ALL groups."))),
+          shiny::p(shiny::tags$strong(i18n$t("Important: If you want to do the analysis by groups, you must provide nLx. Without nLx, WPP mortality selection applies to ALL groups."))),
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
           shiny::p(i18n$t("Sample data includes Age, pop, and nLx (custom mortality)."))
         )
