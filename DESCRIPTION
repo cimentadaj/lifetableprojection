@@ -16,6 +16,7 @@ Imports:
     golem,
     magrittr,
     ODAPbackend (>= 00.01.002),
+    OPPPserver (>= 0.0.6.9006),
     pkgload,
     plotly,
     rhandsontable,
@@ -41,4 +42,5 @@ Config/testthat/edition: 3
 Language: en-US
 Remotes:
     github::timriffe/ODAPbackend,
-    github::cimentadaj/untheme
+    github::cimentadaj/untheme,
+    github::PPgp/OPPPserver@dev

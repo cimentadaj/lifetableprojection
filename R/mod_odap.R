@@ -1,37 +1,32 @@
-#' Get Country Code from Country Name
+#' Get WPP Country Code from Country Name
+#'
+#' Dynamically retrieves country code from WPP package UNlocations dataset.
 #'
 #' @param country_name Character. Name of the country.
 #' @return Numeric country code or NULL if not found.
 #' @noRd
-get_country_code <- function(country_name) {
-  # Subset of common countries - can be expanded as needed
-  codes <- c(
-    "India" = 356,
-    "Brazil" = 76,
-    "China" = 156,
-    "United States of America" = 840,
-    "Nigeria" = 566,
-    "Japan" = 392,
-    "Mexico" = 484,
-    "Germany" = 276,
-    "France" = 250,
-    "United Kingdom" = 826,
-    "South Africa" = 710,
-    "Australia" = 36,
-    "Canada" = 124,
-    "Russia" = 643,
-    "Spain" = 724,
-    "Italy" = 380,
-    "Argentina" = 32,
-    "Egypt" = 818,
-    "Pakistan" = 586,
-    "Bangladesh" = 50,
-    "Indonesia" = 360,
-    "Turkey" = 792,
-    "Kenya" = 404,
-    "Ethiopia" = 231
-  )
-  codes[[country_name]]
+get_wpp_country_code <- function(country_name) {
+  if (is.null(country_name) || country_name == "") {
+    return(NULL)
+  }
+
+  tryCatch({
+    # Load UNlocations from wpp2024 package
+    data("UNlocations", package = "wpp2024", envir = environment())
+
+    # Lookup country code
+    code <- UNlocations$country_code[UNlocations$name == country_name]
+
+    if (length(code) > 0) {
+      return(code[1])
+    } else {
+      warning("Country '", country_name, "' not found in WPP UNlocations.")
+      return(NULL)
+    }
+  }, error = function(e) {
+    warning("Could not load WPP UNlocations: ", e$message)
+    return(NULL)
+  })
 }
 
 
@@ -441,11 +436,7 @@ odap_module_server <- function(input, output, session) {
               shiny.semantic::selectInput(
                 ns("wpp_country"),
                 i18n$t("Country"),
-                choices = c("India", "Brazil", "China", "United States of America", "Nigeria",
-                           "Japan", "Mexico", "Germany", "France", "United Kingdom",
-                           "South Africa", "Australia", "Canada", "Russia", "Spain",
-                           "Italy", "Argentina", "Egypt", "Pakistan", "Bangladesh",
-                           "Indonesia", "Turkey", "Kenya", "Ethiopia"),
+                choices = OPPPserver::get_wpp_countries(),
                 selected = if (!is.null(input$wpp_country)) input$wpp_country else "India"
               ),
               shiny.semantic::selectInput(
@@ -1008,7 +999,7 @@ odap_module_server <- function(input, output, session) {
           wpp_name <- isolate(input$wpp_country)
           wpp_sex <- isolate(input$wpp_sex)
           wpp_year <- isolate(input$wpp_year)
-          wpp_country_code <- if (!is.null(wpp_name)) get_country_code(wpp_name) else NULL
+          wpp_country_code <- if (!is.null(wpp_name)) get_wpp_country_code(wpp_name) else NULL
         }
 
         # Run the HEAVY computation HERE (inside renderPlotly for spinner)
