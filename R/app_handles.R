@@ -125,6 +125,25 @@ handle_transitions <- function(input, current_tab) {
     show("module_landing_page")
     current_tab("module_landing")
   })
+
+  # Documentation navigation
+  observeEvent(input$show_documentation, {
+    hide("module_landing_page")
+    show("documentation_page")
+    current_tab("documentation")
+  })
+
+  observeEvent(input$close_documentation, {
+    hide("documentation_page")
+    show("module_landing_page")
+    current_tab("module_landing")
+  })
+
+  observeEvent(input$back_to_landing_from_docs, {
+    hide("documentation_page")
+    show("module_landing_page")
+    current_tab("module_landing")
+  })
 }
 
 

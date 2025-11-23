@@ -1654,6 +1654,146 @@
             "en": "Year",
             "fr": "Année",
             "es": "Año"
+        },
+        {
+            "en": "Documentation",
+            "fr": "Documentation",
+            "es": "Documentación"
+        },
+        {
+            "en": "Installation Guide",
+            "fr": "Guide d'Installation",
+            "es": "Guía de Instalación"
+        },
+        {
+            "en": "This guide will help you install and run the Life Table Projection application on your local machine. Choose the method that works best for you.",
+            "fr": "Ce guide vous aidera à installer et exécuter l'application Life Table Projection sur votre machine locale. Choisissez la méthode qui vous convient le mieux.",
+            "es": "Esta guía le ayudará a instalar y ejecutar la aplicación Life Table Projection en su máquina local. Elija el método que mejor le funcione."
+        },
+        {
+            "en": "Install via R",
+            "fr": "Installer via R",
+            "es": "Instalar vía R"
+        },
+        {
+            "en": "Recommended for R users. This is the simplest way to get started.",
+            "fr": "Recommandé pour les utilisateurs de R. C'est la façon la plus simple de commencer.",
+            "es": "Recomendado para usuarios de R. Esta es la forma más simple de comenzar."
+        },
+        {
+            "en": "Requirements",
+            "fr": "Exigences",
+            "es": "Requisitos"
+        },
+        {
+            "en": "R version:",
+            "fr": "Version de R :",
+            "es": "Versión de R:"
+        },
+        {
+            "en": "R >= 4.0.0 (check your version with",
+            "fr": "R >= 4.0.0 (vérifiez votre version avec",
+            "es": "R >= 4.0.0 (verifique su versión con"
+        },
+        {
+            "en": "Installation Steps",
+            "fr": "Étapes d'Installation",
+            "es": "Pasos de Instalación"
+        },
+        {
+            "en": "Install the pak package",
+            "fr": "Installer le package pak",
+            "es": "Instalar el paquete pak"
+        },
+        {
+            "en": "Install the application",
+            "fr": "Installer l'application",
+            "es": "Instalar la aplicación"
+        },
+        {
+            "en": "Run the application",
+            "fr": "Exécuter l'application",
+            "es": "Ejecutar la aplicación"
+        },
+        {
+            "en": "Open your browser",
+            "fr": "Ouvrez votre navigateur",
+            "es": "Abra su navegador"
+        },
+        {
+            "en": "The app will automatically open in your default browser. If not, navigate to the URL shown in your R console (typically",
+            "fr": "L'application s'ouvrira automatiquement dans votre navigateur par défaut. Sinon, naviguez vers l'URL affichée dans votre console R (généralement",
+            "es": "La aplicación se abrirá automáticamente en su navegador predeterminado. Si no, navegue a la URL mostrada en su consola R (típicamente"
+        },
+        {
+            "en": "Install via Docker",
+            "fr": "Installer via Docker",
+            "es": "Instalar vía Docker"
+        },
+        {
+            "en": "Alternative method using Docker containers. Use this if the R installation doesn't work.",
+            "fr": "Méthode alternative utilisant des conteneurs Docker. Utilisez ceci si l'installation R ne fonctionne pas.",
+            "es": "Método alternativo usando contenedores Docker. Use esto si la instalación de R no funciona."
+        },
+        {
+            "en": "Prerequisites",
+            "fr": "Prérequis",
+            "es": "Prerequisitos"
+        },
+        {
+            "en": "First, install Docker Desktop for your operating system:",
+            "fr": "Tout d'abord, installez Docker Desktop pour votre système d'exploitation :",
+            "es": "Primero, instale Docker Desktop para su sistema operativo:"
+        },
+        {
+            "en": "Download for Mac",
+            "fr": "Télécharger pour Mac",
+            "es": "Descargar para Mac"
+        },
+        {
+            "en": "Download for Windows",
+            "fr": "Télécharger pour Windows",
+            "es": "Descargar para Windows"
+        },
+        {
+            "en": "Download the Dockerfile",
+            "fr": "Télécharger le Dockerfile",
+            "es": "Descargar el Dockerfile"
+        },
+        {
+            "en": "Get the Dockerfile from GitHub:",
+            "fr": "Obtenez le Dockerfile depuis GitHub :",
+            "es": "Obtenga el Dockerfile desde GitHub:"
+        },
+        {
+            "en": "Save it to a folder on your computer.",
+            "fr": "Enregistrez-le dans un dossier sur votre ordinateur.",
+            "es": "Guárdelo en una carpeta en su computadora."
+        },
+        {
+            "en": "Build the Docker image",
+            "fr": "Construire l'image Docker",
+            "es": "Construir la imagen Docker"
+        },
+        {
+            "en": "Open a terminal/command prompt in the folder containing the Dockerfile and run:",
+            "fr": "Ouvrez un terminal/invite de commande dans le dossier contenant le Dockerfile et exécutez :",
+            "es": "Abra una terminal/línea de comandos en la carpeta que contiene el Dockerfile y ejecute:"
+        },
+        {
+            "en": "Run the container",
+            "fr": "Exécuter le conteneur",
+            "es": "Ejecutar el contenedor"
+        },
+        {
+            "en": "Navigate to",
+            "fr": "Naviguez vers",
+            "es": "Navegue a"
+        },
+        {
+            "en": "Back to modules",
+            "fr": "Retour aux modules",
+            "es": "Volver a módulos"
         }
     ]
 }
