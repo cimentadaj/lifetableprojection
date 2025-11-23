@@ -1649,6 +1649,11 @@
             "en": "Female",
             "fr": "Femme",
             "es": "Mujer"
+        },
+        {
+            "en": "Year",
+            "fr": "Année",
+            "es": "Año"
         }
     ]
 }
