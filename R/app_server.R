@@ -446,31 +446,46 @@ lifetable_server <- function(input, output, session) {
 
     tags$div(
       class = "info-box",
-      h1(i18n$t("Data upload and validation")),
-      p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:")),
-      br(),
-      div(
-        style = "display: flex; gap: 5px;",
-        div(
-          style = "",
-          rHandsontableOutput("data_table")
-        ),
-        div(
-          TooltipHost(
-            content = textOutput("exposures_tooltip_text"),
-            delay = 0,
-            Image(
-              src = "www/info.png",
-              width = "20px",
-              shouldStartVisible = TRUE
+      shiny.semantic::tabset(
+        tabs = list(
+          list(
+            menu = i18n$t("Upload Instructions"),
+            content = div(
+              h1(i18n$t("Data upload and validation")),
+              p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:")),
+              br(),
+              div(
+                style = "display: flex; gap: 5px;",
+                div(
+                  style = "",
+                  rHandsontableOutput("data_table")
+                ),
+                div(
+                  TooltipHost(
+                    content = textOutput("exposures_tooltip_text"),
+                    delay = 0,
+                    Image(
+                      src = "www/info.png",
+                      width = "20px",
+                      shouldStartVisible = TRUE
+                    )
+                  )
+                )
+              ),
+              br(),
+              strong(h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
+              br(),
+              action_button("upload_instructions", i18n$t("Instructions"), class = "ui blue button")
+            )
+          ),
+          list(
+            menu = i18n$t("Method Documentation"),
+            content = div(
+              uiOutput("lifetable_method_docs")
             )
           )
         )
-      ),
-      br(),
-      strong(h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
-      br(),
-      action_button("upload_instructions", i18n$t("Instructions"), class = "ui blue button")
+      )
     )
   })
 
@@ -491,6 +506,58 @@ lifetable_server <- function(input, output, session) {
           class = "ui blue button",
           style = "height: 4%;"
         )
+      )
+    )
+  })
+
+  output$lifetable_method_docs <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+
+    tagList(
+      h3(i18n$t("Life Table Methods")),
+      p(i18n$t("The life table module calculates standard demographic life table indicators from mortality data:")),
+      div(
+        class = "ui relaxed divided list",
+        div(class = "item", div(class = "content",
+          div(class = "header", "mx"),
+          div(class = "description", i18n$t("Age-specific mortality rate"))
+        )),
+        div(class = "item", div(class = "content",
+          div(class = "header", "qx"),
+          div(class = "description", i18n$t("Probability of dying between age x and x+n"))
+        )),
+        div(class = "item", div(class = "content",
+          div(class = "header", "px"),
+          div(class = "description", i18n$t("Probability of surviving from age x to x+n"))
+        )),
+        div(class = "item", div(class = "content",
+          div(class = "header", "lx"),
+          div(class = "description", i18n$t("Number of survivors to exact age x"))
+        )),
+        div(class = "item", div(class = "content",
+          div(class = "header", "dx"),
+          div(class = "description", i18n$t("Deaths between age x and x+n"))
+        )),
+        div(class = "item", div(class = "content",
+          div(class = "header", "nLx"),
+          div(class = "description", i18n$t("Person-years lived between age x and x+n"))
+        )),
+        div(class = "item", div(class = "content",
+          div(class = "header", "Tx"),
+          div(class = "description", i18n$t("Total person-years lived above age x"))
+        )),
+        div(class = "item", div(class = "content",
+          div(class = "header", "ex"),
+          div(class = "description", i18n$t("Life expectancy at age x"))
+        ))
+      ),
+      h4(i18n$t("Input Data Requirements:")),
+      div(
+        class = "ui bulleted list",
+        div(class = "item", i18n$t("Age: Single ages or age groups")),
+        div(class = "item", i18n$t("Deaths: Death counts by age")),
+        div(class = "item", i18n$t("Exposures: Population exposure (person-years)"))
       )
     )
   })

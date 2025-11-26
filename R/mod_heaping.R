@@ -196,9 +196,24 @@ heaping_module_ui <- function(i18n) {
           ),
           shiny::div(
             class = "info-box",
-            shiny::uiOutput(ns("heaping_info_box_content")),
-            rhandsontable::rHandsontableOutput(ns("heaping_sample_table"), width = "100%", height = 210),
-            shiny::uiOutput(ns("heaping_info_box_instructions"))
+            shiny.semantic::tabset(
+              tabs = list(
+                list(
+                  menu = i18n$t("Upload Instructions"),
+                  content = shiny::div(
+                    shiny::uiOutput(ns("heaping_info_box_content")),
+                    rhandsontable::rHandsontableOutput(ns("heaping_sample_table"), width = "100%", height = 210),
+                    shiny::uiOutput(ns("heaping_info_box_instructions"))
+                  )
+                ),
+                list(
+                  menu = i18n$t("Method Documentation"),
+                  content = shiny::div(
+                    shiny::uiOutput(ns("heaping_method_docs"))
+                  )
+                )
+              )
+            )
           ),
           shiny::tags$script(shiny::HTML("
             $(document).ready(function() {
@@ -349,6 +364,54 @@ heaping_module_server <- function(input, output, session) {
         shiny::tagList(
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
           shiny::p(i18n$t("The heaping sample contains Age, Deaths, and Exposures observed at single ages."))
+        )
+      })
+
+      output$heaping_method_docs <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::tagList(
+          shiny::h3(i18n$t("Heaping Diagnostic Methods")),
+          shiny::p(i18n$t("The heaping module provides several methods to detect age preference patterns in demographic data:")),
+          shiny::div(
+            class = "ui relaxed divided list",
+            shiny::div(
+              class = "item",
+              shiny::div(class = "content",
+                shiny::div(class = "header", i18n$t("Bachi Index")),
+                shiny::div(class = "description", i18n$t("Measures digit preference by comparing observed vs expected frequencies across all terminal digits"))
+              )
+            ),
+            shiny::div(
+              class = "item",
+              shiny::div(class = "content",
+                shiny::div(class = "header", i18n$t("Myers' Blended Index")),
+                shiny::div(class = "description", i18n$t("Detects preference for terminal digits 0-9 using a blending technique to reduce age-specific effects"))
+              )
+            ),
+            shiny::div(
+              class = "item",
+              shiny::div(class = "content",
+                shiny::div(class = "header", i18n$t("Whipple Index")),
+                shiny::div(class = "description", i18n$t("Measures attraction to ages ending in 0 or 5, commonly used for data quality assessment"))
+              )
+            ),
+            shiny::div(
+              class = "item",
+              shiny::div(class = "content",
+                shiny::div(class = "header", i18n$t("Noumbissi Index")),
+                shiny::div(class = "description", i18n$t("Digit-specific heaping measure that evaluates preference for each terminal digit separately"))
+              )
+            ),
+            shiny::div(
+              class = "item",
+              shiny::div(class = "content",
+                shiny::div(class = "header", i18n$t("Sawtooth Pattern")),
+                shiny::div(class = "description", i18n$t("Detects alternating high-low pattern in adjacent ages, indicating systematic data collection issues"))
+              )
+            )
+          )
         )
       })
 

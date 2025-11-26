@@ -162,7 +162,7 @@ But also modify any call to odap_opag (sequentially if called) such that if grou
 
 ---
 
-- [ ] Task 4: Add Two-Tab System to Upload Documentation Pages
+- [x] Task 4: Add Two-Tab System to Upload Documentation Pages
 
 **Note:** No tests need to be written for these tasks.
 

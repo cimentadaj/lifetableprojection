@@ -123,9 +123,24 @@ smoothing_module_ui <- function(i18n) {
           ),
           shiny::div(
             class = "info-box",
-            shiny::uiOutput(ns("smoothing_info_box_content")),
-            rhandsontable::rHandsontableOutput(ns("smoothing_sample_table"), width = "100%", height = 210),
-            shiny::uiOutput(ns("smoothing_info_box_instructions"))
+            shiny.semantic::tabset(
+              tabs = list(
+                list(
+                  menu = i18n$t("Upload Instructions"),
+                  content = shiny::div(
+                    shiny::uiOutput(ns("smoothing_info_box_content")),
+                    rhandsontable::rHandsontableOutput(ns("smoothing_sample_table"), width = "100%", height = 210),
+                    shiny::uiOutput(ns("smoothing_info_box_instructions"))
+                  )
+                ),
+                list(
+                  menu = i18n$t("Method Documentation"),
+                  content = shiny::div(
+                    shiny::uiOutput(ns("smoothing_method_docs"))
+                  )
+                )
+              )
+            )
           ),
           shiny::tags$script(shiny::HTML("
             $(document).ready(function() {
@@ -280,6 +295,75 @@ smoothing_module_server <- function(input, output, session) {
           shiny::p(i18n$t("Minimum required: Age and one numeric variable to smooth (Deaths, Exposures, or similar counts).")),
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
           shiny::p(i18n$t("The smoothing sample contains Age, Deaths, and Exposures observed at single ages."))
+        )
+      })
+
+      output$smoothing_method_docs <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::tagList(
+          shiny::h3(i18n$t("Smoothing Methods")),
+          shiny::h4(i18n$t("Fine Methods (splitting to single ages):")),
+          shiny::div(
+            class = "ui relaxed divided list",
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "sprague"),
+              shiny::div(class = "description", i18n$t("Sprague 4th difference formula - standard demographic method"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "beers(ord)"),
+              shiny::div(class = "description", i18n$t("Beers ordinary interpolation - less constrained"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "beers(mod)"),
+              shiny::div(class = "description", i18n$t("Beers modified interpolation - additional smoothing constraints"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "grabill"),
+              shiny::div(class = "description", i18n$t("Grabill method - designed for population data"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "pclm"),
+              shiny::div(class = "description", i18n$t("Penalized Composite Link Model - modern spline-based approach"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "mono"),
+              shiny::div(class = "description", i18n$t("Monotonic graduation - prevents oscillations/negative values"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "uniform"),
+              shiny::div(class = "description", i18n$t("Uniform distribution within age groups - simplest method"))
+            ))
+          ),
+          shiny::h4(i18n$t("Rough Methods (smoothing 5-year groups):")),
+          shiny::div(
+            class = "ui relaxed divided list",
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "Carrier-Farrag"),
+              shiny::div(class = "description", i18n$t("Ratio-based smoothing method"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "KKN"),
+              shiny::div(class = "description", i18n$t("Karup-King-Newton method"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "Arriaga"),
+              shiny::div(class = "description", i18n$t("Arriaga redistribution method"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "United Nations"),
+              shiny::div(class = "description", i18n$t("UN standard smoothing"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "Strong"),
+              shiny::div(class = "description", i18n$t("Aggressive smoothing method"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "Zigzag"),
+              shiny::div(class = "description", i18n$t("Corrects oscillation patterns"))
+            ))
+          )
         )
       })
 

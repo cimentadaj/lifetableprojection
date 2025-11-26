@@ -123,9 +123,24 @@ graduation_module_ui <- function(i18n) {
           ),
           shiny::div(
             class = "info-box",
-            shiny::uiOutput(ns("graduation_info_box_content")),
-            rhandsontable::rHandsontableOutput(ns("graduation_sample_table"), width = "100%", height = 210),
-            shiny::uiOutput(ns("graduation_info_box_instructions"))
+            shiny.semantic::tabset(
+              tabs = list(
+                list(
+                  menu = i18n$t("Upload Instructions"),
+                  content = shiny::div(
+                    shiny::uiOutput(ns("graduation_info_box_content")),
+                    rhandsontable::rHandsontableOutput(ns("graduation_sample_table"), width = "100%", height = 210),
+                    shiny::uiOutput(ns("graduation_info_box_instructions"))
+                  )
+                ),
+                list(
+                  menu = i18n$t("Method Documentation"),
+                  content = shiny::div(
+                    shiny::uiOutput(ns("graduation_method_docs"))
+                  )
+                )
+              )
+            )
           ),
           shiny::tags$script(shiny::HTML("
             $(document).ready(function() {
@@ -280,6 +295,54 @@ graduation_module_server <- function(input, output, session) {
           shiny::p(i18n$t("Minimum required: Age and one numeric variable to graduate (Deaths, Exposures, or similar counts).")),
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
           shiny::p(i18n$t("The graduation sample contains Age, Deaths, and Exposures."))
+        )
+      })
+
+      output$graduation_method_docs <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::tagList(
+          shiny::h3(i18n$t("Graduation Methods")),
+          shiny::p(i18n$t("The graduation module uses the same methods as the smoothing module to transform age data between different grouping structures.")),
+          shiny::div(
+            class = "ui relaxed divided list",
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "sprague"),
+              shiny::div(class = "description", i18n$t("Sprague 4th difference formula - standard demographic method"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "beers(ord)"),
+              shiny::div(class = "description", i18n$t("Beers ordinary interpolation"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "beers(mod)"),
+              shiny::div(class = "description", i18n$t("Beers modified interpolation with smoothing"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "grabill"),
+              shiny::div(class = "description", i18n$t("Grabill method for population data"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "pclm"),
+              shiny::div(class = "description", i18n$t("Penalized Composite Link Model - spline approach"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "mono"),
+              shiny::div(class = "description", i18n$t("Monotonic graduation - prevents negative values"))
+            )),
+            shiny::div(class = "item", shiny::div(class = "content",
+              shiny::div(class = "header", "uniform"),
+              shiny::div(class = "description", i18n$t("Uniform distribution within age groups"))
+            ))
+          ),
+          shiny::p(i18n$t("Additional graduation parameters:")),
+          shiny::div(
+            class = "ui bulleted list",
+            shiny::div(class = "item", i18n$t("Age Output: Choose between 5-year, abridged, or single age formats")),
+            shiny::div(class = "item", i18n$t("Constraints: Apply specific constraints to infant age groups")),
+            shiny::div(class = "item", i18n$t("Pivoting: Re-aggregate data to desired age structure"))
+          )
         )
       })
 
