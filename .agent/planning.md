@@ -4,7 +4,7 @@
 
 ---
 
-- [ ] Task 1: Make Data Upload Generic for Any Column (Not Just Deaths/Exposures)
+- [x] Task 1: Make Data Upload Generic for Any Column (Not Just Deaths/Exposures)
 
 **Goal:** Update the variable selection in heaping, smoothing, and graduation modules to allow any column (not just hardcoded Deaths/Exposures) to be selected as the variable to evaluate.
 
