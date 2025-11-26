@@ -341,12 +341,31 @@ graduation_module_server <- function(input, output, session) {
         if (!is.null(session$userData$language_version)) {
           session$userData$language_version()
         }
+
+        # Get data from shared
+        df <- shared$data()
+        req(df)
+
+        # Get numeric columns that aren't Age or grouping columns
+        numeric_cols <- names(df)[sapply(df, is.numeric)]
+        exclude_cols <- c("Age", ".id", ".id_label")
+        choices <- setdiff(numeric_cols, exclude_cols)
+
+        # If no numeric columns available, show error
+        if (length(choices) == 0) {
+          return(shiny::div(
+            class = "ui warning message",
+            i18n$t("No numeric columns found in uploaded data")
+          ))
+        }
+
         shiny::tagList(
           shiny.semantic::selectInput(
             ns("graduation_variable"),
             i18n$t("Variable to graduate"),
-            choices = c("Deaths", "Exposures"),
-            selected = if (!is.null(input$graduation_variable)) input$graduation_variable else "Deaths"
+            choices = choices,
+            selected = if (!is.null(input$graduation_variable) && input$graduation_variable %in% choices)
+              input$graduation_variable else choices[1]
           ),
           shiny.semantic::checkbox_input(
             ns("constrain_infants"),
