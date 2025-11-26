@@ -779,7 +779,53 @@ smoothing_module_server <- function(input, output, session) {
           temp_files <- c(temp_files, plot_file)
         }
 
-        # 3. Create ZIP file
+        # 3. Create analysis info text file
+        info_file <- file.path(temp_dir, "analysis_info.txt")
+        method_type <- if (latest$age_out == "single") "Fine" else "Rough"
+        method_used <- if (latest$age_out == "single") latest$fine_method else latest$rough_method
+
+        info_text <- paste(
+          "Module: Smoothing Analysis",
+          "Description: This module performs age smoothing and graduation on demographic data.",
+          "",
+          sprintf("Method Type: %s", method_type),
+          sprintf("Method Used: %s", method_used),
+          "",
+          "Method Descriptions:",
+          if (method_type == "Fine") {
+            paste(
+              "- sprague: Sprague 4th difference formula - standard demographic method",
+              "- beers(ord): Beers ordinary interpolation - less constrained",
+              "- beers(mod): Beers modified interpolation - additional smoothing constraints",
+              "- grabill: Grabill method - designed for population data",
+              "- pclm: Penalized Composite Link Model - modern spline-based approach",
+              "- mono: Monotonic graduation - prevents oscillations/negative values",
+              "- uniform: Uniform distribution within age groups - simplest method",
+              sep = "\n"
+            )
+          } else {
+            paste(
+              "- Carrier-Farrag: Ratio-based smoothing method",
+              "- KKN: Karup-King-Newton method",
+              "- Arriaga: Arriaga redistribution method",
+              "- United Nations: UN standard smoothing",
+              "- Strong: Aggressive smoothing method",
+              "- Zigzag: Corrects oscillation patterns",
+              sep = "\n"
+            )
+          },
+          "",
+          sprintf("Analysis Date: %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+          sprintf("Variable Analyzed: %s", variable),
+          sprintf("Age Output Type: %s", latest$age_out),
+          if (!is.null(latest$u5m)) sprintf("Under-5 Mortality: %s", latest$u5m) else NULL,
+          sprintf("Constrain Infants: %s", latest$constrain_infants),
+          sep = "\n"
+        )
+        writeLines(info_text, info_file)
+        temp_files <- c(temp_files, info_file)
+
+        # 4. Create ZIP file
         zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
       }
 
@@ -938,6 +984,50 @@ smoothing_module_server <- function(input, output, session) {
             }
           }
         }
+
+        # Create analysis info text file
+        info_file <- file.path(temp_dir, "analysis_info.txt")
+        info_text <- paste(
+          "Module: Smoothing Analysis (All Groups)",
+          "Description: This module performs age smoothing and graduation on demographic data.",
+          "",
+          sprintf("Method Type: %s", if (params$age_out == "single") "Fine" else "Rough"),
+          sprintf("Method Used: %s", if (params$age_out == "single") params$fine_method else params$rough_method),
+          "",
+          "Method Descriptions:",
+          if (params$age_out == "single") {
+            paste(
+              "- sprague: Sprague 4th difference formula - standard demographic method",
+              "- beers(ord): Beers ordinary interpolation - less constrained",
+              "- beers(mod): Beers modified interpolation - additional smoothing constraints",
+              "- grabill: Grabill method - designed for population data",
+              "- pclm: Penalized Composite Link Model - modern spline-based approach",
+              "- mono: Monotonic graduation - prevents oscillations/negative values",
+              "- uniform: Uniform distribution within age groups - simplest method",
+              sep = "\n"
+            )
+          } else {
+            paste(
+              "- Carrier-Farrag: Ratio-based smoothing method",
+              "- KKN: Karup-King-Newton method",
+              "- Arriaga: Arriaga redistribution method",
+              "- United Nations: UN standard smoothing",
+              "- Strong: Aggressive smoothing method",
+              "- Zigzag: Corrects oscillation patterns",
+              sep = "\n"
+            )
+          },
+          "",
+          sprintf("Analysis Date: %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+          sprintf("Variable Analyzed: %s", params$variable),
+          sprintf("Age Output Type: %s", params$age_out),
+          sprintf("Number of Groups: %d", length(results)),
+          if (!is.null(params$u5m)) sprintf("Under-5 Mortality: %s", params$u5m) else NULL,
+          sprintf("Constrain Infants: %s", params$constrain_infants),
+          sep = "\n"
+        )
+        writeLines(info_text, info_file)
+        temp_files <- c(temp_files, info_file)
 
         # Create ZIP file
         zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)

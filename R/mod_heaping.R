@@ -519,7 +519,7 @@ heaping_module_server <- function(input, output, session) {
       output$download_heaping_csv <- shiny::downloadHandler(
         filename = function() {
           timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-          sprintf("heaping_results_%s.csv", timestamp)
+          sprintf("heaping_results_%s.zip", timestamp)
         },
         content = function(file) {
           latest <- shared$last_result()
@@ -576,9 +576,42 @@ heaping_module_server <- function(input, output, session) {
           ordered_cols <- c(".id", ".id_label", "variable", setdiff(names(results), c(".id", ".id_label", "variable")))
           results <- results[, ordered_cols, drop = FALSE]
           cat(sprintf("[HEAPING_MODULE] download final dataset | rows=%s | cols=%s\n", nrow(results), ncol(results)))
-          utils::write.csv(results, file, row.names = FALSE)
+
+          # Create temp directory for files
+          temp_dir <- tempdir()
+          temp_files <- c()
+
+          # 1. Save CSV file
+          csv_file <- file.path(temp_dir, "heaping_results.csv")
+          utils::write.csv(results, csv_file, row.names = FALSE)
+          temp_files <- c(temp_files, csv_file)
+
+          # 2. Create analysis info text file
+          info_file <- file.path(temp_dir, "analysis_info.txt")
+          info_text <- paste(
+            "Module: Heaping Analysis",
+            "Description: This module detects age heaping (digit preference) in demographic data.",
+            "",
+            "Analysis Methods:",
+            "- Bachi Index: Measures overall digit preference by comparing observed vs expected frequencies",
+            "- Myers' Blended Index: Detects preference for specific terminal digits (0-9)",
+            "- Whipple Index: Measures preference for ages ending in 0 or 5",
+            "- Noumbissi Index: Digit-specific heaping measurement",
+            "- Sawtooth Pattern: Detects alternating high-low patterns in adjacent ages",
+            "",
+            sprintf("Analysis Date: %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+            sprintf("Variable Analyzed: %s", variable),
+            "",
+            "Higher index values generally indicate more heaping/digit preference.",
+            sep = "\n"
+          )
+          writeLines(info_text, info_file)
+          temp_files <- c(temp_files, info_file)
+
+          # 3. Create ZIP file
+          zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
         },
-        contentType = "text/csv"
+        contentType = "application/zip"
       )
 
       ns <- session$ns

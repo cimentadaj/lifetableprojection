@@ -374,7 +374,7 @@ shiny::tags$script(shiny::HTML("
 
 ---
 
-- [ ] Task 7: Add TXT Explanation File to Module Downloads
+- [x] Task 7: Add TXT Explanation File to Module Downloads
 **Note:** No tests need to be written for these tasks.
 
 **Goal:** When users download results from heaping, smoothing, ODAP and graduation modules, include a TXT file explaining what the method does and the date/time of the analysis run.

@@ -776,7 +776,35 @@ odap_module_server <- function(input, output, session) {
           temp_files <- c(temp_files, plot_file)
         }
 
-        # 3. Create ZIP file
+        # 3. Create analysis info text file
+        info_file <- file.path(temp_dir, "analysis_info.txt")
+        info_text <- paste(
+          "Module: ODAP (Old-Age Population) Analysis",
+          "Description: This module redistributes old-age population data using mortality patterns.",
+          "",
+          sprintf("Method Used: %s", latest$method %||% "mono"),
+          "",
+          "Method Descriptions:",
+          "- mono: Monotonic redistribution - preserves mortality monotonicity patterns",
+          "- pclm: Penalized Composite Link Model - spline-based smoothing approach",
+          "- uniform: Uniform redistribution - simple proportional distribution",
+          "",
+          "Parameters:",
+          sprintf("- OAnew (new open age group): %s", latest$OAnew %||% "100"),
+          sprintf("- Age_fit (ages to fit model): %s", paste(latest$Age_fit %||% "60:89", collapse = ", ")),
+          sprintf("- AgeInt_fit (age intervals): %s", paste(latest$AgeInt_fit %||% "1", collapse = ", ")),
+          sprintf("- Redistribute_from (starting age): %s", latest$Redistribute_from %||% "80"),
+          "",
+          sprintf("Analysis Date: %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+          sprintf("Variable Analyzed: pop"),
+          "",
+          "Note: ODAP redistributes population in the open age group to create more detailed age breakdowns.",
+          sep = "\n"
+        )
+        writeLines(info_text, info_file)
+        temp_files <- c(temp_files, info_file)
+
+        # 4. Create ZIP file
         zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
       }
 
@@ -1013,6 +1041,34 @@ odap_module_server <- function(input, output, session) {
             }
           }
         }
+
+        # Create analysis info text file
+        info_file <- file.path(temp_dir, "analysis_info.txt")
+        info_text <- paste(
+          "Module: ODAP (Old-Age Population) Analysis (All Groups)",
+          "Description: This module redistributes old-age population data using mortality patterns.",
+          "",
+          sprintf("Method Used: %s", params$method %||% "mono"),
+          "",
+          "Method Descriptions:",
+          "- mono: Monotonic redistribution - preserves mortality monotonicity patterns",
+          "- pclm: Penalized Composite Link Model - spline-based smoothing approach",
+          "- uniform: Uniform redistribution - simple proportional distribution",
+          "",
+          "Parameters:",
+          sprintf("- OAnew (new open age group): %s", params$oanew %||% "100"),
+          sprintf("- Age_fit (ages to fit model): %s", paste(params$age_fit %||% "60:89", collapse = ", ")),
+          sprintf("- Redistribute_from (starting age): %s", params$redistribute_from %||% "80"),
+          "",
+          sprintf("Analysis Date: %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+          sprintf("Variable Analyzed: pop"),
+          sprintf("Number of Groups: %d", length(results)),
+          "",
+          "Note: ODAP redistributes population in the open age group to create more detailed age breakdowns.",
+          sep = "\n"
+        )
+        writeLines(info_text, info_file)
+        temp_files <- c(temp_files, info_file)
 
         # Create ZIP file
         zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)

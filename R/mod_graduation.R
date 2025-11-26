@@ -728,7 +728,34 @@ graduation_module_server <- function(input, output, session) {
           temp_files <- c(temp_files, plot_file)
         }
 
-        # 3. Create ZIP file
+        # 3. Create analysis info text file
+        info_file <- file.path(temp_dir, "analysis_info.txt")
+        info_text <- paste(
+          "Module: Graduation Analysis",
+          "Description: This module performs age graduation to transform data between different age formats.",
+          "",
+          sprintf("Method Used: %s", latest$method %||% "auto"),
+          sprintf("Age Output Type: %s", latest$age_out %||% "5-year"),
+          "",
+          "Method Descriptions:",
+          "- sprague: Sprague 4th difference formula - standard demographic method",
+          "- beers(ord): Beers ordinary interpolation - less constrained",
+          "- beers(mod): Beers modified interpolation - additional smoothing constraints",
+          "- grabill: Grabill method - designed for population data",
+          "- pclm: Penalized Composite Link Model - modern spline-based approach",
+          "- mono: Monotonic graduation - prevents oscillations/negative values",
+          "- uniform: Uniform distribution within age groups - simplest method",
+          "",
+          sprintf("Analysis Date: %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+          sprintf("Variable Analyzed: %s", variable),
+          "",
+          "Note: Graduation transforms age data between single-year ages, 5-year groups, and abridged formats.",
+          sep = "\n"
+        )
+        writeLines(info_text, info_file)
+        temp_files <- c(temp_files, info_file)
+
+        # 4. Create ZIP file
         zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
       }
 
@@ -907,6 +934,36 @@ graduation_module_server <- function(input, output, session) {
             temp_files <- c(temp_files, plot_file)
           }
         }
+
+        # Create analysis info text file
+        info_file <- file.path(temp_dir, "analysis_info.txt")
+        info_text <- paste(
+          "Module: Graduation Analysis (All Groups)",
+          "Description: This module performs age graduation to transform data between different age formats.",
+          "",
+          sprintf("Method Used: %s", latest$method %||% "auto"),
+          sprintf("Age Output Type: %s", params$age_out),
+          "",
+          "Method Descriptions:",
+          "- sprague: Sprague 4th difference formula - standard demographic method",
+          "- beers(ord): Beers ordinary interpolation - less constrained",
+          "- beers(mod): Beers modified interpolation - additional smoothing constraints",
+          "- grabill: Grabill method - designed for population data",
+          "- pclm: Penalized Composite Link Model - modern spline-based approach",
+          "- mono: Monotonic graduation - prevents oscillations/negative values",
+          "- uniform: Uniform distribution within age groups - simplest method",
+          "",
+          sprintf("Analysis Date: %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
+          sprintf("Variable Analyzed: %s", params$variable),
+          sprintf("Number of Groups: %d", length(results)),
+          if (!is.null(params$u5m)) sprintf("Under-5 Mortality: %s", params$u5m) else NULL,
+          sprintf("Constrain Infants: %s", params$constrain_infants),
+          "",
+          "Note: Graduation transforms age data between single-year ages, 5-year groups, and abridged formats.",
+          sep = "\n"
+        )
+        writeLines(info_text, info_file)
+        temp_files <- c(temp_files, info_file)
 
         # Create ZIP file
         zip::zip(zipfile = file, files = basename(temp_files), root = temp_dir)
