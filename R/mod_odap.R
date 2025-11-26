@@ -137,6 +137,15 @@ odap_module_ui <- function(i18n) {
           }
         "))
       ),
+      shiny::tags$script(shiny::HTML("
+        $(document).ready(function() {
+          // Initialize Semantic UI tooltips
+          $('[data-tooltip]').popup({
+            hoverable: true,
+            delay: { show: 300, hide: 100 }
+          });
+        });
+      ")),
       shiny::div(
         class = "odap-main",
 
@@ -446,11 +455,28 @@ odap_module_server <- function(input, output, session) {
         }
 
         shiny::tagList(
-          shiny.semantic::selectInput(
-            ns("method"),
-            i18n$t("Redistribution method"),
-            choices = c("mono", "pclm", "uniform"),
-            selected = if (!is.null(input$method)) input$method else "mono"
+          shiny::div(
+            shiny::div(
+              style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+              shiny::tags$label(
+                `for` = ns("method"),
+                i18n$t("Redistribution method")
+              ),
+              shiny::tags$span(
+                class = "ui circular label",
+                style = "cursor: help; font-size: 0.8em; padding: 0.3em 0.5em;",
+                `data-tooltip` = i18n$t("Method for redistributing old-age population. 'mono' - monotonic (preserves mortality pattern), 'pclm' - spline-based smoothing, 'uniform' - simple proportional distribution."),
+                `data-position` = "right center",
+                `data-variation` = "wide",
+                "?"
+              )
+            ),
+            shiny.semantic::selectInput(
+              ns("method"),
+              NULL,  # No label here since we have it above
+              choices = c("mono", "pclm", "uniform"),
+              selected = if (!is.null(input$method)) input$method else "mono"
+            )
           ),
           shiny::numericInput(
             ns("redistribute_from"),

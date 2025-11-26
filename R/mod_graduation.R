@@ -105,6 +105,15 @@ graduation_module_ui <- function(i18n) {
           }
         "))
       ),
+      shiny::tags$script(shiny::HTML("
+        $(document).ready(function() {
+          // Initialize Semantic UI tooltips
+          $('[data-tooltip]').popup({
+            hoverable: true,
+            delay: { show: 300, hide: 100 }
+          });
+        });
+      ")),
       shiny::div(
         class = "graduation-main",
 
@@ -440,11 +449,28 @@ graduation_module_server <- function(input, output, session) {
             i18n$t("Under-5 Mortality (optional)"),
             value = NULL
           ),
-          shiny.semantic::selectInput(
-            ns("age_out"),
-            i18n$t("Output Age Classes"),
-            choices = c("single", "abridged", "5-year"),
-            selected = if (!is.null(input$age_out)) input$age_out else "single"
+          shiny::div(
+            shiny::div(
+              style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+              shiny::tags$label(
+                `for` = ns("age_out"),
+                i18n$t("Output Age Classes")
+              ),
+              shiny::tags$span(
+                class = "ui circular label",
+                style = "cursor: help; font-size: 0.8em; padding: 0.3em 0.5em;",
+                `data-tooltip` = i18n$t("Target age grouping for graduation. 'single' - individual ages (0,1,2...), 'abridged' - standard life table ages (0,1-4,5-9...), '5-year' - five-year groups (0-4,5-9...)."),
+                `data-position` = "right center",
+                `data-variation` = "wide",
+                "?"
+              )
+            ),
+            shiny.semantic::selectInput(
+              ns("age_out"),
+              NULL,  # No label here since we have it above
+              choices = c("single", "abridged", "5-year"),
+              selected = if (!is.null(input$age_out)) input$age_out else "single"
+            )
           ),
           shiny::br(),
           shiny::actionButton(

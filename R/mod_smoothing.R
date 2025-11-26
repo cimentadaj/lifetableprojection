@@ -105,6 +105,15 @@ smoothing_module_ui <- function(i18n) {
           }
         "))
       ),
+      shiny::tags$script(shiny::HTML("
+        $(document).ready(function() {
+          // Initialize Semantic UI tooltips
+          $('[data-tooltip]').popup({
+            hoverable: true,
+            delay: { show: 300, hide: 100 }
+          });
+        });
+      ")),
       shiny::div(
         class = "smoothing-main",
 
@@ -451,17 +460,51 @@ smoothing_module_server <- function(input, output, session) {
             selected = if (!is.null(input$smoothing_variable) && input$smoothing_variable %in% choices)
               input$smoothing_variable else choices[1]
           ),
-          shiny.semantic::selectInput(
-            ns("fine_method"),
-            i18n$t("Fine Method"),
-            choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
-            selected = if (!is.null(input$fine_method)) input$fine_method else "sprague"
+          shiny::div(
+            shiny::div(
+              style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+              shiny::tags$label(
+                `for` = ns("fine_method"),
+                i18n$t("Fine Method")
+              ),
+              shiny::tags$span(
+                class = "ui circular label",
+                style = "cursor: help; font-size: 0.8em; padding: 0.3em 0.5em;",
+                `data-tooltip` = i18n$t("Method for splitting grouped ages to single ages. 'sprague' - standard formula, 'beers(ord)' - ordinary Beers, 'beers(mod)' - modified Beers, 'pclm' - modern spline method, 'mono' - monotonic (no negatives), 'uniform' - equal distribution."),
+                `data-position` = "right center",
+                `data-variation` = "wide",
+                "?"
+              )
+            ),
+            shiny.semantic::selectInput(
+              ns("fine_method"),
+              NULL,  # No label here since we have it above
+              choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+              selected = if (!is.null(input$fine_method)) input$fine_method else "sprague"
+            )
           ),
-          shiny.semantic::selectInput(
-            ns("rough_method"),
-            i18n$t("Rough Method"),
-            choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
-            selected = if (!is.null(input$rough_method)) input$rough_method else "none"
+          shiny::div(
+            shiny::div(
+              style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+              shiny::tags$label(
+                `for` = ns("rough_method"),
+                i18n$t("Rough Method")
+              ),
+              shiny::tags$span(
+                class = "ui circular label",
+                style = "cursor: help; font-size: 0.8em; padding: 0.3em 0.5em;",
+                `data-tooltip` = i18n$t("Method for smoothing 5-year age groups. 'Carrier-Farrag' - ratio method, 'KKN' - Karup-King-Newton, 'Arriaga' - redistribution, 'United Nations' - UN method, 'Strong' - aggressive smoothing, 'Zigzag' - oscillation correction."),
+                `data-position` = "right center",
+                `data-variation` = "wide",
+                "?"
+              )
+            ),
+            shiny.semantic::selectInput(
+              ns("rough_method"),
+              NULL,  # No label here since we have it above
+              choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
+              selected = if (!is.null(input$rough_method)) input$rough_method else "none"
+            )
           ),
           shiny.semantic::checkbox_input(
             ns("constrain_infants"),
