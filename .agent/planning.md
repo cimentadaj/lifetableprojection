@@ -357,7 +357,7 @@ shiny::tags$script(shiny::HTML("
 
 ---
 
-- [ ] Task 6: Update Upload Documentation - Column Requirements and Data Format
+- [x] Task 6: Update Upload Documentation - Column Requirements and Data Format
 **Note:** No tests need to be written for these tasks.
 **Goal:** Clarify in upload documentation that users can provide one column or both, and that proportions (not just raw numbers) are acceptable. Also specify that data should be in single ages (not abridged or 5-year groups).
 
