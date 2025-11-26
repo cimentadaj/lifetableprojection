@@ -1794,6 +1794,26 @@
             "en": "Back to modules",
             "fr": "Retour aux modules",
             "es": "Volver a módulos"
+        },
+        {
+            "en": "Data requirements:",
+            "fr": "Exigences de données :",
+            "es": "Requisitos de datos:"
+        },
+        {
+            "en": "Data can be raw counts or proportions/rates",
+            "fr": "Les données peuvent être des comptages bruts ou des proportions/taux",
+            "es": "Los datos pueden ser conteos brutos o proporciones/tasas"
+        },
+        {
+            "en": "Sex values will be taken from your data",
+            "fr": "Les valeurs de sexe seront prises de vos données",
+            "es": "Los valores de sexo se tomarán de sus datos"
+        },
+        {
+            "en": "Year values will be taken from your data",
+            "fr": "Les valeurs d'année seront prises de vos données",
+            "es": "Los valores de año se tomarán de sus datos"
         }
     ]
 }
