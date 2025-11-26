@@ -301,7 +301,12 @@ graduation_module_server <- function(input, output, session) {
           session$userData$language_version()
         }
         shiny::tagList(
-          shiny::p(i18n$t("Minimum required: Age and one numeric variable to graduate (Deaths, Exposures, or similar counts).")),
+          shiny::p(shiny::strong(i18n$t("Data requirements:"))),
+          shiny::tags$ul(
+            shiny::tags$li(i18n$t("Required: Age column (must be single-year ages: 0, 1, 2, 3, ... not 5-year or abridged groups)")),
+            shiny::tags$li(i18n$t("Required: At least one numeric column (Deaths, Exposures, or any other metric)")),
+            shiny::tags$li(i18n$t("Data can be raw counts or proportions/rates"))
+          ),
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
           shiny::p(i18n$t("The graduation sample contains Age, Deaths, and Exposures."))
         )
