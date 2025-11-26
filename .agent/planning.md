@@ -50,7 +50,7 @@ output$[module]_variable_selector <- shiny::renderUI({
 
 ---
 
-- [ ] Task 2: Fix Graduation Scale Mismatch (Single Ages to 5-Year Age Groups)
+- [x] Task 2: Fix Graduation Scale Mismatch (Single Ages to 5-Year Age Groups)
 **Note:** No tests need to be written for these tasks.
 
 **Goal:** When graduating from single ages to 5-year age groups, divide the values appropriately so they're on a comparable scale in the plot. Also ensure downloaded data has matching totals between original and graduated columns.
