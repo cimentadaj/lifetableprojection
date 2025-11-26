@@ -248,7 +248,7 @@ shiny::div(
 
 ---
 
-- [ ] Task 5: Add Info Buttons for Method Parameters
+- [x] Task 5: Add Info Buttons for Method Parameters
 
 **Note:** No tests need to be written for these tasks.
 
