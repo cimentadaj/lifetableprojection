@@ -396,7 +396,7 @@ shiny::tags$script(shiny::HTML("
 
 ---
 
-- [ ] Task 8: French Translation - Fix Untranslated 'data' Word
+- [x] Task 8: French Translation - Fix Untranslated 'data' Word
 **Note:** No tests need to be written for these tasks.
 
 **Goal:** The word "data" appears untranslated in the French UI in several places, including complete sentences. Find and add proper French translations.
