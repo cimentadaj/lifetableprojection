@@ -101,7 +101,7 @@ graduated_data[[paste0(variable, "_graduated")]] <-
 
 ---
 
-- [ ] Task 3: ODAP Module - Allow Sex/Year Columns in Upload Data
+- [x] Task 3: ODAP Module - Allow Sex/Year Columns in Upload Data
 
 **Goal:** If user provides `sex` and/or `year` columns in their upload data, use those values for WPP data retrieval instead of showing dropdown inputs. Each group should use its corresponding sex/year values.
 
