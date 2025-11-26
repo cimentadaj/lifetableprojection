@@ -379,12 +379,21 @@ odap_module_server <- function(input, output, session) {
         # Check if we need WPP selection inputs
         df <- shared$data()
         needs_wpp <- FALSE
+        needs_sex <- FALSE
+        needs_year <- FALSE
         if (!is.null(df)) {
           # Check case-insensitively since backend will lowercase column names
           col_names_lower <- tolower(names(df))
           has_nlx <- "nlx" %in% col_names_lower
-          has_grouping <- all(c("name", "sex", "year") %in% col_names_lower)
-          needs_wpp <- !has_nlx && !has_grouping
+          has_sex_col <- "sex" %in% col_names_lower
+          has_year_col <- "year" %in% col_names_lower
+
+          # We need WPP data if we don't have nLx
+          needs_wpp <- !has_nlx
+          # Country is always from dropdown (never from data)
+          # Only hide sex/year if columns are provided
+          needs_sex <- !has_nlx && !has_sex_col
+          needs_year <- !has_nlx && !has_year_col
         }
 
         shiny::tagList(
@@ -433,26 +442,37 @@ odap_module_server <- function(input, output, session) {
               shiny::hr(),
               shiny::h4(i18n$t("WPP Mortality Data Selection")),
               shiny::p(i18n$t("Your data doesn't include nLx. Select which WPP mortality data to use:")),
+              # Country is always shown when WPP is needed
               shiny.semantic::selectInput(
                 ns("wpp_country"),
                 i18n$t("Country"),
                 choices = OPPPserver::get_wpp_countries(),
                 selected = if (!is.null(input$wpp_country)) input$wpp_country else "India"
               ),
-              shiny.semantic::selectInput(
-                ns("wpp_sex"),
-                i18n$t("Sex"),
-                choices = c("Male" = "M", "Female" = "F"),
-                selected = if (!is.null(input$wpp_sex)) input$wpp_sex else "M"
-              ),
-              shiny::numericInput(
-                ns("wpp_year"),
-                i18n$t("Year"),
-                value = if (!is.null(input$wpp_year)) input$wpp_year else 2020,
-                min = 1950,
-                max = 2024,
-                step = 1
-              )
+              # Only show sex dropdown if sex column not in data
+              if (needs_sex) {
+                shiny.semantic::selectInput(
+                  ns("wpp_sex"),
+                  i18n$t("Sex"),
+                  choices = c("Male" = "M", "Female" = "F"),
+                  selected = if (!is.null(input$wpp_sex)) input$wpp_sex else "M"
+                )
+              } else {
+                shiny::p(i18n$t("Sex values will be taken from your data"))
+              },
+              # Only show year dropdown if year column not in data
+              if (needs_year) {
+                shiny::numericInput(
+                  ns("wpp_year"),
+                  i18n$t("Year"),
+                  value = if (!is.null(input$wpp_year)) input$wpp_year else 2020,
+                  min = 1950,
+                  max = 2024,
+                  step = 1
+                )
+              } else {
+                shiny::p(i18n$t("Year values will be taken from your data"))
+              }
             )
           },
 
@@ -709,6 +729,40 @@ odap_module_server <- function(input, output, session) {
           results <- future.apply::future_lapply(all_ids, function(gid) {
             data_subset <- df[df$.id == gid, , drop = FALSE]
 
+            # Check for sex/year columns in the data
+            col_names_lower <- tolower(names(data_subset))
+            has_sex_col <- "sex" %in% col_names_lower
+            has_year_col <- "year" %in% col_names_lower
+            has_nlx <- "nlx" %in% col_names_lower
+
+            # Get sex/year from data if available, otherwise use UI inputs
+            row_sex <- NULL
+            row_year <- NULL
+            wpp_name <- NULL
+            wpp_country_code <- NULL
+
+            if (!has_nlx) {
+              # Get sex from data column or UI
+              if (has_sex_col) {
+                row_sex <- data_subset[["sex"]][1]
+                if (is.na(row_sex)) row_sex <- data_subset[["Sex"]][1]
+              } else {
+                row_sex <- isolate(input$wpp_sex)
+              }
+
+              # Get year from data column or UI
+              if (has_year_col) {
+                row_year <- as.numeric(data_subset[["year"]][1])
+                if (is.na(row_year)) row_year <- as.numeric(data_subset[["Year"]][1])
+              } else {
+                row_year <- isolate(input$wpp_year)
+              }
+
+              # Country is always from dropdown
+              wpp_name <- isolate(input$wpp_country)
+              wpp_country_code <- if (!is.null(wpp_name)) get_wpp_country_code(wpp_name) else NULL
+            }
+
             tryCatch({
               result <- ODAPbackend::odap_opag(
                 data_in = data_subset,
@@ -718,6 +772,10 @@ odap_module_server <- function(input, output, session) {
                 OAnew = params$oanew,
                 method = params$method,
                 nLx = NULL,
+                name = wpp_name,
+                sex = row_sex,
+                year = row_year,
+                country_code = wpp_country_code,
                 i18n = i18n
               )
               list(group_id = gid, result = result, error = NULL)
@@ -729,6 +787,40 @@ odap_module_server <- function(input, output, session) {
           results <- lapply(all_ids, function(gid) {
             data_subset <- df[df$.id == gid, , drop = FALSE]
 
+            # Check for sex/year columns in the data
+            col_names_lower <- tolower(names(data_subset))
+            has_sex_col <- "sex" %in% col_names_lower
+            has_year_col <- "year" %in% col_names_lower
+            has_nlx <- "nlx" %in% col_names_lower
+
+            # Get sex/year from data if available, otherwise use UI inputs
+            row_sex <- NULL
+            row_year <- NULL
+            wpp_name <- NULL
+            wpp_country_code <- NULL
+
+            if (!has_nlx) {
+              # Get sex from data column or UI
+              if (has_sex_col) {
+                row_sex <- data_subset[["sex"]][1]
+                if (is.na(row_sex)) row_sex <- data_subset[["Sex"]][1]
+              } else {
+                row_sex <- isolate(input$wpp_sex)
+              }
+
+              # Get year from data column or UI
+              if (has_year_col) {
+                row_year <- as.numeric(data_subset[["year"]][1])
+                if (is.na(row_year)) row_year <- as.numeric(data_subset[["Year"]][1])
+              } else {
+                row_year <- isolate(input$wpp_year)
+              }
+
+              # Country is always from dropdown
+              wpp_name <- isolate(input$wpp_country)
+              wpp_country_code <- if (!is.null(wpp_name)) get_wpp_country_code(wpp_name) else NULL
+            }
+
             tryCatch({
               result <- ODAPbackend::odap_opag(
                 data_in = data_subset,
@@ -738,6 +830,10 @@ odap_module_server <- function(input, output, session) {
                 OAnew = params$oanew,
                 method = params$method,
                 nLx = NULL,
+                name = wpp_name,
+                sex = row_sex,
+                year = row_year,
+                country_code = wpp_country_code,
                 i18n = i18n
               )
               list(group_id = gid, result = result, error = NULL)
@@ -996,9 +1092,25 @@ odap_module_server <- function(input, output, session) {
         # Only use WPP inputs if data doesn't have nLx or grouping columns
         # ISOLATE these too!
         if (!has_nlx && !has_grouping) {
+          # Country is always from dropdown
           wpp_name <- isolate(input$wpp_country)
-          wpp_sex <- isolate(input$wpp_sex)
-          wpp_year <- isolate(input$wpp_year)
+
+          # Check for sex column in data
+          if ("sex" %in% col_names_lower) {
+            wpp_sex <- data_full[["sex"]][1]
+            if (is.na(wpp_sex)) wpp_sex <- data_full[["Sex"]][1]
+          } else {
+            wpp_sex <- isolate(input$wpp_sex)
+          }
+
+          # Check for year column in data
+          if ("year" %in% col_names_lower) {
+            wpp_year <- as.numeric(data_full[["year"]][1])
+            if (is.na(wpp_year)) wpp_year <- as.numeric(data_full[["Year"]][1])
+          } else {
+            wpp_year <- isolate(input$wpp_year)
+          }
+
           wpp_country_code <- if (!is.null(wpp_name)) get_wpp_country_code(wpp_name) else NULL
         }
 
