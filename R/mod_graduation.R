@@ -710,6 +710,10 @@ graduation_module_server <- function(input, output, session) {
         remaining_cols <- setdiff(names(out_data), col_order)
         out_data <- out_data[, c(col_order, remaining_cols), drop = FALSE]
 
+        # Ensure Age is numeric and sort by Age
+        out_data$Age <- as.numeric(out_data$Age)
+        out_data <- out_data[order(out_data$Age), ]
+
         utils::write.csv(out_data, csv_file, row.names = FALSE)
         temp_files <- c(temp_files, csv_file)
 
@@ -868,6 +872,10 @@ graduation_module_server <- function(input, output, session) {
           if (graduated_col_name %in% names(out_data)) col_order <- c(col_order, graduated_col_name)
           remaining_cols <- setdiff(names(out_data), col_order)
           out_data <- out_data[, c(col_order, remaining_cols), drop = FALSE]
+
+          # Ensure Age is numeric and sort by Age (within groups)
+          out_data$Age <- as.numeric(out_data$Age)
+          out_data <- out_data[order(out_data$.id, out_data$Age), ]
 
           # Write CSV
           csv_file <- file.path(temp_dir, "graduation_results_all_groups.csv")

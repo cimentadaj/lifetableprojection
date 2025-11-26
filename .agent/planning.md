@@ -413,7 +413,7 @@ shiny::tags$script(shiny::HTML("
 
 ---
 
-- [ ] Task 9: Sort Age Columns Numerically in All Downloads
+- [x] Task 9: Sort Age Columns Numerically in All Downloads
 **Note:** No tests need to be written for these tasks.
 
 **Goal:** Age columns in downloaded CSV files are currently saved as strings and appear unsorted (e.g., "1", "10", "11", ... "2", "20"). Ensure Age is treated as numeric and rows are sorted by Age in all download modules.

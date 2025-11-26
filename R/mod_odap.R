@@ -758,6 +758,10 @@ odap_module_server <- function(input, output, session) {
           }
         }
 
+        # Ensure Age is numeric and sort by Age
+        out_data$Age <- as.numeric(out_data$Age)
+        out_data <- out_data[order(out_data$Age), ]
+
         utils::write.csv(out_data, csv_file, row.names = FALSE)
         temp_files <- c(temp_files, csv_file)
 
@@ -999,6 +1003,10 @@ odap_module_server <- function(input, output, session) {
           if (!is.null(lbl_df)) {
             out_data <- merge(out_data, lbl_df, by = ".id", all.x = TRUE)
           }
+
+          # Ensure Age is numeric and sort by Age (within groups)
+          out_data$Age <- as.numeric(out_data$Age)
+          out_data <- out_data[order(out_data$.id, out_data$Age), ]
 
           # Write CSV
           csv_file <- file.path(temp_dir, "odap_results_all_groups.csv")
