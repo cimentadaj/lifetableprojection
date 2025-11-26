@@ -432,7 +432,7 @@ shiny::tags$script(shiny::HTML("
 
 ---
 
-- [ ] Task 10: Graduation Download - Include Plot in Download
+- [x] Task 10: Graduation Download - Include Plot in Download
 **Note:** No tests need to be written for these tasks.
 
 **Goal:** The graduation module download currently only exports the data CSV. Add the plot (as PNG or PDF) to the download.
