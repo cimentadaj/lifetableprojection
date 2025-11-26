@@ -763,9 +763,24 @@ graduation_module_server <- function(input, output, session) {
             original_data <- df[df$.id == gid, , drop = FALSE]
 
             # Create plot
+            # For plotting, apply same normalization as in graduation.R for visual comparison
+            original_values <- original_data[[variable]]
+            graduated_values <- graduated_data[[variable]]
+
+            # Check if converting from single ages to grouped ages for plot normalization
+            input_is_single <- DemoTools::is_single(original_data$Age)
+            output_is_grouped <- !DemoTools::is_single(graduated_data$Age)
+
+            if (input_is_single && output_is_grouped) {
+              # For visual comparison, divide grouped values by typical interval width
+              # This shows average per single age rather than sum
+              age_intervals <- diff(c(graduated_data$Age, max(graduated_data$Age) + 5))
+              graduated_values <- graduated_values / age_intervals
+            }
+
             plot_data <- data.frame(
               Age = c(original_data$Age, graduated_data$Age),
-              Value = c(original_data[[variable]], graduated_data[[variable]]),
+              Value = c(original_values, graduated_values),
               Type = c(rep("Original", nrow(original_data)), rep("Graduated", nrow(graduated_data)))
             )
 
