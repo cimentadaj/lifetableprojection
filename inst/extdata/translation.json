@@ -2169,6 +2169,26 @@
             "en": "Average remaining years of life at each age - the key summary measure of population health.",
             "fr": "Années de vie restantes moyennes à chaque âge - la mesure résumée clé de la santé de la population.",
             "es": "Años de vida restantes promedio a cada edad - la medida resumen clave de la salud de la población."
+        },
+        {
+            "en": "Method for splitting grouped ages to single ages:<br><br>'sprague' - standard formula<br>'beers(ord)' - ordinary Beers<br>'beers(mod)' - modified Beers<br>'grabill' - designed for population data<br>'pclm' - modern spline method<br>'mono' - monotonic (no negatives)<br>'uniform' - equal distribution",
+            "fr": "Méthode pour diviser les âges groupés en âges simples:<br><br>'sprague' - formule standard<br>'beers(ord)' - Beers ordinaire<br>'beers(mod)' - Beers modifié<br>'grabill' - conçu pour les données de population<br>'pclm' - méthode spline moderne<br>'mono' - monotone (pas de négatifs)<br>'uniform' - distribution égale",
+            "es": "Método para dividir edades agrupadas en edades simples:<br><br>'sprague' - fórmula estándar<br>'beers(ord)' - Beers ordinario<br>'beers(mod)' - Beers modificado<br>'grabill' - diseñado para datos de población<br>'pclm' - método spline moderno<br>'mono' - monótono (sin negativos)<br>'uniform' - distribución igual"
+        },
+        {
+            "en": "Method for smoothing 5-year age groups:<br><br>'Carrier-Farrag' - ratio method<br>'KKN' - Karup-King-Newton<br>'Arriaga' - redistribution<br>'United Nations' - UN method<br>'Strong' - aggressive smoothing<br>'Zigzag' - oscillation correction",
+            "fr": "Méthode pour lisser les groupes d'âge de 5 ans:<br><br>'Carrier-Farrag' - méthode des ratios<br>'KKN' - Karup-King-Newton<br>'Arriaga' - redistribution<br>'United Nations' - méthode ONU<br>'Strong' - lissage agressif<br>'Zigzag' - correction des oscillations",
+            "es": "Método para suavizar grupos de edad de 5 años:<br><br>'Carrier-Farrag' - método de ratios<br>'KKN' - Karup-King-Newton<br>'Arriaga' - redistribución<br>'United Nations' - método ONU<br>'Strong' - suavizado agresivo<br>'Zigzag' - corrección de oscilaciones"
+        },
+        {
+            "en": "Target age grouping for graduation:<br><br>'single' - individual ages (0,1,2...)<br>'abridged' - standard life table ages (0,1-4,5-9...)<br>'5-year' - five-year groups (0-4,5-9...)",
+            "fr": "Groupement d'âge cible pour la graduation:<br><br>'single' - âges individuels (0,1,2...)<br>'abridged' - âges standard de table de mortalité (0,1-4,5-9...)<br>'5-year' - groupes de cinq ans (0-4,5-9...)",
+            "es": "Agrupación de edad objetivo para graduación:<br><br>'single' - edades individuales (0,1,2...)<br>'abridged' - edades estándar de tabla de vida (0,1-4,5-9...)<br>'5-year' - grupos de cinco años (0-4,5-9...)"
+        },
+        {
+            "en": "Method for redistributing old-age population:<br><br>'mono' - monotonic (preserves mortality pattern)<br>'pclm' - spline-based smoothing<br>'uniform' - simple proportional distribution",
+            "fr": "Méthode pour redistribuer la population âgée:<br><br>'mono' - monotone (préserve le schéma de mortalité)<br>'pclm' - lissage basé sur les splines<br>'uniform' - distribution proportionnelle simple",
+            "es": "Método para redistribuir la población de edad avanzada:<br><br>'mono' - monótono (preserva el patrón de mortalidad)<br>'pclm' - suavizado basado en splines<br>'uniform' - distribución proporcional simple"
         }
     ]
 }

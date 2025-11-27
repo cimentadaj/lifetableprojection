@@ -103,6 +103,12 @@ smoothing_module_ui <- function(i18n) {
             color: #4a5568;
             font-weight: 500;
           }
+          /* Fix tooltip horizontal overflow - force text wrapping */
+          [data-tooltip]:before {
+            white-space: normal !important;
+            max-width: 300px !important;
+            line-height: 1.4 !important;
+          }
         "))
       ),
       shiny::tags$script(shiny::HTML("
@@ -259,7 +265,8 @@ smoothing_module_server <- function(input, output, session) {
       shared <- create_shared_data_context(
         "smoothing",
         input, output, session, i18n,
-        sample_loader = smoothing_sample_loader
+        sample_loader = smoothing_sample_loader,
+        validation_function = validateData_generic
       )
       shared$last_result <- shiny::reactiveVal(NULL)
       download_scope_choice <- shiny::reactiveVal("single")
@@ -475,13 +482,14 @@ smoothing_module_server <- function(input, output, session) {
                 `for` = ns("fine_method"),
                 i18n$t("Fine Method")
               ),
-              shiny::tags$span(
-                class = "ui circular label",
-                style = "cursor: help; font-size: 0.8em; padding: 0.3em 0.5em;",
-                `data-tooltip` = i18n$t("Method for splitting grouped ages to single ages. 'sprague' - standard formula, 'beers(ord)' - ordinary Beers, 'beers(mod)' - modified Beers, 'pclm' - modern spline method, 'mono' - monotonic (no negatives), 'uniform' - equal distribution."),
-                `data-position` = "right center",
-                `data-variation` = "wide",
-                "?"
+              shiny.fluent::TooltipHost(
+                content = shiny::uiOutput(ns("fine_method_tooltip")),
+                delay = 0,
+                shiny.fluent::Image(
+                  src = "www/info.png",
+                  width = "20px",
+                  shouldStartVisible = TRUE
+                )
               )
             ),
             shiny.semantic::selectInput(
@@ -498,13 +506,14 @@ smoothing_module_server <- function(input, output, session) {
                 `for` = ns("rough_method"),
                 i18n$t("Rough Method")
               ),
-              shiny::tags$span(
-                class = "ui circular label",
-                style = "cursor: help; font-size: 0.8em; padding: 0.3em 0.5em;",
-                `data-tooltip` = i18n$t("Method for smoothing 5-year age groups. 'Carrier-Farrag' - ratio method, 'KKN' - Karup-King-Newton, 'Arriaga' - redistribution, 'United Nations' - UN method, 'Strong' - aggressive smoothing, 'Zigzag' - oscillation correction."),
-                `data-position` = "right center",
-                `data-variation` = "wide",
-                "?"
+              shiny.fluent::TooltipHost(
+                content = shiny::uiOutput(ns("rough_method_tooltip")),
+                delay = 0,
+                shiny.fluent::Image(
+                  src = "www/info.png",
+                  width = "20px",
+                  shouldStartVisible = TRUE
+                )
               )
             ),
             shiny.semantic::selectInput(
@@ -539,6 +548,21 @@ smoothing_module_server <- function(input, output, session) {
         )
       })
       outputOptions(output, "smoothing_controls", suspendWhenHidden = FALSE)
+
+      # Tooltip text outputs for info icons
+      output$fine_method_tooltip <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::HTML(i18n$t("Method for splitting grouped ages to single ages:<br><br>'sprague' - standard formula<br>'beers(ord)' - ordinary Beers<br>'beers(mod)' - modified Beers<br>'grabill' - designed for population data<br>'pclm' - modern spline method<br>'mono' - monotonic (no negatives)<br>'uniform' - equal distribution"))
+      })
+
+      output$rough_method_tooltip <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::HTML(i18n$t("Method for smoothing 5-year age groups:<br><br>'Carrier-Farrag' - ratio method<br>'KKN' - Karup-King-Newton<br>'Arriaga' - redistribution<br>'United Nations' - UN method<br>'Strong' - aggressive smoothing<br>'Zigzag' - oscillation correction"))
+      })
 
       # Group selectors (matching lifetable pattern)
       output$smoothing_group_selectors <- shiny::renderUI({

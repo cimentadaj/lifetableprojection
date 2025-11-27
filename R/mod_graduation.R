@@ -103,6 +103,12 @@ graduation_module_ui <- function(i18n) {
             color: #4a5568;
             font-weight: 500;
           }
+          /* Fix tooltip horizontal overflow - force text wrapping */
+          [data-tooltip]:before {
+            white-space: normal !important;
+            max-width: 300px !important;
+            line-height: 1.4 !important;
+          }
         "))
       ),
       shiny::tags$script(shiny::HTML("
@@ -259,7 +265,8 @@ graduation_module_server <- function(input, output, session) {
       shared <- create_shared_data_context(
         "graduation",
         input, output, session, i18n,
-        sample_loader = graduation_sample_loader
+        sample_loader = graduation_sample_loader,
+        validation_function = validateData_generic
       )
       shared$last_result <- shiny::reactiveVal(NULL)
       download_scope_choice <- shiny::reactiveVal("single")
@@ -454,13 +461,14 @@ graduation_module_server <- function(input, output, session) {
                 `for` = ns("age_out"),
                 i18n$t("Output Age Classes")
               ),
-              shiny::tags$span(
-                class = "ui circular label",
-                style = "cursor: help; font-size: 0.8em; padding: 0.3em 0.5em;",
-                `data-tooltip` = i18n$t("Target age grouping for graduation. 'single' - individual ages (0,1,2...), 'abridged' - standard life table ages (0,1-4,5-9...), '5-year' - five-year groups (0-4,5-9...)."),
-                `data-position` = "right center",
-                `data-variation` = "wide",
-                "?"
+              shiny.fluent::TooltipHost(
+                content = shiny::uiOutput(ns("age_out_tooltip")),
+                delay = 0,
+                shiny.fluent::Image(
+                  src = "www/info.png",
+                  width = "20px",
+                  shouldStartVisible = TRUE
+                )
               )
             ),
             shiny.semantic::selectInput(
@@ -479,6 +487,14 @@ graduation_module_server <- function(input, output, session) {
         )
       })
       outputOptions(output, "graduation_controls", suspendWhenHidden = FALSE)
+
+      # Tooltip text output for info icon
+      output$age_out_tooltip <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::HTML(i18n$t("Target age grouping for graduation:<br><br>'single' - individual ages (0,1,2...)<br>'abridged' - standard life table ages (0,1-4,5-9...)<br>'5-year' - five-year groups (0-4,5-9...)"))
+      })
 
       # Group selectors (matching lifetable pattern)
       output$graduation_group_selectors <- shiny::renderUI({

@@ -153,6 +153,12 @@ odap_module_ui <- function(i18n) {
             color: #4a5568;
             font-weight: 500;
           }
+          /* Fix tooltip horizontal overflow - force text wrapping */
+          [data-tooltip]:before {
+            white-space: normal !important;
+            max-width: 300px !important;
+            line-height: 1.4 !important;
+          }
         "))
       ),
       shiny::tags$script(shiny::HTML("
@@ -475,13 +481,14 @@ odap_module_server <- function(input, output, session) {
                 `for` = ns("method"),
                 i18n$t("Redistribution method")
               ),
-              shiny::tags$span(
-                class = "ui circular label",
-                style = "cursor: help; font-size: 0.8em; padding: 0.3em 0.5em;",
-                `data-tooltip` = i18n$t("Method for redistributing old-age population. 'mono' - monotonic (preserves mortality pattern), 'pclm' - spline-based smoothing, 'uniform' - simple proportional distribution."),
-                `data-position` = "right center",
-                `data-variation` = "wide",
-                "?"
+              shiny.fluent::TooltipHost(
+                content = shiny::uiOutput(ns("method_tooltip")),
+                delay = 0,
+                shiny.fluent::Image(
+                  src = "www/info.png",
+                  width = "20px",
+                  shouldStartVisible = TRUE
+                )
               )
             ),
             shiny.semantic::selectInput(
@@ -573,6 +580,14 @@ odap_module_server <- function(input, output, session) {
         )
       })
       outputOptions(output, "odap_controls", suspendWhenHidden = FALSE)
+
+      # Tooltip text output for info icon
+      output$method_tooltip <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::HTML(i18n$t("Method for redistributing old-age population:<br><br>'mono' - monotonic (preserves mortality pattern)<br>'pclm' - spline-based smoothing<br>'uniform' - simple proportional distribution"))
+      })
 
       # Group selectors
       output$odap_group_selectors <- shiny::renderUI({
