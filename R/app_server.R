@@ -320,6 +320,45 @@ lifetable_server <- function(input, output, session) {
     })
   }
 
+  # Helper function to create error plot for displaying errors in plot area
+
+  create_error_plot <- function(error_msg, i18n) {
+    plotly::plot_ly(x = 0, y = 0, type = "scatter", mode = "markers",
+                    marker = list(size = 0, opacity = 0)) |>
+      plotly::add_annotations(
+        text = paste0("<b>", i18n$t("Error"), ":</b><br><br>", gsub("\n", "<br>", error_msg)),
+        x = 0.5, y = 0.5,
+        xref = "paper", yref = "paper",
+        showarrow = FALSE,
+        font = list(size = 14, color = "red"),
+        xanchor = "center", yanchor = "middle"
+      ) |>
+      plotly::layout(
+        xaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE, range = c(-1, 1)),
+        yaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE, range = c(-1, 1)),
+        plot_bgcolor = "white", paper_bgcolor = "white",
+        showlegend = FALSE
+      ) |>
+      plotly::config(displayModeBar = FALSE)
+  }
+
+  # Helper function to extract meaningful error message from nested errors
+  extract_error_msg <- function(e) {
+    error_msg <- conditionMessage(e)
+    # Strip ANSI escape codes (added by cli/rlang)
+    error_msg <- gsub("\033\\[[0-9;]*m", "", error_msg)
+    # Try to extract just the meaningful part after the last "Caused by error"
+    if (grepl("Caused by error.*?:", error_msg)) {
+      parts <- strsplit(error_msg, "Caused by error[^:]*:")[[1]]
+      if (length(parts) > 1) {
+        error_msg <- trimws(parts[length(parts)])
+      }
+    }
+    # Remove leading "! " if present
+    error_msg <- sub("^!\\s*", "", error_msg)
+    error_msg
+  }
+
   i18n <- usei18n_local()
 
   # Create reactive value for language changes to propagate to modules
@@ -886,44 +925,6 @@ lifetable_server <- function(input, output, session) {
 
       # Render plot
       output[[paste0(step_name, "_plot")]] <- renderPlotly({
-        # Helper function to create error plot
-        create_error_plot <- function(error_msg) {
-          plotly::plot_ly(x = 0, y = 0, type = "scatter", mode = "markers",
-                          marker = list(size = 0, opacity = 0)) |>
-            plotly::add_annotations(
-              text = paste0("<b>", i18n$t("Error"), ":</b><br><br>", gsub("\n", "<br>", error_msg)),
-              x = 0.5, y = 0.5,
-              xref = "paper", yref = "paper",
-              showarrow = FALSE,
-              font = list(size = 14, color = "red"),
-              xanchor = "center", yanchor = "middle"
-            ) |>
-            plotly::layout(
-              xaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE, range = c(-1, 1)),
-              yaxis = list(showgrid = FALSE, showticklabels = FALSE, zeroline = FALSE, range = c(-1, 1)),
-              plot_bgcolor = "white", paper_bgcolor = "white",
-              showlegend = FALSE
-            ) |>
-            plotly::config(displayModeBar = FALSE)
-        }
-
-        # Helper function to extract meaningful error message
-        extract_error_msg <- function(e) {
-          error_msg <- conditionMessage(e)
-          # Strip ANSI escape codes (added by cli/rlang)
-          error_msg <- gsub("\033\\[[0-9;]*m", "", error_msg)
-          # Try to extract just the meaningful part after the last "Caused by error"
-          if (grepl("Caused by error.*?:", error_msg)) {
-            parts <- strsplit(error_msg, "Caused by error[^:]*:")[[1]]
-            if (length(parts) > 1) {
-              error_msg <- trimws(parts[length(parts)])
-            }
-          }
-          # Remove leading "! " if present
-          error_msg <- sub("^!\\s*", "", error_msg)
-          error_msg
-        }
-
         # Wrap everything in tryCatch to catch errors from preprocessing_results()
         tryCatch({
           results <- preprocessing_results()
@@ -942,7 +943,7 @@ lifetable_server <- function(input, output, session) {
             return(NULL)
           }
 
-          create_error_plot(error_msg)
+          create_error_plot(error_msg, i18n)
         })
       })
     })
@@ -1183,19 +1184,43 @@ lifetable_server <- function(input, output, session) {
     req(input$calculate_lt)
 
     output$plot_mortality_rate <- renderPlotly({
-      lt_plots()[[tabNames_internal[1]]]()$plotly
+      tryCatch({
+        lt_plots()[[tabNames_internal[1]]]()$plotly
+      }, error = function(e) {
+        error_msg <- extract_error_msg(e)
+        if (nchar(trimws(error_msg)) == 0) return(NULL)
+        create_error_plot(error_msg, i18n)
+      })
     })
 
     output$plot_survival_curve <- renderPlotly({
-      lt_plots()[[tabNames_internal[2]]]()$plotly
+      tryCatch({
+        lt_plots()[[tabNames_internal[2]]]()$plotly
+      }, error = function(e) {
+        error_msg <- extract_error_msg(e)
+        if (nchar(trimws(error_msg)) == 0) return(NULL)
+        create_error_plot(error_msg, i18n)
+      })
     })
 
     output$plot_conditional_death_probabilities <- renderPlotly({
-      lt_plots()[[tabNames_internal[4]]]()$plotly
+      tryCatch({
+        lt_plots()[[tabNames_internal[4]]]()$plotly
+      }, error = function(e) {
+        error_msg <- extract_error_msg(e)
+        if (nchar(trimws(error_msg)) == 0) return(NULL)
+        create_error_plot(error_msg, i18n)
+      })
     })
 
     output$plot_death_distribution <- renderPlotly({
-      lt_plots()[[tabNames_internal[3]]]()$plotly
+      tryCatch({
+        lt_plots()[[tabNames_internal[3]]]()$plotly
+      }, error = function(e) {
+        error_msg <- extract_error_msg(e)
+        if (nchar(trimws(error_msg)) == 0) return(NULL)
+        create_error_plot(error_msg, i18n)
+      })
     })
 
     output$plot_lifetable_results <- renderDT({
