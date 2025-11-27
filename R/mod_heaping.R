@@ -318,7 +318,8 @@ heaping_module_server <- function(input, output, session) {
       shared <- create_shared_data_context(
         "heaping",
         input, output, session, i18n,
-        sample_loader = heaping_sample_loader
+        sample_loader = heaping_sample_loader,
+        validation_function = validateData_generic
       )
       shared$last_result <- shiny::reactiveVal(NULL)
 

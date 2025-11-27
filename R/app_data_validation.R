@@ -42,6 +42,19 @@ validateData_opag <- function(data, i18n) {
   ODAPbackend::check_data_opag(data)
 }
 
+#' Validate Generic Data (Column-Agnostic)
+#'
+#' Generic validation for modules that accept any numeric column (heaping, smoothing, graduation).
+#' Only requires Age column and at least one numeric value column.
+#'
+#' @param data Data frame to be validated (must contain Age and at least one numeric column).
+#' @param i18n Translator object for internationalization
+#' @return Data frame containing validation results.
+#' @export
+validateData_generic <- function(data, i18n) {
+  ODAPbackend::check_data_generic(data)
+}
+
 #' Render Data Table
 #'
 #' Creates a read-only handsontable UI component for displaying data.
