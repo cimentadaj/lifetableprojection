@@ -2084,6 +2084,91 @@
             "en": "Sex",
             "fr": "Sexe",
             "es": "Sexo"
+        },
+        {
+            "en": "OPAG Redistribution Methods",
+            "fr": "Méthodes de redistribution OPAG",
+            "es": "Métodos de redistribución OPAG"
+        },
+        {
+            "en": "OPAG (Old-Age Population Age Graduation) extends population data beyond an open age group (e.g., 80+) to single ages up to 100+. It uses mortality patterns from WPP or your own life table data to redistribute population while maintaining demographic consistency.",
+            "fr": "OPAG (Graduation par âge de la population âgée) étend les données de population au-delà d'un groupe d'âge ouvert (par ex. 80+) vers des âges simples jusqu'à 100+. Il utilise les modèles de mortalité du WPP ou vos propres données de table de mortalité pour redistribuer la population tout en maintenant la cohérence démographique.",
+            "es": "OPAG (Graduación por Edad de Población Mayor) extiende los datos de población más allá de un grupo de edad abierto (ej. 80+) a edades simples hasta 100+. Utiliza patrones de mortalidad del WPP o sus propios datos de tabla de vida para redistribuir la población manteniendo la consistencia demográfica."
+        },
+        {
+            "en": "Monotonic graduation ensures population counts decline smoothly with age, preventing implausible increases at advanced ages. Choose this when you want results that follow expected mortality patterns without oscillations.",
+            "fr": "La graduation monotone assure que les effectifs de population diminuent progressivement avec l'âge, évitant les augmentations invraisemblables aux âges avancés. Choisissez cette méthode pour des résultats qui suivent les modèles de mortalité attendus sans oscillations.",
+            "es": "La graduación monótona asegura que los conteos de población disminuyan suavemente con la edad, previniendo aumentos inverosímiles en edades avanzadas. Elija esto cuando desee resultados que sigan los patrones de mortalidad esperados sin oscilaciones."
+        },
+        {
+            "en": "PCLM uses penalized splines to find the optimal balance between smoothness and fit to your data. Choose this for a data-driven approach that adapts automatically to your population's characteristics.",
+            "fr": "PCLM utilise des splines pénalisées pour trouver l'équilibre optimal entre lissage et ajustement à vos données. Choisissez cette approche basée sur les données qui s'adapte automatiquement aux caractéristiques de votre population.",
+            "es": "PCLM utiliza splines penalizadas para encontrar el equilibrio óptimo entre suavidad y ajuste a sus datos. Elija esto para un enfoque basado en datos que se adapta automáticamente a las características de su población."
+        },
+        {
+            "en": "Uniform distribution divides the open age group population equally across target ages. Use as a simple baseline or when mortality data is unavailable.",
+            "fr": "La distribution uniforme divise la population du groupe d'âge ouvert également entre les âges cibles. Utilisez comme référence simple ou lorsque les données de mortalité ne sont pas disponibles.",
+            "es": "La distribución uniforme divide la población del grupo de edad abierto equitativamente entre las edades objetivo. Use como línea base simple o cuando los datos de mortalidad no estén disponibles."
+        },
+        {
+            "en": "A life table transforms mortality data into a comprehensive picture of survival patterns. Starting from observed deaths and population exposure, it calculates the probability of surviving to each age and the expected remaining years of life. This module produces complete period life tables following standard demographic methods.",
+            "fr": "Une table de mortalité transforme les données de mortalité en une image complète des modèles de survie. À partir des décès observés et de l'exposition de la population, elle calcule la probabilité de survie à chaque âge et l'espérance de vie restante. Ce module produit des tables de mortalité du moment complètes selon les méthodes démographiques standard.",
+            "es": "Una tabla de vida transforma los datos de mortalidad en una imagen completa de los patrones de supervivencia. Partiendo de las muertes observadas y la exposición de la población, calcula la probabilidad de sobrevivir a cada edad y los años de vida restantes esperados. Este módulo produce tablas de vida de período completas siguiendo métodos demográficos estándar."
+        },
+        {
+            "en": "What you'll learn from your data:",
+            "fr": "Ce que vous apprendrez de vos données :",
+            "es": "Lo que aprenderá de sus datos:"
+        },
+        {
+            "en": "Mortality rates (mx)",
+            "fr": "Taux de mortalité (mx)",
+            "es": "Tasas de mortalidad (mx)"
+        },
+        {
+            "en": "The observed death rate at each age, calculated from your deaths and exposure data.",
+            "fr": "Le taux de décès observé à chaque âge, calculé à partir de vos données de décès et d'exposition.",
+            "es": "La tasa de mortalidad observada a cada edad, calculada a partir de sus datos de muertes y exposición."
+        },
+        {
+            "en": "Survival probabilities (qx, px)",
+            "fr": "Probabilités de survie (qx, px)",
+            "es": "Probabilidades de supervivencia (qx, px)"
+        },
+        {
+            "en": "The chance of dying or surviving through each age interval, derived from mortality rates.",
+            "fr": "La probabilité de décéder ou de survivre à chaque intervalle d'âge, dérivée des taux de mortalité.",
+            "es": "La probabilidad de morir o sobrevivir a través de cada intervalo de edad, derivada de las tasas de mortalidad."
+        },
+        {
+            "en": "Survivors and deaths (lx, dx)",
+            "fr": "Survivants et décès (lx, dx)",
+            "es": "Sobrevivientes y muertes (lx, dx)"
+        },
+        {
+            "en": "How a hypothetical cohort of 100,000 births would diminish through life based on current mortality.",
+            "fr": "Comment une cohorte hypothétique de 100 000 naissances diminuerait au cours de la vie selon la mortalité actuelle.",
+            "es": "Cómo una cohorte hipotética de 100,000 nacimientos disminuiría a lo largo de la vida según la mortalidad actual."
+        },
+        {
+            "en": "Person-years (nLx, Tx)",
+            "fr": "Années-personnes (nLx, Tx)",
+            "es": "Años-persona (nLx, Tx)"
+        },
+        {
+            "en": "Total years lived by the cohort at each age and cumulatively, used for life expectancy calculations.",
+            "fr": "Années totales vécues par la cohorte à chaque âge et cumulativement, utilisées pour les calculs d'espérance de vie.",
+            "es": "Años totales vividos por la cohorte a cada edad y acumulativamente, usados para cálculos de esperanza de vida."
+        },
+        {
+            "en": "Life expectancy (ex)",
+            "fr": "Espérance de vie (ex)",
+            "es": "Esperanza de vida (ex)"
+        },
+        {
+            "en": "Average remaining years of life at each age - the key summary measure of population health.",
+            "fr": "Années de vie restantes moyennes à chaque âge - la mesure résumée clé de la santé de la population.",
+            "es": "Años de vida restantes promedio a cada edad - la medida resumen clave de la salud de la población."
         }
     ]
 }

@@ -515,49 +515,31 @@ lifetable_server <- function(input, output, session) {
     input$selected_language
 
     tagList(
-      h3(i18n$t("Life Table Methods")),
-      p(i18n$t("The life table module calculates standard demographic life table indicators from mortality data:")),
+      h3(i18n$t("Life Table Analysis")),
+      p(i18n$t("A life table transforms mortality data into a comprehensive picture of survival patterns. Starting from observed deaths and population exposure, it calculates the probability of surviving to each age and the expected remaining years of life. This module produces complete period life tables following standard demographic methods.")),
+      h4(i18n$t("What you'll learn from your data:")),
       div(
         class = "ui relaxed divided list",
         div(class = "item", div(class = "content",
-          div(class = "header", "mx"),
-          div(class = "description", i18n$t("Age-specific mortality rate"))
+          div(class = "header", i18n$t("Mortality rates (mx)")),
+          div(class = "description", i18n$t("The observed death rate at each age, calculated from your deaths and exposure data."))
         )),
         div(class = "item", div(class = "content",
-          div(class = "header", "qx"),
-          div(class = "description", i18n$t("Probability of dying between age x and x+n"))
+          div(class = "header", i18n$t("Survival probabilities (qx, px)")),
+          div(class = "description", i18n$t("The chance of dying or surviving through each age interval, derived from mortality rates."))
         )),
         div(class = "item", div(class = "content",
-          div(class = "header", "px"),
-          div(class = "description", i18n$t("Probability of surviving from age x to x+n"))
+          div(class = "header", i18n$t("Survivors and deaths (lx, dx)")),
+          div(class = "description", i18n$t("How a hypothetical cohort of 100,000 births would diminish through life based on current mortality."))
         )),
         div(class = "item", div(class = "content",
-          div(class = "header", "lx"),
-          div(class = "description", i18n$t("Number of survivors to exact age x"))
+          div(class = "header", i18n$t("Person-years (nLx, Tx)")),
+          div(class = "description", i18n$t("Total years lived by the cohort at each age and cumulatively, used for life expectancy calculations."))
         )),
         div(class = "item", div(class = "content",
-          div(class = "header", "dx"),
-          div(class = "description", i18n$t("Deaths between age x and x+n"))
-        )),
-        div(class = "item", div(class = "content",
-          div(class = "header", "nLx"),
-          div(class = "description", i18n$t("Person-years lived between age x and x+n"))
-        )),
-        div(class = "item", div(class = "content",
-          div(class = "header", "Tx"),
-          div(class = "description", i18n$t("Total person-years lived above age x"))
-        )),
-        div(class = "item", div(class = "content",
-          div(class = "header", "ex"),
-          div(class = "description", i18n$t("Life expectancy at age x"))
+          div(class = "header", i18n$t("Life expectancy (ex)")),
+          div(class = "description", i18n$t("Average remaining years of life at each age - the key summary measure of population health."))
         ))
-      ),
-      h4(i18n$t("Input Data Requirements:")),
-      div(
-        class = "ui bulleted list",
-        div(class = "item", i18n$t("Age: Single ages or age groups")),
-        div(class = "item", i18n$t("Deaths: Death counts by age")),
-        div(class = "item", i18n$t("Exposures: Population exposure (person-years)"))
       )
     )
   })

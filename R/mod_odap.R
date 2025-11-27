@@ -372,32 +372,23 @@ odap_module_server <- function(input, output, session) {
           session$userData$language_version()
         }
         shiny::tagList(
-          shiny::h3(i18n$t("ODAP Redistribution Methods")),
-          shiny::p(i18n$t("ODAP (Old Age Population Adjustment) redistributes population from an open-age group to extended single ages:")),
+          shiny::h3(i18n$t("OPAG Redistribution Methods")),
+          shiny::p(i18n$t("OPAG (Old-Age Population Age Graduation) extends population data beyond an open age group (e.g., 80+) to single ages up to 100+. It uses mortality patterns from WPP or your own life table data to redistribute population while maintaining demographic consistency.")),
           shiny::div(
             class = "ui relaxed divided list",
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "mono"),
-              shiny::div(class = "description", i18n$t("Monotonic redistribution - preserves mortality monotonicity patterns"))
+              shiny::div(class = "description", i18n$t("Monotonic graduation ensures population counts decline smoothly with age, preventing implausible increases at advanced ages. Choose this when you want results that follow expected mortality patterns without oscillations."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "pclm"),
-              shiny::div(class = "description", i18n$t("PCLM-based redistribution - uses penalized composite link model with spline smoothing"))
+              shiny::div(class = "description", i18n$t("PCLM uses penalized splines to find the optimal balance between smoothness and fit to your data. Choose this for a data-driven approach that adapts automatically to your population's characteristics."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "uniform"),
-              shiny::div(class = "description", i18n$t("Uniform redistribution - simple proportional distribution across ages"))
+              shiny::div(class = "description", i18n$t("Uniform distribution divides the open age group population equally across target ages. Use as a simple baseline or when mortality data is unavailable."))
             ))
-          ),
-          shiny::h4(i18n$t("Key Parameters:")),
-          shiny::div(
-            class = "ui bulleted list",
-            shiny::div(class = "item", shiny::tags$strong("Age_fit:"), " ", i18n$t("Ages used for fitting the graduation model")),
-            shiny::div(class = "item", shiny::tags$strong("AgeInt_fit:"), " ", i18n$t("Age intervals for the fitting data")),
-            shiny::div(class = "item", shiny::tags$strong("Redistribute_from:"), " ", i18n$t("Starting age for redistribution (e.g., 80+)")),
-            shiny::div(class = "item", shiny::tags$strong("OAnew:"), " ", i18n$t("New open age group (e.g., extend to 100+)"))
-          ),
-          shiny::p(i18n$t("The module extends population data to higher ages while maintaining demographic consistency using mortality patterns from WPP or custom life tables."))
+          )
         )
       })
 
