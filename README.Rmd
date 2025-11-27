@@ -31,20 +31,48 @@ You can install the development version of lifetableprojection from [GitHub](htt
 devtools::install_github("cimentadaj/lifetableprojection")
 ```
 
-## How to launch the app
+## How to Launch the App
 
-To launch the app locally, run:
+### Option 1: With R Installed
 
 ``` r
 library(lifetableprojection)
 run_app()
 ```
 
-To launch the app through docker run this in the terminal at the root of
-the repository:
+### Option 2: With Docker (No R Required)
+
+Docker runs the app in a container - perfect if you don't have R installed.
+
+#### Step 1: Install Docker Desktop
+
+| Platform | Instructions |
+|----------|--------------|
+| **Windows** | Download [Docker Desktop](https://www.docker.com/products/docker-desktop). Enable **WSL 2** when prompted during installation. |
+| **Mac** | Download [Docker Desktop](https://www.docker.com/products/docker-desktop) and follow the installer. |
+
+#### Step 2: Download the Dockerfile
+
+Download the [Dockerfile](https://raw.githubusercontent.com/cimentadaj/lifetableprojection/main/Dockerfile) and save it to a folder (e.g., your Desktop).
+
+#### Step 3: Build and Run
+
+Open a terminal in the folder where you saved the Dockerfile:
+
+- **Windows**: Right-click the folder → "Open in Terminal"
+- **Mac**: Right-click the folder → "New Terminal at Folder"
+
+Then copy-paste these commands:
 
 ``` bash
-PORT=8180
-docker build -t proj-app --build-arg PORT=$PORT .
-docker run -p $PORT:$PORT -e PORT=$PORT -d proj-app
+docker build -t lifetable-app .
+docker run --rm -p 8180:8180 lifetable-app
 ```
+
+#### Step 4: Open the App
+
+Go to **http://localhost:8180** in your browser.
+
+#### Step 5: Stop the App
+
+Press `Ctrl+C` in the terminal window.
