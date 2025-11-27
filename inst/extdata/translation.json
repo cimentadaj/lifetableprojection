@@ -2189,6 +2189,36 @@
             "en": "Method for redistributing old-age population:<br><br>'mono' - monotonic (preserves mortality pattern)<br>'pclm' - spline-based smoothing<br>'uniform' - simple proportional distribution",
             "fr": "Méthode pour redistribuer la population âgée:<br><br>'mono' - monotone (préserve le schéma de mortalité)<br>'pclm' - lissage basé sur les splines<br>'uniform' - distribution proportionnelle simple",
             "es": "Método para redistribuir la población de edad avanzada:<br><br>'mono' - monótono (preserva el patrón de mortalidad)<br>'pclm' - suavizado basado en splines<br>'uniform' - distribución proporcional simple"
+        },
+        {
+            "en": "You can include grouping columns (e.g., Sex, Year, Region) to perform analysis separately for each group.",
+            "fr": "Vous pouvez inclure des colonnes de regroupement (par ex. Sexe, Année, Région) pour effectuer l'analyse séparément pour chaque groupe.",
+            "es": "Puede incluir columnas de agrupación (p. ej., Sexo, Año, Región) para realizar el análisis por separado para cada grupo."
+        },
+        {
+            "en": "Method for smoothing 5-year age groups:<br><br><b>auto</b> - Automatically selects best method<br><b>none</b> - No smoothing applied<br><b>Carrier-Farrag</b> - Uses ratios between adjacent groups<br><b>KKN</b> - Karup-King-Newton weighted averages<br><b>Arriaga</b> - Redistributes excess counts<br><b>United Nations</b> - UN standard method<br><b>Strong</b> - Aggressive smoothing<br><b>Zigzag</b> - Corrects oscillating patterns",
+            "fr": "Méthode pour lisser les groupes d'âge de 5 ans:<br><br><b>auto</b> - Sélectionne automatiquement la meilleure méthode<br><b>none</b> - Aucun lissage appliqué<br><b>Carrier-Farrag</b> - Utilise des ratios entre groupes adjacents<br><b>KKN</b> - Moyennes pondérées Karup-King-Newton<br><b>Arriaga</b> - Redistribue les comptages excédentaires<br><b>United Nations</b> - Méthode standard ONU<br><b>Strong</b> - Lissage agressif<br><b>Zigzag</b> - Corrige les oscillations",
+            "es": "Método para suavizar grupos de edad de 5 años:<br><br><b>auto</b> - Selecciona automáticamente el mejor método<br><b>none</b> - Sin suavizado aplicado<br><b>Carrier-Farrag</b> - Usa ratios entre grupos adyacentes<br><b>KKN</b> - Promedios ponderados Karup-King-Newton<br><b>Arriaga</b> - Redistribuye conteos excedentes<br><b>United Nations</b> - Método estándar ONU<br><b>Strong</b> - Suavizado agresivo<br><b>Zigzag</b> - Corrige patrones oscilantes"
+        },
+        {
+            "en": "Method for splitting grouped ages to single ages:<br><br><b>auto</b> - Automatically selects best method<br><b>none</b> - No splitting applied<br><b>sprague</b> - 4th difference interpolation<br><b>beers(ord)</b> - Ordinary Beers interpolation<br><b>beers(mod)</b> - Modified Beers with extra smoothing<br><b>grabill</b> - Designed for census data<br><b>pclm</b> - Modern penalized spline method<br><b>mono</b> - Monotonic (prevents negatives)<br><b>uniform</b> - Equal distribution",
+            "fr": "Méthode pour diviser les âges groupés en âges simples:<br><br><b>auto</b> - Sélectionne automatiquement la meilleure méthode<br><b>none</b> - Aucune division appliquée<br><b>sprague</b> - Interpolation de 4ème différence<br><b>beers(ord)</b> - Interpolation Beers ordinaire<br><b>beers(mod)</b> - Beers modifié avec lissage supplémentaire<br><b>grabill</b> - Conçu pour les données de recensement<br><b>pclm</b> - Méthode moderne de spline pénalisée<br><b>mono</b> - Monotone (empêche les négatifs)<br><b>uniform</b> - Distribution égale",
+            "es": "Método para dividir edades agrupadas en edades simples:<br><br><b>auto</b> - Selecciona automáticamente el mejor método<br><b>none</b> - Sin división aplicada<br><b>sprague</b> - Interpolación de 4ta diferencia<br><b>beers(ord)</b> - Interpolación Beers ordinaria<br><b>beers(mod)</b> - Beers modificado con suavizado extra<br><b>grabill</b> - Diseñado para datos de censo<br><b>pclm</b> - Método moderno de spline penalizado<br><b>mono</b> - Monótono (previene negativos)<br><b>uniform</b> - Distribución igual"
+        },
+        {
+            "en": "Mathematical model for extending mortality rates to oldest ages:<br><br><b>Kannisto</b> - Logistic model, widely used<br><b>Kannisto-Makeham</b> - Adds background mortality<br><b>Makeham</b> - Classic exponential model<br><b>Gompertz</b> - Simple exponential<br><b>GGompertz</b> - Generalized Gompertz<br><b>Beard</b> - Plateau at oldest ages<br><b>Beard-Makeham</b> - Beard with background mortality<br><b>Quadratic</b> - Polynomial fit",
+            "fr": "Modèle mathématique pour extrapoler les taux de mortalité aux âges les plus avancés:<br><br><b>Kannisto</b> - Modèle logistique, largement utilisé<br><b>Kannisto-Makeham</b> - Ajoute la mortalité de fond<br><b>Makeham</b> - Modèle exponentiel classique<br><b>Gompertz</b> - Exponentiel simple<br><b>GGompertz</b> - Gompertz généralisé<br><b>Beard</b> - Plateau aux âges les plus avancés<br><b>Beard-Makeham</b> - Beard avec mortalité de fond<br><b>Quadratic</b> - Ajustement polynomial",
+            "es": "Modelo matemático para extender tasas de mortalidad a edades más avanzadas:<br><br><b>Kannisto</b> - Modelo logístico, ampliamente usado<br><b>Kannisto-Makeham</b> - Añade mortalidad de fondo<br><b>Makeham</b> - Modelo exponencial clásico<br><b>Gompertz</b> - Exponencial simple<br><b>GGompertz</b> - Gompertz generalizado<br><b>Beard</b> - Meseta en edades más avanzadas<br><b>Beard-Makeham</b> - Beard con mortalidad de fondo<br><b>Quadratic</b> - Ajuste polinomial"
+        },
+        {
+            "en": "Rule for calculating average person-years lived in the first year of life (a0):<br><br><b>Andreev-Kingkade</b> - Modern approach based on empirical data<br><b>Coale-Demeny</b> - Classic approach from model life tables",
+            "fr": "Règle pour calculer les années-personnes moyennes vécues dans la première année de vie (a0):<br><br><b>Andreev-Kingkade</b> - Approche moderne basée sur des données empiriques<br><b>Coale-Demeny</b> - Approche classique des tables de mortalité types",
+            "es": "Regla para calcular años-persona promedio vividos en el primer año de vida (a0):<br><br><b>Andreev-Kingkade</b> - Enfoque moderno basado en datos empíricos<br><b>Coale-Demeny</b> - Enfoque clásico de tablas de vida modelo"
+        },
+        {
+            "en": "Method for calculating average person-years lived in each age interval (ax):<br><br><b>UN (Greville)</b> - UN recommended method using Greville's formula<br><b>PASEX</b> - Population Analysis Spreadsheet method",
+            "fr": "Méthode pour calculer les années-personnes moyennes vécues dans chaque intervalle d'âge (ax):<br><br><b>UN (Greville)</b> - Méthode recommandée par l'ONU utilisant la formule de Greville<br><b>PASEX</b> - Méthode de feuille de calcul d'analyse de population",
+            "es": "Método para calcular años-persona promedio vividos en cada intervalo de edad (ax):<br><br><b>UN (Greville)</b> - Método recomendado por ONU usando la fórmula de Greville<br><b>PASEX</b> - Método de hoja de cálculo de análisis de población"
         }
     ]
 }

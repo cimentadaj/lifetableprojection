@@ -155,21 +155,43 @@ adjustment_steps <- list(
           column(
             6,
             h4(i18n$t("Exposures Parameters")),
-            selectInput(
-              "smoothing_rough_exp",
-              i18n$t("Rough Method (Exposures)"),
-              choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
-              selected = "auto"
+            div(
+              div(
+                style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+                tags$label(`for` = "smoothing_rough_exp", i18n$t("Rough Method")),
+                TooltipHost(
+                  content = uiOutput("rough_method_tooltip"),
+                  delay = 0,
+                  Image(src = "www/info.png", width = "20px", shouldStartVisible = TRUE)
+                )
+              ),
+              selectInput(
+                "smoothing_rough_exp",
+                NULL,
+                choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
+                selected = "auto"
+              )
             )
           ),
           column(
             6,
             h4(i18n$t("Deaths Parameters")),
-            selectInput(
-              "smoothing_rough_deaths",
-              i18n$t("Rough Method (Deaths)"),
-              choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
-              selected = "auto"
+            div(
+              div(
+                style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+                tags$label(`for` = "smoothing_rough_deaths", i18n$t("Rough Method")),
+                TooltipHost(
+                  content = uiOutput("rough_method_tooltip"),
+                  delay = 0,
+                  Image(src = "www/info.png", width = "20px", shouldStartVisible = TRUE)
+                )
+              ),
+              selectInput(
+                "smoothing_rough_deaths",
+                NULL,
+                choices = c("auto", "none", "Carrier-Farrag", "KKN", "Arriaga", "United Nations", "Strong", "Zigzag"),
+                selected = "auto"
+              )
             )
           )
         ),
@@ -194,22 +216,44 @@ adjustment_steps <- list(
           fluidRow(
             column(
               6,
-              selectInput(
-                "smoothing_fine_exp",
-                i18n$t("Fine Method (Exposures)"),
-                choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
-                selected = "auto"
+              div(
+                div(
+                  style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+                  tags$label(`for` = "smoothing_fine_exp", i18n$t("Fine Method")),
+                  TooltipHost(
+                    content = uiOutput("fine_method_tooltip"),
+                    delay = 0,
+                    Image(src = "www/info.png", width = "20px", shouldStartVisible = TRUE)
+                  )
+                ),
+                selectInput(
+                  "smoothing_fine_exp",
+                  NULL,
+                  choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+                  selected = "auto"
+                )
               ),
               numericInput("smoothing_u5m_exp", i18n$t("Under-5 Mortality (optional, Exposures)"), value = NULL),
               shiny.semantic::checkbox_input("smoothing_constrain_infants_exp", i18n$t("Constrain Infants (Exposures)"), is_marked = TRUE)
             ),
             column(
               6,
-              selectInput(
-                "smoothing_fine_deaths",
-                i18n$t("Fine Method (Deaths)"),
-                choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
-                selected = "auto"
+              div(
+                div(
+                  style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+                  tags$label(`for` = "smoothing_fine_deaths", i18n$t("Fine Method")),
+                  TooltipHost(
+                    content = uiOutput("fine_method_tooltip"),
+                    delay = 0,
+                    Image(src = "www/info.png", width = "20px", shouldStartVisible = TRUE)
+                  )
+                ),
+                selectInput(
+                  "smoothing_fine_deaths",
+                  NULL,
+                  choices = c("auto", "none", "sprague", "beers(ord)", "beers(mod)", "grabill", "pclm", "mono", "uniform"),
+                  selected = "auto"
+                )
               ),
               numericInput("smoothing_u5m_deaths", i18n$t("Under-5 Mortality (optional, Deaths)"), value = NULL),
               shiny.semantic::checkbox_input("smoothing_constrain_infants_deaths", i18n$t("Constrain Infants (Deaths)"), is_marked = TRUE)
@@ -492,6 +536,7 @@ lifetable_server <- function(input, output, session) {
             content = div(
               h1(i18n$t("Data upload and validation")),
               p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:")),
+              p(i18n$t("You can include grouping columns (e.g., Sex, Year, Region) to perform analysis separately for each group.")),
               br(),
               div(
                 style = "display: flex; gap: 5px;",
@@ -643,14 +688,47 @@ lifetable_server <- function(input, output, session) {
           class = "ui two column grid",
           div(
             class = "column",
-            create_field_set("", i18n$t("Extrapolation Law"), "input_extrapLaw", EXTRAP_LAWS, EXTRAP_LAWS[1]),
+            div(
+              div(
+                style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+                tags$label(`for` = "input_extrapLaw", i18n$t("Extrapolation Law")),
+                TooltipHost(
+                  content = uiOutput("extraplaw_tooltip"),
+                  delay = 0,
+                  Image(src = "www/info.png", width = "20px", shouldStartVisible = TRUE)
+                )
+              ),
+              shiny.semantic::selectInput("input_extrapLaw", NULL, choices = EXTRAP_LAWS, selected = EXTRAP_LAWS[1])
+            ),
             create_field_set("", i18n$t("Lifetable Radix"), "input_radix", input_selected = 100000, numeric_input = TRUE)
           ),
           div(
             class = "column",
             create_field_set("", i18n$t("Sex Ratio at Birth"), "input_srb", input_selected = 1.05, numeric_input = TRUE),
-            create_field_set("", i18n$t("a(0) Rule"), "input_a0rule", c("Andreev-Kingkade", "Coale-Demeny"), "Andreev-Kingkade"),
-            create_field_set("", i18n$t("a(x) Method"), "input_axmethod", c("UN (Greville)", "PASEX"), "UN (Greville)")
+            div(
+              div(
+                style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+                tags$label(`for` = "input_a0rule", i18n$t("a(0) Rule")),
+                TooltipHost(
+                  content = uiOutput("a0rule_tooltip"),
+                  delay = 0,
+                  Image(src = "www/info.png", width = "20px", shouldStartVisible = TRUE)
+                )
+              ),
+              shiny.semantic::selectInput("input_a0rule", NULL, choices = c("Andreev-Kingkade", "Coale-Demeny"), selected = "Andreev-Kingkade")
+            ),
+            div(
+              div(
+                style = "display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px;",
+                tags$label(`for` = "input_axmethod", i18n$t("a(x) Method")),
+                TooltipHost(
+                  content = uiOutput("axmethod_tooltip"),
+                  delay = 0,
+                  Image(src = "www/info.png", width = "20px", shouldStartVisible = TRUE)
+                )
+              ),
+              shiny.semantic::selectInput("input_axmethod", NULL, choices = c("UN (Greville)", "PASEX"), selected = "UN (Greville)")
+            )
           )
         )
       ),
@@ -1915,6 +1993,38 @@ lifetable_server <- function(input, output, session) {
     i18n <- usei18n_local()
     input$selected_language
     i18n$t("Exposures refer to the person-years lived over the same period where Deaths were registered. If Deaths refer to a single year, then sometimes mid-year population can be used to approximate Exposures.")
+  })
+
+  # Tooltip outputs for smoothing methods
+  output$rough_method_tooltip <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+    HTML(i18n$t("Method for smoothing 5-year age groups:<br><br><b>auto</b> - Automatically selects best method<br><b>none</b> - No smoothing applied<br><b>Carrier-Farrag</b> - Uses ratios between adjacent groups<br><b>KKN</b> - Karup-King-Newton weighted averages<br><b>Arriaga</b> - Redistributes excess counts<br><b>United Nations</b> - UN standard method<br><b>Strong</b> - Aggressive smoothing<br><b>Zigzag</b> - Corrects oscillating patterns"))
+  })
+
+  output$fine_method_tooltip <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+    HTML(i18n$t("Method for splitting grouped ages to single ages:<br><br><b>auto</b> - Automatically selects best method<br><b>none</b> - No splitting applied<br><b>sprague</b> - 4th difference interpolation<br><b>beers(ord)</b> - Ordinary Beers interpolation<br><b>beers(mod)</b> - Modified Beers with extra smoothing<br><b>grabill</b> - Designed for census data<br><b>pclm</b> - Modern penalized spline method<br><b>mono</b> - Monotonic (prevents negatives)<br><b>uniform</b> - Equal distribution"))
+  })
+
+  # Tooltip outputs for lifetable advanced options
+  output$extraplaw_tooltip <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+    HTML(i18n$t("Mathematical model for extending mortality rates to oldest ages:<br><br><b>Kannisto</b> - Logistic model, widely used<br><b>Kannisto-Makeham</b> - Adds background mortality<br><b>Makeham</b> - Classic exponential model<br><b>Gompertz</b> - Simple exponential<br><b>GGompertz</b> - Generalized Gompertz<br><b>Beard</b> - Plateau at oldest ages<br><b>Beard-Makeham</b> - Beard with background mortality<br><b>Quadratic</b> - Polynomial fit"))
+  })
+
+  output$a0rule_tooltip <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+    HTML(i18n$t("Rule for calculating average person-years lived in the first year of life (a0):<br><br><b>Andreev-Kingkade</b> - Modern approach based on empirical data<br><b>Coale-Demeny</b> - Classic approach from model life tables"))
+  })
+
+  output$axmethod_tooltip <- renderUI({
+    i18n <- usei18n_local()
+    input$selected_language
+    HTML(i18n$t("Method for calculating average person-years lived in each age interval (ax):<br><br><b>UN (Greville)</b> - UN recommended method using Greville's formula<br><b>PASEX</b> - Population Analysis Spreadsheet method"))
   })
 }
 
