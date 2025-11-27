@@ -292,7 +292,7 @@ smoothing_module_server <- function(input, output, session) {
         }
         shiny::tagList(
           shiny::h1(i18n$t("Data upload and validation")),
-          shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:"))
+          shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's an example of the data formatting, using Deaths/Exposures but it can be any other numeric column:"))
         )
       })
 
@@ -303,7 +303,7 @@ smoothing_module_server <- function(input, output, session) {
         shiny::tagList(
           shiny::p(shiny::strong(i18n$t("Data requirements:"))),
           shiny::tags$ul(
-            shiny::tags$li(i18n$t("Required: Age column (must be single-year ages: 0, 1, 2, 3, ... not 5-year or abridged groups)")),
+            shiny::tags$li(i18n$t("Required: Age column (single-year ages like 0, 1, 2, 3, ... or 5-year age groups, or abridged format)")),
             shiny::tags$li(i18n$t("Required: At least one numeric column (Deaths, Exposures, or any other metric)")),
             shiny::tags$li(i18n$t("Data can be raw counts or proportions/rates"))
           ),
@@ -318,64 +318,67 @@ smoothing_module_server <- function(input, output, session) {
         }
         shiny::tagList(
           shiny::h3(i18n$t("Smoothing Methods")),
+          shiny::p(i18n$t("Smoothing methods help you redistribute population or demographic counts across ages to reduce irregularities caused by age heaping, digit preference, or data collection issues. The goal is to produce a more realistic age distribution that better reflects the underlying population structure.")),
           shiny::h4(i18n$t("Fine Methods (splitting to single ages):")),
+          shiny::p(i18n$t("These methods take grouped data (typically 5-year age groups) and estimate single-year age distributions. Use fine methods when you need detailed age-specific information for life table construction or demographic analysis.")),
           shiny::div(
             class = "ui relaxed divided list",
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "sprague"),
-              shiny::div(class = "description", i18n$t("Sprague 4th difference formula - standard demographic method"))
+              shiny::div(class = "description", i18n$t("The Sprague method uses a 4th difference osculatory interpolation formula to split 5-year age groups into single years. It is one of the most widely used methods in demography because it produces smooth curves that preserve the original group totals. Choose Sprague when you want a well-established, reliable approach that balances smoothness with fidelity to your data. The resulting single-year estimates will show gradual transitions between ages without artificial jumps."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "beers(ord)"),
-              shiny::div(class = "description", i18n$t("Beers ordinary interpolation - less constrained"))
+              shiny::div(class = "description", i18n$t("The Beers ordinary interpolation method provides a flexible approach to splitting age groups into single years with fewer mathematical constraints than other methods. This means it follows the observed data more closely but may produce less smooth results. Use Beers ordinary when you trust your data quality and want the interpolation to reflect the actual observed patterns, even if they show some irregularities. This method is particularly useful when you suspect the true population distribution has genuine fluctuations."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "beers(mod)"),
-              shiny::div(class = "description", i18n$t("Beers modified interpolation - additional smoothing constraints"))
+              shiny::div(class = "description", i18n$t("The Beers modified interpolation applies additional smoothing constraints compared to the ordinary version. This produces curves that are more mathematically regular while still respecting the original age group totals. Choose Beers modified when you want a balance between following observed patterns and producing aesthetically smooth results. It works well for populations where you expect a gradual age structure without sudden changes."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "grabill"),
-              shiny::div(class = "description", i18n$t("Grabill method - designed for population data"))
+              shiny::div(class = "description", i18n$t("The Grabill method was specifically designed for splitting population census data into single-year ages. It uses a moving weighted average approach that handles boundary conditions (the youngest and oldest age groups) particularly well. Choose Grabill when working with population counts from censuses or surveys where you need reliable estimates across the entire age range, including at the extremes where other methods may produce unreliable results."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "pclm"),
-              shiny::div(class = "description", i18n$t("Penalized Composite Link Model - modern spline-based approach"))
+              shiny::div(class = "description", i18n$t("The Penalized Composite Link Model is a modern statistical approach that uses penalized splines to ungroupp data. Unlike traditional demographic methods, PCLM treats the problem as a statistical estimation task and can provide uncertainty measures. It automatically finds the optimal smoothness level by balancing fit to the data against regularity. Choose PCLM when you want a data-driven approach that adapts to your specific data characteristics, or when you need confidence intervals around your estimates."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "mono"),
-              shiny::div(class = "description", i18n$t("Monotonic graduation - prevents oscillations/negative values"))
+              shiny::div(class = "description", i18n$t("The Monotonic graduation method ensures that the resulting single-year values never become negative and maintains monotonicity where appropriate. This is crucial when working with quantities that cannot logically be negative, such as population counts or death rates in certain age ranges. Choose mono when you have concerns about other methods producing implausible negative values or oscillating patterns, particularly in age ranges with small numbers."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "uniform"),
-              shiny::div(class = "description", i18n$t("Uniform distribution within age groups - simplest method"))
+              shiny::div(class = "description", i18n$t("The Uniform distribution method simply divides each age group total equally among all single years within that group. While mathematically simple, this approach assumes no variation in the population across single ages within each group. Use uniform only as a baseline comparison or when other methods are not appropriate for your data. The results will show step-like patterns at group boundaries, which may not reflect the true population structure."))
             ))
           ),
           shiny::h4(i18n$t("Rough Methods (smoothing 5-year groups):")),
+          shiny::p(i18n$t("These methods work directly on 5-year age groups to reduce digit preference and age heaping without splitting to single ages. Use rough methods when your data shows clear signs of digit preference (people reporting ages ending in 0 or 5) but you want to maintain the 5-year age group structure.")),
           shiny::div(
             class = "ui relaxed divided list",
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "Carrier-Farrag"),
-              shiny::div(class = "description", i18n$t("Ratio-based smoothing method"))
+              shiny::div(class = "description", i18n$t("The Carrier-Farrag method uses ratios between adjacent age groups to redistribute population counts and reduce digit preference effects. It works by examining the relationship between neighboring groups and smoothing out unrealistic jumps. Choose this method when you observe clear age heaping in your data and want a straightforward correction that preserves the overall age structure while reducing obvious irregularities."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "KKN"),
-              shiny::div(class = "description", i18n$t("Karup-King-Newton method"))
+              shiny::div(class = "description", i18n$t("The Karup-King-Newton method is a classic demographic smoothing technique that uses weighted averages of surrounding age groups to produce more regular distributions. It has been widely used in official demographic statistics and provides reliable results for typical population age structures. Choose KKN when you want a well-tested, conservative approach that makes moderate adjustments to your data without aggressive smoothing."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "Arriaga"),
-              shiny::div(class = "description", i18n$t("Arriaga redistribution method"))
+              shiny::div(class = "description", i18n$t("The Arriaga redistribution method focuses on correcting age heaping by redistributing excess counts from ages where digit preference causes artificial peaks. It specifically targets the characteristic patterns of age misreporting common in populations with limited numeracy. Choose Arriaga when you have strong evidence of digit preference in your data and want a method designed specifically to address this demographic data quality issue."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "United Nations"),
-              shiny::div(class = "description", i18n$t("UN standard smoothing"))
+              shiny::div(class = "description", i18n$t("The United Nations standard smoothing method was developed for use in countries with data quality challenges and has been applied extensively in global demographic estimation. It provides a moderate level of smoothing appropriate for typical census data from developing countries. Choose the UN method when working with data that may have multiple quality issues beyond simple digit preference, or when you want consistency with international demographic practice."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "Strong"),
-              shiny::div(class = "description", i18n$t("Aggressive smoothing method"))
+              shiny::div(class = "description", i18n$t("The Strong method applies aggressive smoothing that substantially reduces irregularities in the age distribution. It makes larger adjustments than other methods and produces very smooth results. Choose Strong when your data has severe quality problems with extreme heaping or erratic patterns, and you need heavy smoothing to produce a usable age distribution. Be aware that aggressive smoothing may also remove genuine features of your population structure."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "Zigzag"),
-              shiny::div(class = "description", i18n$t("Corrects oscillation patterns"))
+              shiny::div(class = "description", i18n$t("The Zigzag method specifically targets alternating high-low patterns in age data, which can arise from systematic reporting errors or data processing issues. It identifies and corrects these oscillating patterns while preserving the overall level and trend of the age distribution. Choose Zigzag when you observe a sawtooth pattern in your age data, where adjacent age groups alternate between being too high and too low compared to expected values."))
             ))
           )
         )

@@ -292,7 +292,7 @@ graduation_module_server <- function(input, output, session) {
         }
         shiny::tagList(
           shiny::h1(i18n$t("Data upload and validation")),
-          shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:"))
+          shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's an example of the data formatting, using Deaths/Exposures but it can be any other numeric column:"))
         )
       })
 
@@ -303,7 +303,7 @@ graduation_module_server <- function(input, output, session) {
         shiny::tagList(
           shiny::p(shiny::strong(i18n$t("Data requirements:"))),
           shiny::tags$ul(
-            shiny::tags$li(i18n$t("Required: Age column (must be single-year ages: 0, 1, 2, 3, ... not 5-year or abridged groups)")),
+            shiny::tags$li(i18n$t("Required: Age column (single-year ages like 0, 1, 2, 3, ... or 5-year age groups, or abridged format)")),
             shiny::tags$li(i18n$t("Required: At least one numeric column (Deaths, Exposures, or any other metric)")),
             shiny::tags$li(i18n$t("Data can be raw counts or proportions/rates"))
           ),
@@ -318,44 +318,37 @@ graduation_module_server <- function(input, output, session) {
         }
         shiny::tagList(
           shiny::h3(i18n$t("Graduation Methods")),
-          shiny::p(i18n$t("The graduation module uses the same methods as the smoothing module to transform age data between different grouping structures.")),
+          shiny::p(i18n$t("Graduation is the process of transforming demographic data from one age grouping structure to another while maintaining internal consistency and producing smooth, plausible age patterns. This module allows you to convert between single-year ages, 5-year age groups, and abridged life table age structures commonly used in demographic analysis. The choice of graduation method affects how counts are redistributed across ages, with each method offering different trade-offs between smoothness, adherence to observed totals, and handling of boundary conditions.")),
           shiny::div(
             class = "ui relaxed divided list",
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "sprague"),
-              shiny::div(class = "description", i18n$t("Sprague 4th difference formula - standard demographic method"))
+              shiny::div(class = "description", i18n$t("The Sprague osculatory interpolation method is the most widely adopted approach in demographic practice for splitting grouped data into single-year ages. It uses a 4th difference formula that ensures smooth transitions between ages while exactly preserving the original group totals. When you apply Sprague graduation, you will obtain single-year estimates that flow naturally from one age to the next without artificial jumps or discontinuities. This method is particularly appropriate when you need to prepare data for life table calculations or when comparing populations with different original age groupings. The Sprague method has been validated across many populations and produces reliable results under typical demographic conditions."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "beers(ord)"),
-              shiny::div(class = "description", i18n$t("Beers ordinary interpolation"))
+              shiny::div(class = "description", i18n$t("The Beers ordinary interpolation offers a more flexible approach to age graduation with fewer mathematical constraints than Sprague. This flexibility means the method follows your observed data more closely, which can be advantageous when the underlying age distribution has genuine irregularities that you want to preserve. However, this same flexibility may produce less visually smooth results when applied to data with measurement error or heaping. Use Beers ordinary when you have confidence in your data quality and want the graduated values to reflect the observed patterns as faithfully as possible, or when you suspect the true population has features that more constrained methods might obscure."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "beers(mod)"),
-              shiny::div(class = "description", i18n$t("Beers modified interpolation with smoothing"))
+              shiny::div(class = "description", i18n$t("The Beers modified interpolation incorporates additional smoothing constraints that produce more regular age curves compared to the ordinary version. While still respecting the original age group totals, this method enforces greater continuity in the graduated values, resulting in curves that appear more mathematically elegant. This approach works well when you want to balance fidelity to observed data with the expectation that true population structures change gradually with age. The modified version is preferred when preparing data for publication or when the graduated values will be used in models that assume smooth underlying distributions."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "grabill"),
-              shiny::div(class = "description", i18n$t("Grabill method for population data"))
+              shiny::div(class = "description", i18n$t("The Grabill method was developed specifically for population data and uses a weighted moving average approach to graduate age groups. Its distinguishing feature is particularly robust handling of the youngest and oldest age groups, where other methods may produce unreliable or implausible estimates. When you use Grabill graduation, you will find that the results at the boundaries of your age range are more stable and less prone to the edge effects that can affect other interpolation methods. This makes Grabill especially suitable for census population counts where accurate estimates across the entire age span are required."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "pclm"),
-              shiny::div(class = "description", i18n$t("Penalized Composite Link Model - spline approach"))
+              shiny::div(class = "description", i18n$t("The Penalized Composite Link Model represents a modern statistical approach to graduation that differs fundamentally from traditional demographic methods. Rather than applying fixed formulas, PCLM treats graduation as a statistical estimation problem and uses penalized splines to find the optimal balance between smoothness and fit to your data. The method automatically adapts its smoothing intensity based on the characteristics of your specific dataset. A key advantage of PCLM is its ability to provide uncertainty estimates around the graduated values, allowing you to assess the precision of your results. Choose PCLM when you want a data-driven approach that can handle unusual age distributions or when quantifying uncertainty is important for your analysis."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "mono"),
-              shiny::div(class = "description", i18n$t("Monotonic graduation - prevents negative values"))
+              shiny::div(class = "description", i18n$t("Monotonic graduation provides mathematical guarantees that the resulting values will never be negative and will maintain monotonicity where the underlying quantity requires it. This is essential when graduating death counts, exposures, or rates where negative values are logically impossible. The method is particularly valuable at older ages where small numbers can cause other graduation methods to produce oscillating or negative estimates. When you apply monotonic graduation, you can be confident that all graduated values will be demographically plausible. This makes it the preferred choice when working with data that will be used directly in life table calculations without further adjustment."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", "uniform"),
-              shiny::div(class = "description", i18n$t("Uniform distribution within age groups"))
+              shiny::div(class = "description", i18n$t("Uniform distribution is the simplest graduation method, dividing each age group total equally among all constituent single-year ages. While this approach makes no assumptions about the shape of the within-group distribution, it produces characteristic step patterns at group boundaries that do not reflect realistic population structures. The uniform method serves primarily as a baseline or reference point against which to compare more sophisticated approaches. It may also be appropriate in situations where the grouped data is already highly aggregated and any detailed age pattern would be speculative, or when you simply need quick provisional estimates before applying more careful graduation methods."))
             ))
-          ),
-          shiny::p(i18n$t("Additional graduation parameters:")),
-          shiny::div(
-            class = "ui bulleted list",
-            shiny::div(class = "item", i18n$t("Age Output: Choose between 5-year, abridged, or single age formats")),
-            shiny::div(class = "item", i18n$t("Constraints: Apply specific constraints to infant age groups")),
-            shiny::div(class = "item", i18n$t("Pivoting: Re-aggregate data to desired age structure"))
           )
         )
       })

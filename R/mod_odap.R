@@ -29,6 +29,24 @@ get_wpp_country_code <- function(country_name) {
   })
 }
 
+#' Normalize sex values to WPP format ("M" or "F")
+#'
+#' Handles various sex representations: m, M, male, Male, males, Males,
+#' f, F, female, Female, females, Females
+#'
+#' @param x Character vector of sex values
+#' @return Character vector with normalized sex values ("M" or "F")
+#' @noRd
+normalize_sex <- function(x) {
+  if (is.null(x) || length(x) == 0) return(x)
+  x_lower <- tolower(x)
+  dplyr::case_when(
+    x_lower %in% c("m", "male", "males") ~ "M",
+    x_lower %in% c("f", "female", "females") ~ "F",
+    TRUE ~ x
+  )
+}
+
 
 #' Old-Age Population Redistribution Module UI
 #'
@@ -333,13 +351,17 @@ odap_module_server <- function(input, output, session) {
           session$userData$language_version()
         }
         shiny::tagList(
-          shiny::p(i18n$t("Required columns: Age and pop (population counts). Age can be single-year (0-100) or abridged (5 or 10-year intervals).")),
-          shiny::p(i18n$t("How to provide mortality data:")),
+          shiny::p(shiny::strong(i18n$t("Required columns:"))),
           shiny::tags$ul(
-            shiny::tags$li(i18n$t("Include 'nLx' column (custom mortality life table)")),
-            shiny::tags$li(i18n$t("Provide only Age + pop (select WPP mortality using dropdowns in the analysis step)"))
+            shiny::tags$li(i18n$t("Age (single-year or abridged)")),
+            shiny::tags$li(i18n$t("pop (population counts)"))
           ),
-          shiny::p(shiny::tags$strong(i18n$t("Important: If you want to do the analysis by groups, you must provide nLx. Without nLx, WPP mortality selection applies to ALL groups."))),
+          shiny::p(shiny::strong(i18n$t("Mortality data (choose one):"))),
+          shiny::tags$ul(
+            shiny::tags$li(i18n$t("Provide nLx column with your own mortality data, OR")),
+            shiny::tags$li(i18n$t("Use WPP mortality (selected in analysis step). Add sex/year columns to fetch WPP data per group."))
+          ),
+          shiny::p(shiny::tags$em(i18n$t("Additional grouping columns are supported for batch analysis."))),
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
           shiny::p(i18n$t("Sample data includes Age, pop, and nLx (custom mortality)."))
         )
@@ -849,18 +871,20 @@ odap_module_server <- function(input, output, session) {
             wpp_country_code <- NULL
 
             if (!has_nlx) {
-              # Get sex from data column or UI
+              # Get sex from data column or UI, normalize to WPP format (M/F)
               if (has_sex_col) {
-                row_sex <- data_subset[["sex"]][1]
-                if (is.na(row_sex)) row_sex <- data_subset[["Sex"]][1]
+                # Find actual column name (could be "sex", "Sex", "SEX", etc.)
+                sex_col <- names(data_subset)[tolower(names(data_subset)) == "sex"][1]
+                row_sex <- normalize_sex(data_subset[[sex_col]][1])
               } else {
                 row_sex <- isolate(input$wpp_sex)
               }
 
               # Get year from data column or UI
               if (has_year_col) {
-                row_year <- as.numeric(data_subset[["year"]][1])
-                if (is.na(row_year)) row_year <- as.numeric(data_subset[["Year"]][1])
+                # Find actual column name (could be "year", "Year", "YEAR", etc.)
+                year_col <- names(data_subset)[tolower(names(data_subset)) == "year"][1]
+                row_year <- as.numeric(data_subset[[year_col]][1])
               } else {
                 row_year <- isolate(input$wpp_year)
               }
@@ -907,18 +931,20 @@ odap_module_server <- function(input, output, session) {
             wpp_country_code <- NULL
 
             if (!has_nlx) {
-              # Get sex from data column or UI
+              # Get sex from data column or UI, normalize to WPP format (M/F)
               if (has_sex_col) {
-                row_sex <- data_subset[["sex"]][1]
-                if (is.na(row_sex)) row_sex <- data_subset[["Sex"]][1]
+                # Find actual column name (could be "sex", "Sex", "SEX", etc.)
+                sex_col <- names(data_subset)[tolower(names(data_subset)) == "sex"][1]
+                row_sex <- normalize_sex(data_subset[[sex_col]][1])
               } else {
                 row_sex <- isolate(input$wpp_sex)
               }
 
               # Get year from data column or UI
               if (has_year_col) {
-                row_year <- as.numeric(data_subset[["year"]][1])
-                if (is.na(row_year)) row_year <- as.numeric(data_subset[["Year"]][1])
+                # Find actual column name (could be "year", "Year", "YEAR", etc.)
+                year_col <- names(data_subset)[tolower(names(data_subset)) == "year"][1]
+                row_year <- as.numeric(data_subset[[year_col]][1])
               } else {
                 row_year <- isolate(input$wpp_year)
               }
@@ -1234,18 +1260,21 @@ odap_module_server <- function(input, output, session) {
           # Country is always from dropdown
           wpp_name <- isolate(input$wpp_country)
 
-          # Check for sex column in data
+          # Check for sex column in data, normalize to WPP format (M/F)
           if ("sex" %in% col_names_lower) {
-            wpp_sex <- data_full[["sex"]][1]
-            if (is.na(wpp_sex)) wpp_sex <- data_full[["Sex"]][1]
+            # Find actual column name (could be "sex", "Sex", "SEX", etc.)
+            sex_col <- names(data_full)[tolower(names(data_full)) == "sex"][1]
+            wpp_sex <- data_full[[sex_col]][1]
+            wpp_sex <- normalize_sex(wpp_sex)
           } else {
             wpp_sex <- isolate(input$wpp_sex)
           }
 
           # Check for year column in data
           if ("year" %in% col_names_lower) {
-            wpp_year <- as.numeric(data_full[["year"]][1])
-            if (is.na(wpp_year)) wpp_year <- as.numeric(data_full[["Year"]][1])
+            # Find actual column name (could be "year", "Year", "YEAR", etc.)
+            year_col <- names(data_full)[tolower(names(data_full)) == "year"][1]
+            wpp_year <- as.numeric(data_full[[year_col]][1])
           } else {
             wpp_year <- isolate(input$wpp_year)
           }

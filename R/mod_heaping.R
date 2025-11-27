@@ -353,7 +353,7 @@ heaping_module_server <- function(input, output, session) {
         }
         shiny::tagList(
           shiny::h1(i18n$t("Data upload and validation")),
-          shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's what we're looking for:"))
+          shiny::p(i18n$t("Begin by uploading your CSV file. Not sure about your file? Here's an example of the data formatting, using Deaths/Exposures but it can be any other numeric column:"))
         )
       })
 
@@ -379,42 +379,42 @@ heaping_module_server <- function(input, output, session) {
         }
         shiny::tagList(
           shiny::h3(i18n$t("Heaping Diagnostic Methods")),
-          shiny::p(i18n$t("The heaping module provides several methods to detect age preference patterns in demographic data:")),
+          shiny::p(i18n$t("Age heaping occurs when people report their ages inaccurately, typically rounding to preferred digits like 0 or 5. This is common in populations with limited numeracy or where ages are estimated rather than known precisely. Detecting heaping is essential before analyzing demographic data because it can distort mortality rates, fertility patterns, and population structures. The following diagnostic methods help you quantify the extent of age misreporting in your data and determine whether correction is needed before proceeding with demographic analysis.")),
           shiny::div(
             class = "ui relaxed divided list",
             shiny::div(
               class = "item",
               shiny::div(class = "content",
                 shiny::div(class = "header", i18n$t("Bachi Index")),
-                shiny::div(class = "description", i18n$t("Measures digit preference by comparing observed vs expected frequencies across all terminal digits"))
+                shiny::div(class = "description", i18n$t("The Bachi Index provides a comprehensive measure of digit preference by examining how much the observed frequency of each terminal digit (0 through 9) deviates from what would be expected in a population with no age preference. The index calculates these deviations across all digits and summarizes them into a single score. A Bachi Index of zero would indicate perfect data with no digit preference, while higher values indicate increasing severity of age heaping. Use this method when you want an overall assessment of data quality that accounts for preference or avoidance of all digits, not just 0 and 5. The Bachi Index is particularly informative when comparing data quality across different populations or time periods."))
               )
             ),
             shiny::div(
               class = "item",
               shiny::div(class = "content",
                 shiny::div(class = "header", i18n$t("Myers' Blended Index")),
-                shiny::div(class = "description", i18n$t("Detects preference for terminal digits 0-9 using a blending technique to reduce age-specific effects"))
+                shiny::div(class = "description", i18n$t("The Myers' Blended Index is specifically designed to detect terminal digit preference while controlling for the natural age distribution of the population. It uses a blending technique that adjusts for the fact that in any real population, not all ages are equally represented. The index ranges from 0 to 90, where 0 indicates no digit preference and 90 would represent extreme concentration on a single digit. Myers' method tells you both the overall severity of heaping and which specific digits are preferred or avoided. When interpreting results, look for elevated values on digits 0 and 5 as the most common pattern, but also note any avoidance of digits like 1 or 9. This method is widely used in demographic research and allows comparison with published data quality assessments from other countries."))
               )
             ),
             shiny::div(
               class = "item",
               shiny::div(class = "content",
                 shiny::div(class = "header", i18n$t("Whipple Index")),
-                shiny::div(class = "description", i18n$t("Measures attraction to ages ending in 0 or 5, commonly used for data quality assessment"))
+                shiny::div(class = "description", i18n$t("The Whipple Index is the most commonly used measure of age heaping, focusing specifically on attraction to ages ending in 0 and 5. It compares the number of people reporting ages ending in these digits to what would be expected if ages were uniformly distributed. A Whipple Index of 100 indicates no preference for 0 and 5, while values above 100 indicate attraction and values below 100 indicate avoidance. The United Nations has established quality categories based on Whipple values: under 105 is considered highly accurate, 105-110 is fairly accurate, 110-125 is approximate, 125-175 is rough, and above 175 indicates very rough data. This makes Whipple particularly useful for quickly classifying your data quality according to international standards and determining whether smoothing or correction methods should be applied."))
               )
             ),
             shiny::div(
               class = "item",
               shiny::div(class = "content",
                 shiny::div(class = "header", i18n$t("Noumbissi Index")),
-                shiny::div(class = "description", i18n$t("Digit-specific heaping measure that evaluates preference for each terminal digit separately"))
+                shiny::div(class = "description", i18n$t("The Noumbissi Index extends the Whipple approach by calculating separate preference measures for each terminal digit from 0 through 9. Rather than combining digits 0 and 5, it evaluates each digit independently, revealing the complete pattern of digit preference in your data. An index value of 1.0 for any digit indicates no preference, values above 1.0 indicate attraction, and values below 1.0 indicate avoidance. This detailed view helps you understand the specific nature of age misreporting in your population. For example, you might find strong attraction to 0 but only moderate preference for 5, or discover unexpected avoidance of certain digits. The Noumbissi Index is valuable when you need to understand the full complexity of age heaping patterns or when designing correction methods that need to account for digit-specific biases."))
               )
             ),
             shiny::div(
               class = "item",
               shiny::div(class = "content",
                 shiny::div(class = "header", i18n$t("Sawtooth Pattern")),
-                shiny::div(class = "description", i18n$t("Detects alternating high-low pattern in adjacent ages, indicating systematic data collection issues"))
+                shiny::div(class = "description", i18n$t("The Sawtooth Pattern diagnostic detects a distinctive alternating high-low pattern where adjacent ages systematically deviate in opposite directions from expected values. Unlike digit preference, which affects ages ending in specific digits, a sawtooth pattern affects every age and creates a zigzag appearance when data is plotted. This pattern typically arises from systematic errors in data collection or processing rather than from respondent behavior. Common causes include problems with age calculation from birth dates, errors in data entry or transcription, or issues with how age was asked or recorded. When you detect a significant sawtooth pattern, it suggests that standard heaping correction methods may not be appropriate, and you should investigate the data collection methodology. The diagnostic quantifies the severity of the pattern and helps determine whether specialized correction using the Zigzag smoothing method is warranted."))
               )
             )
           )
