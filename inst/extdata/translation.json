@@ -2439,6 +2439,11 @@
             "en": "Children Ever Born Must be Greater than Zero for Women Aged 15-19, 20-24 and 25-29",
             "fr": "Les enfants nés vivants doivent être supérieurs à zéro pour les femmes de 15-19, 20-24 et 25-29 ans",
             "es": "Los hijos nacidos vivos deben ser mayores que cero para las mujeres de 15-19, 20-24 y 25-29 años"
+        },
+        {
+            "en": "Select at least one grouping column, or tick the box below if your data has no groups.",
+            "fr": "Sélectionnez au moins une colonne de regroupement, ou cochez la case ci-dessous si vos données n'ont pas de groupes.",
+            "es": "Seleccione al menos una columna de agrupación, o marque la casilla de abajo si sus datos no tienen grupos."
         }
     ]
 }

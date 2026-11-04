@@ -248,7 +248,13 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
       return()
     }
 
-    if (length(selected_columns) > 3) {
+    if (length(selected_columns) == 0) {
+      # Without columns, create_groupid() would put every row in its own group.
+      output$modal_error_message <- renderUI({
+        HTML(sprintf('<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;">%s</p>',
+          i18n$t("Select at least one grouping column, or tick the box below if your data has no groups.")))
+      })
+    } else if (length(selected_columns) > 3) {
       output$modal_error_message <- renderUI({
         HTML(sprintf('<p style="color: red; font-weight: bold; font-size: 15px; text-align: center;">%s</p>', 
           i18n$t("A maximum of 3 grouping variables are allowed.")))
