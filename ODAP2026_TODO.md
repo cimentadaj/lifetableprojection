@@ -108,6 +108,12 @@ The error contract is unchanged until Ivan and Roy decide.
     this also covers the life table page (`2be5bd9`, `tests/testthat/test-grouping-modal.R`).
   - Re-uploading the same file after Cancel didn't reopen the grouping modal. Fixed for the five upload
     modules (`df34c0d`) and the life table page (next commit).
+- Found in the full Chrome re-test (4 Nov 2026) and fixed:
+  - The grouping modal opened the column menu over the "No grouping" checkbox (Semantic UI autofocus), so a click
+    on the checkbox picked a column (`c92b5de`).
+  - "Browse...", "no file selected" and "Upload complete" stayed in English in every upload widget (`342e811`).
+- Still open, not caused by this branch: the browser console logs `[shiny] Error in inputBinding.receiveMessage()`
+  once per language switch (same on the code before these fixes).
 - Follow-ups (4 Nov 2026): a "Results for: …" line above the chart, a warning when the controls no longer match the
   shown results, and a hint that the model life table sex only changes the implied e0 (`73be953`).
 
