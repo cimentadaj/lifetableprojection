@@ -12,7 +12,7 @@ failed_checks <- function(res) res$check[res$pass == "Fail"]
 test_that("Panama sample reproduces UN Manual X Table 53", {
   res <- run_childmort(panama, variant = "trussell", mlt_model = "West",
                        sex = "male", date_obs = 1976)
-  expect_equal(nrow(res$errors), 0)
+  expect_equal(nrow(res$group_errors), 0)
   expect_equal(round(res$estimates$qx, 4), manual_x_qx)
   expect_equal(res$estimates$x, c(1, 2, 3, 5, 10, 15, 20))
   expect_equal(res$estimates$q_label[1], "q(1)")
@@ -110,7 +110,7 @@ test_that("variant and model family must match (no silent fallback)", {
 test_that("Palloni-Helligman variant runs with mean age at maternity", {
   res <- run_childmort(panama, variant = "palloni_helligman", mlt_model = "Latin",
                        sex = "female", date_obs = 1976, mam = 27)
-  expect_equal(nrow(res$errors), 0)
+  expect_equal(nrow(res$group_errors), 0)
   expect_equal(nrow(res$estimates), 7)
   expect_true(all(is.finite(res$estimates$qx) & res$estimates$qx > 0))
   expect_equal(res$params$mam, 27)
@@ -123,7 +123,7 @@ test_that("grouped input returns one block per group and keeps .id", {
   two <- rbind(transform(panama, .id = 1L, .id_label = "North"),
                transform(panama, .id = 2L, .id_label = "South", CD = round(CD * 1.2)))
   res <- run_childmort(two, date_obs = 1976)
-  expect_equal(nrow(res$errors), 0)
+  expect_equal(nrow(res$group_errors), 0)
   expect_equal(as.vector(table(res$estimates$.id)), c(7L, 7L))
   expect_equal(unique(res$estimates$.id_label), c("North", "South"))
   north <- res$estimates[res$estimates$.id == 1, ]
@@ -138,8 +138,8 @@ test_that("a broken group does not stop the other groups", {
   two <- rbind(transform(panama, .id = 1L), bad)
   res <- run_childmort(two, date_obs = 1976)
   expect_equal(unique(res$estimates$.id), 1L)
-  expect_equal(res$errors$.id, "2")
-  expect_match(res$errors$message, "cannot exceed")
+  expect_equal(res$group_errors$.id, "2")
+  expect_match(res$group_errors$message, "cannot exceed")
 })
 
 test_that("a Date column overrides the date of observation per group", {
@@ -155,7 +155,7 @@ test_that("a Date column overrides the date of observation per group", {
 test_that("a missing date is reported as an error", {
   res <- run_childmort(panama, date_obs = NULL)
   expect_null(res$estimates)
-  expect_match(res$errors$message, "date of observation")
+  expect_match(res$group_errors$message, "date of observation")
 })
 
 test_that("two-region fixture (CS input, grouped) runs end to end", {
@@ -165,7 +165,7 @@ test_that("two-region fixture (CS input, grouped) runs end to end", {
   df$.id_label <- df$Region
   expect_true(all(check_data_childmort(df)$pass == "Pass"))
   res <- run_childmort(df, date_obs = NULL)
-  expect_equal(nrow(res$errors), 0)
+  expect_equal(nrow(res$group_errors), 0)
   expect_equal(nrow(res$estimates), 14)
 })
 
@@ -178,4 +178,12 @@ test_that("diagnostics and plot are produced for a group", {
   p <- childmort_plot(res$estimates)
   expect_s3_class(p, "ggplot")
   expect_s3_class(plotly::ggplotly(p, tooltip = "text"), "plotly")
+})
+
+test_that("successful results never partially match an `error` element", {
+  # mod_simple_module_server and the render callback test `result$error`;
+  # `$` partial matching must not pick up another list element.
+  res <- run_childmort(panama, date_obs = 1976)
+  expect_null(res$error)
+  expect_false(any(startsWith(names(res), "error")))
 })

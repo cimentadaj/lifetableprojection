@@ -265,7 +265,7 @@ childmort_estimate_group <- function(df, variant, mlt_model, sex, date_obs, mam 
 #'   `Date` column.
 #' @param mam Mean age at maternity (Palloni-Helligman only).
 #' @return List with `estimates` (all groups, with `.id`), `mlt` (all groups),
-#'   `errors` (data frame of `.id` and `message`, zero rows when all groups
+#'   `group_errors` (data frame of `.id` and `message`, zero rows when all groups
 #'   succeed) and `params`.
 #' @noRd
 run_childmort <- function(data,
@@ -327,7 +327,7 @@ run_childmort <- function(data,
   list(
     estimates = estimates,
     mlt = mlt,
-    errors = errors,
+    group_errors = errors,
     params = list(
       variant = variant,
       mlt_model = mlt_model,
@@ -374,6 +374,9 @@ childmort_plot <- function(estimates,
     "%s<br>Women %s<br>q(x) = %.4f<br>Date = %.1f",
     estimates$q_label, estimates$age_label, estimates$qx, estimates$date_t
   )
+  # Offset labels in data units: plotly ignores vjust but keeps nudges
+  q_range <- diff(range(estimates$qx, na.rm = TRUE))
+  label_nudge <- if (is.finite(q_range) && q_range > 0) 0.06 * q_range else 0.002
   ggplot2::ggplot(
     estimates,
     ggplot2::aes(x = .data$date_t, y = .data$qx, text = .data$hover)
@@ -382,7 +385,7 @@ childmort_plot <- function(estimates,
     ggplot2::geom_point(color = "#1b6ec2", size = 3) +
     ggplot2::geom_text(
       ggplot2::aes(label = .data$q_label),
-      vjust = -1.1, size = 3.5, color = "#1b1c1d"
+      nudge_y = label_nudge, size = 3.5, color = "#1b1c1d"
     ) +
     ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.05, 0.15))) +
     ggplot2::labs(title = title, x = x_label, y = y_label) +
