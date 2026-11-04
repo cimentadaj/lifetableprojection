@@ -42,9 +42,12 @@ validate_data <- function(data) {
 #' @param group_selection_passed Reactive value to flag whether the group selection stage has been passed
 #' @param selected_grouping_vars Reactive value to store the variables selected as grouping vars
 #' @param i18n Translator object for internationalization
+#' @param show_trigger Optional reactive that changes on every upload. The modal
+#'   is shown again when it changes and grouping is not confirmed yet, even if
+#'   the uploaded data is identical to the previous upload.
 #' @importFrom shiny observeEvent req
 #' @importFrom shinyalert shinyalert
-handle_group_selection_modal <- function(input, output, session, data, group_selection_passed, selected_grouping_vars, i18n, data_raw = NULL, raw_key = NULL) {
+handle_group_selection_modal <- function(input, output, session, data, group_selection_passed, selected_grouping_vars, i18n, data_raw = NULL, raw_key = NULL, show_trigger = NULL) {
   ns <- session$ns
   modal_id <- ns("column_selection_modal")
   # Reactive expression for choices with safe defaults
@@ -143,6 +146,17 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
       show_group_selection_modal()
     }
   })
+
+  # Re-uploading the same file after Cancel changes neither data() nor
+  # group_selection_passed(), so the observers above and below never fire.
+  if (!is.null(show_trigger)) {
+    observeEvent(show_trigger(), {
+      cat(sprintf("[GROUP_MODAL] upload trigger fired | group_passed=%s\n", group_selection_passed()))
+      if (!isTRUE(group_selection_passed())) {
+        show_group_selection_modal()
+      }
+    }, ignoreInit = TRUE)
+  }
 
   observeEvent(group_selection_passed(), {
     cat(sprintf("[GROUP_MODAL] group_selection_passed changed -> %s | has_data=%s\n",

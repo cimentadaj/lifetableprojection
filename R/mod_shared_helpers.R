@@ -27,6 +27,9 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
   data_origin <- reactiveVal("none")
   group_selection_passed <- reactiveVal(FALSE)
   selected_grouping_vars <- reactiveVal(character(0))
+  # Bumped on every upload so the grouping modal reopens even when the file
+  # (and so every other reactive value) is unchanged, e.g. after Cancel.
+  upload_count <- reactiveVal(0)
 
   sample_data <- if (is.null(sample_loader)) {
     handle_sample_data(i18n)
@@ -61,6 +64,7 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
     selected_grouping_vars(character(0))
     cat(sprintf("[DATA_CONTEXT][%s] setting group_selection_passed(FALSE) to trigger modal\n", module_id))
     group_selection_passed(FALSE) # reset so the grouping modal reopens for new uploads
+    upload_count(upload_count() + 1)
     cat(sprintf("[DATA_CONTEXT][%s] upload state reset | new_origin=%s | group_passed=%s | selected_vars=%s\n",
       module_id, data_origin(), group_selection_passed(), paste(selected_grouping_vars(), collapse = ",")))
     cat(sprintf("[DATA_CONTEXT][%s] ========== UPLOAD PROCESSING COMPLETE ==========\n", module_id))
@@ -146,7 +150,8 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
     selected_grouping_vars = selected_grouping_vars,
     i18n = i18n,
     data_raw = raw_data,
-    raw_key = raw_storage_key
+    raw_key = raw_storage_key,
+    show_trigger = upload_count
   )
 
   # Validation
