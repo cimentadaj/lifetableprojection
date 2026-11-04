@@ -13,7 +13,8 @@ handle_group_selection_modal(
   selected_grouping_vars,
   i18n,
   data_raw = NULL,
-  raw_key = NULL
+  raw_key = NULL,
+  show_trigger = NULL
 )
 }
 \arguments{
@@ -30,6 +31,10 @@ handle_group_selection_modal(
 \item{selected_grouping_vars}{Reactive value to store the variables selected as grouping vars}
 
 \item{i18n}{Translator object for internationalization}
+
+\item{show_trigger}{Optional reactive that changes on every upload. The modal
+is shown again when it changes and grouping is not confirmed yet, even if
+the uploaded data is identical to the previous upload.}
 }
 \description{
 Handle Column Selection
