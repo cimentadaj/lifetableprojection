@@ -835,15 +835,20 @@ lifetable_server <- function(input, output, session) {
     data_in(sample_data())
   })
 
+  # Bumped on every upload so the grouping modal reopens even when the same
+  # file is uploaded again after Cancel (data_in() would not change).
+  upload_count <- reactiveVal(0)
+
   observe({
     data_in(uploaded_data())
+    upload_count(isolate(upload_count()) + 1)
   })
 
   # Display table as example..
   output$data_table <- renderRHandsontable(renderDataTable(sample_data(), i18n))
 
   # Handle column selection
-  handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars, i18n, data_raw = data_in)
+  handle_group_selection_modal(input, output, session, data_in, group_selection_passed, selected_grouping_vars, i18n, data_raw = data_in, show_trigger = upload_count)
 
   # DF containing the id and labels
   labels_df <- reactive({

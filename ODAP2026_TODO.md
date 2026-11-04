@@ -106,7 +106,8 @@ The error contract is unchanged until Ivan and Roy decide.
   - Clicking Confirm in the grouping modal without picking columns or ticking "No grouping" made
     `ODAPbackend:::create_groupid()` put each row in its own group. The modal now asks for a column or the tick;
     this also covers the life table page (`2be5bd9`, `tests/testthat/test-grouping-modal.R`).
-  - Re-uploading the same file after Cancel didn't reopen the grouping modal (`df34c0d`).
+  - Re-uploading the same file after Cancel didn't reopen the grouping modal. Fixed for the five upload
+    modules (`df34c0d`) and the life table page (next commit).
 - Follow-ups (4 Nov 2026): a "Results for: …" line above the chart, a warning when the controls no longer match the
   shown results, and a hint that the model life table sex only changes the implied e0 (`73be953`).
 
