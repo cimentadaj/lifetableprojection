@@ -207,6 +207,9 @@ test_that("every new module string has French and Spanish translations", {
     "Child Mortality (Brass Method)", "Multiplier variant", "Model life table family",
     "Model life table sex", "Mean age at maternity", "Estimate Child Mortality",
     "Child mortality estimates", "Implied life expectancy at birth",
+    "Results for", "Date of observation", "Date column of your data", "Male", "Female",
+    "The settings have changed. Click 'Estimate Child Mortality' to update the results.",
+    "Only changes the implied life expectancy at birth; the q(x) estimates stay the same.",
     childmort_diagnostics(data.frame(x = 1, qx = 0.1, date_t = 1970, e0_implied = NA))
   )
   hits <- tr[tr$en %in% module_strings, ]
@@ -224,4 +227,43 @@ test_that("analysis info text documents the run parameters", {
   expect_match(txt_all, "All Groups")
   expect_match(txt_all, "taken from the Date column")
   expect_match(txt_all, "Number of Groups: 3")
+})
+
+test_that("settings summary lists what the run used", {
+  res <- run_childmort(panama, variant = "trussell", mlt_model = "West",
+                       sex = "female", date_obs = 1976)
+  items <- childmort_settings_items(res$params)
+  expect_equal(items$label, c("Multiplier variant", "Model life table family",
+                              "Model life table sex", "Date of observation"))
+  expect_equal(items$value, c("Trussell", "West", "Female", "1976"))
+
+  ph <- run_childmort(panama, variant = "palloni_helligman", mlt_model = "Far_East_Asian",
+                      date_obs = NULL, mam = 28.5)$params
+  ph_items <- childmort_settings_items(ph)
+  expect_equal(ph_items$value, c("Palloni-Heligman", "Far East Asian", "Male",
+                                 "Date column of your data", "28.5"))
+  expect_equal(ph_items$translate_value, c(FALSE, FALSE, TRUE, TRUE, FALSE))
+})
+
+test_that("changed settings are detected only when they affect the run", {
+  params <- run_childmort(panama, date_obs = 1976)$params  # trussell / West / male
+  same <- list(variant = "trussell", mlt_model = "West", sex = "male",
+               date_obs = 1976, mam = 27)
+  expect_false(childmort_settings_changed(params, same))
+  expect_true(childmort_settings_changed(params, modifyList(same, list(mlt_model = "North"))))
+  expect_true(childmort_settings_changed(params, modifyList(same, list(sex = "female"))))
+  expect_true(childmort_settings_changed(params, modifyList(same, list(date_obs = 1980))))
+  expect_true(childmort_settings_changed(params, modifyList(same, list(variant = "palloni_helligman"))))
+  # Mean age at maternity is ignored for Trussell
+  expect_false(childmort_settings_changed(params, modifyList(same, list(mam = 31))))
+  # Controls being re-rendered (NULL) count as unchanged
+  expect_false(childmort_settings_changed(params, list(variant = NULL, mlt_model = NULL)))
+
+  ph <- run_childmort(panama, variant = "palloni_helligman", mlt_model = "General",
+                      date_obs = NULL, mam = 27)$params
+  ph_same <- list(variant = "palloni_helligman", mlt_model = "General", sex = "male",
+                  date_obs = 2020, mam = 27)
+  # The date comes from the Date column, so the date control is ignored
+  expect_false(childmort_settings_changed(ph, ph_same))
+  expect_true(childmort_settings_changed(ph, modifyList(ph_same, list(mam = 30))))
 })

@@ -214,6 +214,7 @@ childmort_module_ui <- function(i18n) {
               shiny::div(
                 id = ns("plot_container"),
                 style = "display: none;",
+                shiny::uiOutput(ns("childmort_run_settings")),
                 shinycssloaders::withSpinner(
                   plotly::plotlyOutput(ns("childmort_plot"), height = "520px", width = "100%")
                 ),
@@ -515,6 +516,11 @@ childmort_module_server <- function(input, output, session) {
             choices = stats::setNames(c("male", "female"), c(i18n$t("Male"), i18n$t("Female"))),
             selected = shiny::isolate(input$mlt_sex) %||% "male"
           ),
+          shiny::p(
+            class = "childmort-control-hint",
+            style = "font-size: 0.9em; color: #666; margin-top: -0.5em;",
+            i18n$t("Only changes the implied life expectancy at birth; the q(x) estimates stay the same.")
+          ),
           if (has_date_col) {
             shiny::p(i18n$t("Date values will be taken from your data"))
           } else {
@@ -538,11 +544,7 @@ childmort_module_server <- function(input, output, session) {
         }
         variant <- input$variant %||% "trussell"
         families <- childmort_families(variant)
-        family_labels <- c(
-          North = "North", South = "South", East = "East", West = "West",
-          Latin = "Latin American", Chilean = "Chilean", South_Asian = "South Asian",
-          Far_East_Asian = "Far East Asian", General = "General"
-        )
+        family_labels <- CHILDMORT_FAMILY_LABELS
         current <- shiny::isolate(input$mlt_model)
         default <- if (identical(variant, "trussell")) "West" else "General"
         shiny.semantic::selectInput(
@@ -584,6 +586,42 @@ childmort_module_server <- function(input, output, session) {
         )
       })
       outputOptions(output, "childmort_run_button", suspendWhenHidden = FALSE)
+
+      # Settings behind the shown results, and a note when the controls differ
+      output$childmort_run_settings <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        latest <- shared$last_result()
+        if (is.null(latest) || is.null(latest$params)) {
+          return(NULL)
+        }
+        items <- childmort_settings_items(latest$params)
+        parts <- vapply(seq_len(nrow(items)), function(i) {
+          value <- if (items$translate_value[i]) i18n$t(items$value[i]) else items$value[i]
+          paste0(i18n$t(items$label[i]), ": ", value)
+        }, character(1))
+        changed <- childmort_settings_changed(latest$params, list(
+          variant = input$variant,
+          mlt_model = input$mlt_model,
+          sex = input$mlt_sex,
+          date_obs = input$date_obs,
+          mam = input$mam
+        ))
+        shiny::tagList(
+          shiny::div(
+            class = "ui small message childmort-run-settings",
+            shiny::tags$b(paste0(i18n$t("Results for"), ": ")),
+            paste(parts, collapse = " \u00b7 ")
+          ),
+          if (changed) {
+            shiny::div(
+              class = "ui warning message childmort-settings-changed",
+              i18n$t("The settings have changed. Click 'Estimate Child Mortality' to update the results.")
+            )
+          }
+        )
+      })
 
       # Tooltip text output for info icon
       output$variant_tooltip <- shiny::renderUI({

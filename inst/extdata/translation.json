@@ -2444,6 +2444,31 @@
             "en": "Select at least one grouping column, or tick the box below if your data has no groups.",
             "fr": "Sélectionnez au moins une colonne de regroupement, ou cochez la case ci-dessous si vos données n'ont pas de groupes.",
             "es": "Seleccione al menos una columna de agrupación, o marque la casilla de abajo si sus datos no tienen grupos."
+        },
+        {
+            "en": "Results for",
+            "fr": "Résultats pour",
+            "es": "Resultados para"
+        },
+        {
+            "en": "Date of observation",
+            "fr": "Date d'observation",
+            "es": "Fecha de observación"
+        },
+        {
+            "en": "Date column of your data",
+            "fr": "colonne Date de vos données",
+            "es": "columna Date de sus datos"
+        },
+        {
+            "en": "The settings have changed. Click 'Estimate Child Mortality' to update the results.",
+            "fr": "Les paramètres ont changé. Cliquez sur « Estimer la mortalité des enfants » pour mettre à jour les résultats.",
+            "es": "Los parámetros han cambiado. Haga clic en «Estimar la mortalidad en la niñez» para actualizar los resultados."
+        },
+        {
+            "en": "Only changes the implied life expectancy at birth; the q(x) estimates stay the same.",
+            "fr": "Ne modifie que l'espérance de vie à la naissance implicite ; les estimations de q(x) restent les mêmes.",
+            "es": "Solo cambia la esperanza de vida al nacer implícita; las estimaciones de q(x) no cambian."
         }
     ]
 }

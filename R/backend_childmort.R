@@ -308,6 +308,79 @@ run_childmort <- function(data,
   )
 }
 
+#' Display names of the model life table families
+#' @noRd
+CHILDMORT_FAMILY_LABELS <- c(
+  North = "North", South = "South", East = "East", West = "West",
+  Latin = "Latin American", Chilean = "Chilean", South_Asian = "South Asian",
+  Far_East_Asian = "Far East Asian", General = "General"
+)
+
+#' Settings behind a child mortality run, for display
+#'
+#' @param params Parameters of a run (`run_childmort()$params`).
+#' @return Data frame with `label` and `value` (English; the module translates
+#'   the labels and the values in `translate_value`), one row per setting that
+#'   applies to the run.
+#' @noRd
+childmort_settings_items <- function(params) {
+  pal <- identical(params$variant, "palloni_helligman")
+  date_value <- if (is.null(params$date_obs) || length(params$date_obs) == 0) {
+    "Date column of your data"
+  } else {
+    format(params$date_obs)
+  }
+  items <- data.frame(
+    label = c("Multiplier variant", "Model life table family",
+              "Model life table sex", "Date of observation"),
+    value = c(
+      if (pal) "Palloni-Heligman" else "Trussell",
+      if (params$mlt_model %in% names(CHILDMORT_FAMILY_LABELS)) {
+        unname(CHILDMORT_FAMILY_LABELS[params$mlt_model])
+      } else {
+        params$mlt_model
+      },
+      if (identical(params$sex, "female")) "Female" else "Male",
+      date_value
+    ),
+    translate_value = c(FALSE, FALSE, TRUE, is.null(params$date_obs)),
+    stringsAsFactors = FALSE
+  )
+  if (pal) {
+    items <- rbind(items, data.frame(
+      label = "Mean age at maternity", value = format(params$mam),
+      translate_value = FALSE, stringsAsFactors = FALSE
+    ))
+  }
+  items
+}
+
+#' Have the controls moved away from the settings of the last run?
+#'
+#' Only settings that affect the run are compared: the mean age at maternity
+#' only for Palloni-Heligman, and the date only when it came from the control
+#' (not from a Date column). A `NULL` control value (a control that is being
+#' re-rendered, e.g. after a language switch) counts as unchanged.
+#'
+#' @param params Parameters of the last run (`run_childmort()$params`).
+#' @param current List with the current `variant`, `mlt_model`, `sex`,
+#'   `date_obs` and `mam` control values.
+#' @return `TRUE` when the shown results no longer match the controls.
+#' @noRd
+childmort_settings_changed <- function(params, current) {
+  differs <- function(old, new) {
+    !is.null(new) && !identical(as.character(old), as.character(new))
+  }
+  differs_num <- function(old, new) {
+    !is.null(new) && !isTRUE(all.equal(as.numeric(old), as.numeric(new)))
+  }
+  differs(params$variant, current$variant) ||
+    differs(params$mlt_model, current$mlt_model) ||
+    differs(params$sex, current$sex) ||
+    (identical(params$variant, "palloni_helligman") && differs_num(params$mam, current$mam)) ||
+    (!is.null(params$date_obs) && differs_num(params$date_obs, current$date_obs))
+}
+
 #' Diagnostic notes for one group of child mortality estimates
 #'
 #' @param estimates Estimates for a single group (rows of
