@@ -76,6 +76,12 @@ Remaining for T0:
 
 ## T1: MortIndEst dependency + shared backend layer
 
+**Status: DONE (4 Nov 2026)** on `dev/childmort-module`. `DESCRIPTION` changes landed with T2 (`89395b9`);
+`run_by_group(data, fun, ..., check = NULL)` in `R/backend_indirect.R` (`582539a`) is now used by
+`run_childmort()`. It returns one bound table per table `fun` returns, with `.id` first and `.id_label` attached,
+plus `group_errors` (`.id`, `message`) for failed groups. Tests: `tests/testthat/test-backend_indirect.R`.
+The error contract is unchanged until Ivan and Roy decide.
+
 - `DESCRIPTION`: add `MortIndEst` (Imports) and `DemoToolsData` (Imports; `childmort_brass` needs it
   at runtime, although MortIndEst only lists it under Suggests). Add the `Remotes` entries for both.
 - New `R/backend_indirect.R` with a generic `run_by_group(data, fun, ...)` that splits on `.id`,
@@ -94,11 +100,15 @@ Remaining for T0:
 - Chrome e2e passed `module_plan.md` Phases 1–5: sample run (Trussell and Palloni-Heligman), 2-region CS upload with
   Region grouping, group switch, single and all-groups ZIP downloads (contents checked), FR/ES switch, back and
   re-entry navigation, invalid-file validation.
-- Problems found in shared code (affect all modules; not changed here):
-  - Tab labels "Upload Instructions" / "Method Documentation" stay in English after a language switch.
-  - Clicking Confirm in the grouping modal without picking columns or ticking "No grouping" makes
-    `ODAPbackend:::create_groupid()` put each row in its own group, so validation messages repeat once per row.
-  - Re-uploading the same file in the same session doesn't reopen the grouping modal.
+- Problems found in shared code during T2, **all fixed on 4 Nov 2026** (unit tests plus a Chrome check each):
+  - Tab labels "Upload Instructions" / "Method Documentation" stayed in English after a language switch.
+    Fixed for all five upload modules (`6dbdb23`, `tests/testthat/test-info-tab-labels.R`).
+  - Clicking Confirm in the grouping modal without picking columns or ticking "No grouping" made
+    `ODAPbackend:::create_groupid()` put each row in its own group. The modal now asks for a column or the tick;
+    this also covers the life table page (`2be5bd9`, `tests/testthat/test-grouping-modal.R`).
+  - Re-uploading the same file after Cancel didn't reopen the grouping modal (`df34c0d`).
+- Follow-ups (4 Nov 2026): a "Results for: …" line above the chart, a warning when the controls no longer match the
+  shown results, and a hint that the model life table sex only changes the implied e0 (`73be953`).
 
 **Why first:** smallest backend (148 lines, one census, no HIV or two-census logic), and it has a
 built-in check: the roxygen example must reproduce **UN Manual X Table 53 (Panama 1976)** to 4 decimal places.
@@ -197,6 +207,11 @@ documented tolerances. Ivan noted that outputs differ across implementations (Or
 intercensal survival). Record which one is the reference. Ivan will supply cases where the methods break,
 for stress tests (Oct 5 action item).
 
+**Child mortality status (4 Nov 2026):** the only reference so far is UN Manual X Table 53 (Panama 1976,
+Trussell / West), reproduced to 4 decimals in `test-childmort.R`. That is not a Mortpak comparison:
+we have no Mortpak (CEBCD) or Division R outputs yet, and no Palloni-Heligman reference values.
+Needed from Ivan / Patrick: Mortpak outputs for a few CEB/CD datasets, including at least one Palloni-Heligman case.
+
 ## T11: Performance + user testing
 Profile bulk runs with many groups (parallel downloads already exist). Run a session with selected national counterparts
 and fix what they find.
@@ -205,9 +220,17 @@ and fix what they find.
 Update the release `Dockerfile` (it installs from GitHub, so MortIndEst and DemoToolsData must resolve) and
 the cloud deploy. Smoke-test every new module on both.
 
+**Status (4 Nov 2026):** not started. The Docker image installs from GitHub master, so it needs
+`dev/childmort-module` pushed and merged first. Done meanwhile: `R CMD build` + `R CMD INSTALL` into a
+temporary library works; the installed package loads, reproduces Manual X and builds `run_app()`.
+
 ## T13: User documentation
 A short page per module: inputs, template, parameters, how to read the outputs, references (Manual X etc.),
 in the app's existing docs/info-button pattern.
+
+**Child mortality: DONE (4 Nov 2026)** (`5728ad9`). The Method Documentation tab covers the method, both variants,
+how to read the chart and the implied e0, the less reliable age groups, and references (Manual X, Brass 1968,
+Trussell 1975, Palloni-Heligman 1985). Inputs and the template are in the Upload Instructions tab. EN/FR/ES.
 
 ---
 
