@@ -199,7 +199,7 @@ heaping_module_ui <- function(i18n) {
             shiny.semantic::tabset(
               tabs = list(
                 list(
-                  menu = i18n$t("Upload Instructions"),
+                  menu = create_info_tab_label(ns("info_tab_upload_label"), i18n$t("Upload Instructions")),
                   content = shiny::div(
                     shiny::uiOutput(ns("heaping_info_box_content")),
                     rhandsontable::rHandsontableOutput(ns("heaping_sample_table"), width = "100%", height = 210),
@@ -207,7 +207,7 @@ heaping_module_ui <- function(i18n) {
                   )
                 ),
                 list(
-                  menu = i18n$t("Method Documentation"),
+                  menu = create_info_tab_label(ns("info_tab_docs_label"), i18n$t("Method Documentation")),
                   content = shiny::div(
                     shiny::uiOutput(ns("heaping_method_docs"))
                   )

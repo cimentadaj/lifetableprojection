@@ -1,3 +1,20 @@
+#' Translatable label for an info box tab
+#'
+#' `shiny.semantic::tabset()` labels are fixed when the module UI is built, so
+#' they would stay in the start-up language. This returns an inline output
+#' that shows `text` until the server renders the translated label
+#' (`create_shared_data_context()` renders `info_tab_upload_label` and
+#' `info_tab_docs_label`).
+#'
+#' @param output_id Namespaced output id.
+#' @param text Label shown before the first render.
+#' @return A `span` output tag.
+#' @noRd
+create_info_tab_label <- function(output_id, text) {
+  # Same markup as shiny::uiOutput(output_id, inline = TRUE), with a placeholder.
+  shiny::span(id = output_id, class = "shiny-html-output", text)
+}
+
 #' Create Shared Data Context
 #'
 #' Sets up the upload, validation, and grouping workflow reused across the new
@@ -153,6 +170,21 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
     raw_key = raw_storage_key,
     show_trigger = upload_count
   )
+
+  # Info box tab labels (see create_info_tab_label()). The tabset is built
+  # once with the UI, so the labels are outputs that follow the language.
+  output$info_tab_upload_label <- renderUI({
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+    i18n$t("Upload Instructions")
+  })
+  output$info_tab_docs_label <- renderUI({
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+    i18n$t("Method Documentation")
+  })
 
   # Validation
   validate_func <- if (!is.null(validation_function)) validation_function else validateData
