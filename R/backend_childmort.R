@@ -286,48 +286,18 @@ run_childmort <- function(data,
   }
 
   data <- prepare_childmort_input(data)
-  if (!".id" %in% names(data)) {
-    data$.id <- 1L
-  }
-  ids <- unique(data$.id)
-
-  per_group <- lapply(ids, function(gid) {
-    df <- data[data$.id == gid, , drop = FALSE]
-    checks <- check_childmort_group(df)
-    if (any(checks$pass == "Fail")) {
-      msg <- paste(stats::na.omit(checks$message), collapse = "; ")
-      return(list(.id = gid, estimates = NULL, mlt = NULL, error = msg))
-    }
-    tryCatch({
-      out <- childmort_estimate_group(df, variant, mlt_model, sex, date_obs, mam)
-      out$estimates <- cbind(.id = gid, out$estimates, stringsAsFactors = FALSE)
-      out$mlt <- cbind(.id = gid, out$mlt, stringsAsFactors = FALSE)
-      list(.id = gid, estimates = out$estimates, mlt = out$mlt, error = NULL)
-    }, error = function(e) {
-      list(.id = gid, estimates = NULL, mlt = NULL, error = conditionMessage(e))
-    })
-  })
-
-  ok <- Filter(function(r) is.null(r$error), per_group)
-  failed <- Filter(function(r) !is.null(r$error), per_group)
-
-  estimates <- if (length(ok) > 0) do.call(rbind, lapply(ok, `[[`, "estimates")) else NULL
-  mlt <- if (length(ok) > 0) do.call(rbind, lapply(ok, `[[`, "mlt")) else NULL
-  errors <- data.frame(
-    .id = vapply(failed, function(r) as.character(r$.id), character(1)),
-    message = vapply(failed, `[[`, character(1), "error"),
-    stringsAsFactors = FALSE
+  by_group <- run_by_group(
+    data,
+    childmort_estimate_group,
+    variant = variant, mlt_model = mlt_model, sex = sex,
+    date_obs = date_obs, mam = mam,
+    check = check_childmort_group
   )
 
-  if (!is.null(estimates) && ".id_label" %in% names(data)) {
-    labels <- unique(data[, c(".id", ".id_label")])
-    estimates$.id_label <- labels$.id_label[match(estimates$.id, labels$.id)]
-  }
-
   list(
-    estimates = estimates,
-    mlt = mlt,
-    group_errors = errors,
+    estimates = by_group[["estimates"]],
+    mlt = by_group[["mlt"]],
+    group_errors = by_group[["group_errors"]],
     params = list(
       variant = variant,
       mlt_model = mlt_model,
