@@ -59,6 +59,17 @@ get_app_modules <- function(i18n) {
       status_label = i18n$t("Active"),
       ui = odap_module_ui(i18n),
       server_fun = odap_module_server
+    ),
+    childmort = list(
+      id = "childmort",
+      name = i18n$t("Child Mortality (Brass Method)"),
+      description = i18n$t("Estimate infant and child mortality from children ever born and children dead reported by women."),
+      icon = "child",
+      status = "active",
+      button_label = i18n$t("Go to module"),
+      status_label = i18n$t("Active"),
+      ui = childmort_module_ui(i18n),
+      server_fun = childmort_module_server
     )
   )
 }

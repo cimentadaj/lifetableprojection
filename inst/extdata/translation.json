@@ -2219,6 +2219,226 @@
             "en": "Method for calculating average person-years lived in each age interval (ax):<br><br><b>UN (Greville)</b> - UN recommended method using Greville's formula<br><b>PASEX</b> - Population Analysis Spreadsheet method",
             "fr": "Méthode pour calculer les années-personnes moyennes vécues dans chaque intervalle d'âge (ax):<br><br><b>UN (Greville)</b> - Méthode recommandée par l'ONU utilisant la formule de Greville<br><b>PASEX</b> - Méthode de feuille de calcul d'analyse de population",
             "es": "Método para calcular años-persona promedio vividos en cada intervalo de edad (ax):<br><br><b>UN (Greville)</b> - Método recomendado por ONU usando la fórmula de Greville<br><b>PASEX</b> - Método de hoja de cálculo de análisis de población"
+        },
+        {
+            "en": "Child Mortality (Brass Method)",
+            "fr": "Mortalité des enfants (méthode de Brass)",
+            "es": "Mortalidad infantil (método de Brass)"
+        },
+        {
+            "en": "Estimate infant and child mortality from children ever born and children dead reported by women.",
+            "fr": "Estimer la mortalité infantile et juvénile à partir des enfants nés vivants et des enfants décédés déclarés par les femmes.",
+            "es": "Estimar la mortalidad infantil y en la niñez a partir de los hijos nacidos vivos y los hijos fallecidos declarados por las mujeres."
+        },
+        {
+            "en": "Estimate infant and child mortality from the number of children ever born and children dead reported by women aged 15-49.",
+            "fr": "Estimer la mortalité infantile et juvénile à partir du nombre d'enfants nés vivants et d'enfants décédés déclarés par les femmes âgées de 15 à 49 ans.",
+            "es": "Estimar la mortalidad infantil y en la niñez a partir del número de hijos nacidos vivos y de hijos fallecidos declarados por las mujeres de 15 a 49 años."
+        },
+        {
+            "en": "Age (lower bound of women's five-year age groups: 15, 20, 25, 30, 35, 40, 45)",
+            "fr": "Age (limite inférieure des groupes d'âges quinquennaux des femmes : 15, 20, 25, 30, 35, 40, 45)",
+            "es": "Age (límite inferior de los grupos quinquenales de edad de las mujeres: 15, 20, 25, 30, 35, 40, 45)"
+        },
+        {
+            "en": "Women (number of women in each age group)",
+            "fr": "Women (nombre de femmes dans chaque groupe d'âges)",
+            "es": "Women (número de mujeres en cada grupo de edad)"
+        },
+        {
+            "en": "CEB (children ever born to those women)",
+            "fr": "CEB (enfants nés vivants de ces femmes)",
+            "es": "CEB (hijos nacidos vivos de esas mujeres)"
+        },
+        {
+            "en": "CD (children dead) or CS (children surviving)",
+            "fr": "CD (enfants décédés) ou CS (enfants survivants)",
+            "es": "CD (hijos fallecidos) o CS (hijos sobrevivientes)"
+        },
+        {
+            "en": "Optional columns:",
+            "fr": "Colonnes facultatives :",
+            "es": "Columnas opcionales:"
+        },
+        {
+            "en": "Date (date of the census or survey as a decimal year, e.g. 1976.5). If absent, set it in the analysis step.",
+            "fr": "Date (date du recensement ou de l'enquête en année décimale, par ex. 1976.5). Si elle est absente, indiquez-la à l'étape d'analyse.",
+            "es": "Date (fecha del censo o la encuesta como año decimal, p. ej. 1976.5). Si falta, indíquela en el paso de análisis."
+        },
+        {
+            "en": "Sample data: Panama 1976 survey (UN Manual X, Table 49).",
+            "fr": "Données d'exemple : enquête du Panama de 1976 (Manuel X des Nations Unies, tableau 49).",
+            "es": "Datos de ejemplo: encuesta de Panamá de 1976 (Manual X de las Naciones Unidas, cuadro 49)."
+        },
+        {
+            "en": "Brass Child Mortality Method",
+            "fr": "Méthode de Brass pour la mortalité des enfants",
+            "es": "Método de Brass para la mortalidad en la niñez"
+        },
+        {
+            "en": "The Brass method converts the proportion of children dead among children ever born, reported by women in each five-year age group, into probabilities of dying in childhood. Women aged 15-19 give q(1), 20-24 give q(2), 25-29 give q(3), 30-34 give q(5), 35-39 give q(10), 40-44 give q(15) and 45-49 give q(20). Each estimate is located in time a number of years before the census or survey, and matched to a model life table to obtain an implied life expectancy at birth.",
+            "fr": "La méthode de Brass convertit la proportion d'enfants décédés parmi les enfants nés vivants, déclarée par les femmes de chaque groupe d'âges quinquennal, en probabilités de décéder pendant l'enfance. Les femmes de 15-19 ans donnent q(1), 20-24 ans q(2), 25-29 ans q(3), 30-34 ans q(5), 35-39 ans q(10), 40-44 ans q(15) et 45-49 ans q(20). Chaque estimation est située dans le temps un certain nombre d'années avant le recensement ou l'enquête, et associée à une table type de mortalité pour obtenir une espérance de vie à la naissance implicite.",
+            "es": "El método de Brass convierte la proporción de hijos fallecidos entre los hijos nacidos vivos, declarada por las mujeres de cada grupo quinquenal de edad, en probabilidades de morir en la niñez. Las mujeres de 15-19 años dan q(1), 20-24 años q(2), 25-29 años q(3), 30-34 años q(5), 35-39 años q(10), 40-44 años q(15) y 45-49 años q(20). Cada estimación se ubica en el tiempo un número de años antes del censo o la encuesta, y se asocia a una tabla modelo de vida para obtener una esperanza de vida al nacer implícita."
+        },
+        {
+            "en": "Trussell multipliers use the Coale-Demeny model life table families (North, South, East, West). This is the variant recommended in UN Manual X.",
+            "fr": "Les multiplicateurs de Trussell utilisent les familles de tables types de mortalité de Coale-Demeny (Nord, Sud, Est, Ouest). C'est la variante recommandée dans le Manuel X des Nations Unies.",
+            "es": "Los multiplicadores de Trussell utilizan las familias de tablas modelo de vida de Coale-Demeny (Norte, Sur, Este, Oeste). Es la variante recomendada en el Manual X de las Naciones Unidas."
+        },
+        {
+            "en": "Palloni-Heligman multipliers use the United Nations model life tables for developing countries (Latin American, Chilean, South Asian, Far East Asian, General) and also require the mean age at maternity.",
+            "fr": "Les multiplicateurs de Palloni-Heligman utilisent les tables types de mortalité des Nations Unies pour les pays en développement (Amérique latine, Chili, Asie du Sud, Extrême-Orient, Générale) et nécessitent aussi l'âge moyen à la maternité.",
+            "es": "Los multiplicadores de Palloni-Heligman utilizan las tablas modelo de vida de las Naciones Unidas para países en desarrollo (América Latina, Chile, Asia meridional, Lejano Oriente, General) y requieren además la edad media a la maternidad."
+        },
+        {
+            "en": "Reference: United Nations (1983). Manual X: Indirect Techniques for Demographic Estimation.",
+            "fr": "Référence : Nations Unies (1983). Manuel X : Techniques indirectes d'estimation démographique.",
+            "es": "Referencia: Naciones Unidas (1983). Manual X: Técnicas indirectas de estimación demográfica."
+        },
+        {
+            "en": "Multiplier variant",
+            "fr": "Variante des multiplicateurs",
+            "es": "Variante de multiplicadores"
+        },
+        {
+            "en": "Model life table sex",
+            "fr": "Sexe de la table type de mortalité",
+            "es": "Sexo de la tabla modelo de vida"
+        },
+        {
+            "en": "Date values will be taken from your data",
+            "fr": "Les dates seront tirées de vos données",
+            "es": "Las fechas se tomarán de sus datos"
+        },
+        {
+            "en": "Date of observation (decimal year)",
+            "fr": "Date d'observation (année décimale)",
+            "es": "Fecha de observación (año decimal)"
+        },
+        {
+            "en": "Model life table family",
+            "fr": "Famille de tables types de mortalité",
+            "es": "Familia de tablas modelo de vida"
+        },
+        {
+            "en": "Mean age at maternity",
+            "fr": "Âge moyen à la maternité",
+            "es": "Edad media a la maternidad"
+        },
+        {
+            "en": "Estimate Child Mortality",
+            "fr": "Estimer la mortalité des enfants",
+            "es": "Estimar la mortalidad en la niñez"
+        },
+        {
+            "en": "Set of multipliers converting proportions of children dead into probabilities of dying:<br><br>'Trussell' - Coale-Demeny model life tables (North, South, East, West)<br>'Palloni-Heligman' - UN model life tables for developing countries; also needs the mean age at maternity",
+            "fr": "Ensemble de multiplicateurs convertissant les proportions d'enfants décédés en probabilités de décéder :<br><br>'Trussell' - tables types de mortalité de Coale-Demeny (Nord, Sud, Est, Ouest)<br>'Palloni-Heligman' - tables types de mortalité des Nations Unies pour les pays en développement ; nécessite aussi l'âge moyen à la maternité",
+            "es": "Conjunto de multiplicadores que convierten las proporciones de hijos fallecidos en probabilidades de morir:<br><br>'Trussell' - tablas modelo de vida de Coale-Demeny (Norte, Sur, Este, Oeste)<br>'Palloni-Heligman' - tablas modelo de vida de las Naciones Unidas para países en desarrollo; requiere además la edad media a la maternidad"
+        },
+        {
+            "en": "All groups",
+            "fr": "Tous les groupes",
+            "es": "Todos los grupos"
+        },
+        {
+            "en": "Note: Downloading all groups creates a combined ZIP file with the results of every group.",
+            "fr": "Remarque : le téléchargement de tous les groupes crée un fichier ZIP combiné avec les résultats de chaque groupe.",
+            "es": "Nota: la descarga de todos los grupos crea un archivo ZIP combinado con los resultados de cada grupo."
+        },
+        {
+            "en": "Child mortality estimates",
+            "fr": "Estimations de la mortalité des enfants",
+            "es": "Estimaciones de la mortalidad en la niñez"
+        },
+        {
+            "en": "Reference date",
+            "fr": "Date de référence",
+            "es": "Fecha de referencia"
+        },
+        {
+            "en": "Probability of dying, q(x)",
+            "fr": "Probabilité de décéder, q(x)",
+            "es": "Probabilidad de morir, q(x)"
+        },
+        {
+            "en": "No data available",
+            "fr": "Aucune donnée disponible",
+            "es": "No hay datos disponibles"
+        },
+        {
+            "en": "Estimation failed: ",
+            "fr": "Échec de l'estimation : ",
+            "es": "La estimación falló: "
+        },
+        {
+            "en": "Age group of women",
+            "fr": "Groupe d'âges des femmes",
+            "es": "Grupo de edad de las mujeres"
+        },
+        {
+            "en": "Estimate",
+            "fr": "Estimation",
+            "es": "Estimación"
+        },
+        {
+            "en": "Probability of dying",
+            "fr": "Probabilité de décéder",
+            "es": "Probabilidad de morir"
+        },
+        {
+            "en": "Years before observation",
+            "fr": "Années avant l'observation",
+            "es": "Años antes de la observación"
+        },
+        {
+            "en": "Implied life expectancy at birth",
+            "fr": "Espérance de vie à la naissance implicite",
+            "es": "Esperanza de vida al nacer implícita"
+        },
+        {
+            "en": "%d group(s) could not be estimated; see the errors file in the all-groups download.",
+            "fr": "%d groupe(s) n'ont pas pu être estimés ; consultez le fichier d'erreurs dans le téléchargement de tous les groupes.",
+            "es": "%d grupo(s) no se pudieron estimar; consulte el archivo de errores en la descarga de todos los grupos."
+        },
+        {
+            "en": "Estimates from women aged 15-19 and 20-24 (q(1), q(2)) are usually biased upwards because young mothers' children face higher risks; interpret them with caution.",
+            "fr": "Les estimations issues des femmes de 15-19 et 20-24 ans (q(1), q(2)) sont généralement biaisées à la hausse car les enfants des jeunes mères courent des risques plus élevés ; interprétez-les avec prudence.",
+            "es": "Las estimaciones de las mujeres de 15-19 y 20-24 años (q(1), q(2)) suelen estar sesgadas al alza porque los hijos de madres jóvenes enfrentan riesgos más altos; interprételas con cautela."
+        },
+        {
+            "en": "Estimates from women aged 45-49 (q(20)) refer to a period long before the survey and are often affected by recall errors.",
+            "fr": "Les estimations issues des femmes de 45-49 ans (q(20)) se rapportent à une période éloignée de l'enquête et sont souvent affectées par des erreurs de mémoire.",
+            "es": "Las estimaciones de las mujeres de 45-49 años (q(20)) se refieren a un período muy anterior a la encuesta y suelen estar afectadas por errores de memoria."
+        },
+        {
+            "en": "Some estimates fall outside the range of the model life tables; their implied life expectancy could not be computed.",
+            "fr": "Certaines estimations sortent de l'intervalle des tables types de mortalité ; leur espérance de vie implicite n'a pas pu être calculée.",
+            "es": "Algunas estimaciones quedan fuera del rango de las tablas modelo de vida; no se pudo calcular su esperanza de vida implícita."
+        },
+        {
+            "en": "Age Must Contain Exactly the Seven Five-Year Groups of Women 15, 20, 25, 30, 35, 40 and 45",
+            "fr": "L'âge doit contenir exactement les sept groupes quinquennaux des femmes 15, 20, 25, 30, 35, 40 et 45",
+            "es": "La edad debe contener exactamente los siete grupos quinquenales de las mujeres 15, 20, 25, 30, 35, 40 y 45"
+        },
+        {
+            "en": "Women Must be Greater than Zero in Every Age Group",
+            "fr": "Le nombre de femmes doit être supérieur à zéro dans chaque groupe d'âges",
+            "es": "El número de mujeres debe ser mayor que cero en cada grupo de edad"
+        },
+        {
+            "en": "Children Ever Born and Children Dead Cannot be Negative",
+            "fr": "Les enfants nés vivants et les enfants décédés ne peuvent pas être négatifs",
+            "es": "Los hijos nacidos vivos y los hijos fallecidos no pueden ser negativos"
+        },
+        {
+            "en": "Children Dead Cannot Exceed Children Ever Born",
+            "fr": "Les enfants décédés ne peuvent pas dépasser les enfants nés vivants",
+            "es": "Los hijos fallecidos no pueden superar a los hijos nacidos vivos"
+        },
+        {
+            "en": "Children Ever Born Must be Greater than Zero for Women Aged 15-19, 20-24 and 25-29",
+            "fr": "Les enfants nés vivants doivent être supérieurs à zéro pour les femmes de 15-19, 20-24 et 25-29 ans",
+            "es": "Los hijos nacidos vivos deben ser mayores que cero para las mujeres de 15-19, 20-24 y 25-29 años"
         }
     ]
 }

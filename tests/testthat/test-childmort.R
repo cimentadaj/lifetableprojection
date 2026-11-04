@@ -187,3 +187,41 @@ test_that("successful results never partially match an `error` element", {
   expect_null(res$error)
   expect_false(any(startsWith(names(res), "error")))
 })
+
+test_that("module is registered and its UI builds", {
+  i18n <- usei18n_local()
+  mods <- get_app_modules(i18n)
+  expect_true("childmort" %in% names(mods))
+  expect_identical(mods$childmort$server_fun, childmort_module_server)
+  ui <- childmort_module_ui(i18n)
+  html <- as.character(ui)
+  expect_match(html, "childmort_module_page", fixed = TRUE)
+  expect_match(html, "childmort-file1", fixed = TRUE)
+  expect_match(html, "childmort-childmort_plot", fixed = TRUE)
+  expect_match(html, "childmort-childmort_table", fixed = TRUE)
+})
+
+test_that("every new module string has French and Spanish translations", {
+  tr <- jsonlite::fromJSON(app_sys("extdata", "translation.json"))$translation
+  module_strings <- c(
+    "Child Mortality (Brass Method)", "Multiplier variant", "Model life table family",
+    "Model life table sex", "Mean age at maternity", "Estimate Child Mortality",
+    "Child mortality estimates", "Implied life expectancy at birth",
+    childmort_diagnostics(data.frame(x = 1, qx = 0.1, date_t = 1970, e0_implied = NA))
+  )
+  hits <- tr[tr$en %in% module_strings, ]
+  expect_setequal(hits$en, module_strings)
+  expect_true(all(nzchar(hits$fr) & nzchar(hits$es)))
+})
+
+test_that("analysis info text documents the run parameters", {
+  txt <- childmort_info_text(list(variant = "palloni_helligman", mlt_model = "Latin",
+                                  sex = "female", date_obs = 1976, mam = 28))
+  expect_match(txt, "Palloni-Heligman")
+  expect_match(txt, "Mean age at maternity: 28")
+  txt_all <- childmort_info_text(list(variant = "trussell", mlt_model = "West",
+                                      sex = "male", date_obs = NULL, mam = NA), n_groups = 3)
+  expect_match(txt_all, "All Groups")
+  expect_match(txt_all, "taken from the Date column")
+  expect_match(txt_all, "Number of Groups: 3")
+})

@@ -83,6 +83,9 @@ app_ui <- function(request) {
     if (mod_id == "odap") {
       return(uiOutput("odap_module_card"))
     }
+    if (mod_id == "childmort") {
+      return(uiOutput("childmort_module_card"))
+    }
 
     # Keep other cards static
     if (identical(mod$status, "active")) {
