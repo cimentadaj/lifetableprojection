@@ -2494,6 +2494,26 @@
             "en": "Give less weight to estimates from women aged 15-19 and 20-24, which are often too high, and to those from women aged 45-49, which refer to distant dates and suffer from recall errors.",
             "fr": "Accordez moins de poids aux estimations issues des femmes de 15-19 et 20-24 ans, souvent trop élevées, et à celles des femmes de 45-49 ans, qui se rapportent à des dates lointaines et souffrent d'erreurs de mémoire.",
             "es": "Dé menos peso a las estimaciones de las mujeres de 15-19 y 20-24 años, que suelen ser demasiado altas, y a las de las mujeres de 45-49 años, que se refieren a fechas lejanas y sufren errores de memoria."
+        },
+        {
+            "en": "Browse...",
+            "fr": "Parcourir...",
+            "es": "Explorar..."
+        },
+        {
+            "en": "Upload complete",
+            "fr": "Téléchargement terminé",
+            "es": "Carga completa"
+        },
+        {
+            "en": "Finishing upload",
+            "fr": "Finalisation du téléchargement",
+            "es": "Finalizando la carga"
+        },
+        {
+            "en": "no file selected",
+            "fr": "aucun fichier sélectionné",
+            "es": "ningún archivo seleccionado"
         }
     ]
 }

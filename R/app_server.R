@@ -414,6 +414,7 @@ lifetable_server <- function(input, output, session) {
     # Update language if it changed
     if (!is.null(input$selected_language)) {
       update_lang(input$selected_language)
+      send_file_input_labels(session, i18n)
       # Increment language version to trigger module UI updates
       session$userData$language_version(session$userData$language_version() + 1)
 

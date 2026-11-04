@@ -15,6 +15,25 @@ create_info_tab_label <- function(output_id, text) {
   shiny::span(id = output_id, class = "shiny-html-output", text)
 }
 
+#' Send translated file upload texts to the browser
+#'
+#' The "Browse..." button and "no file selected" placeholder of
+#' `shiny.semantic::file_input()`, and the upload progress text written by
+#' Shiny's JavaScript, are fixed in English. `inst/app/www/file_input_i18n.js`
+#' swaps them for the texts sent here; call this after every language change.
+#'
+#' @param session Shiny session.
+#' @param i18n Translator (already set to the session language).
+#' @noRd
+send_file_input_labels <- function(session, i18n) {
+  session$sendCustomMessage("file-input-labels", list(
+    browse = i18n$t("Browse..."),
+    complete = i18n$t("Upload complete"),
+    finishing = i18n$t("Finishing upload"),
+    placeholder = i18n$t("no file selected")
+  ))
+}
+
 #' Create Shared Data Context
 #'
 #' Sets up the upload, validation, and grouping workflow reused across the new

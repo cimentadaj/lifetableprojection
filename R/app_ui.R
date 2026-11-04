@@ -125,6 +125,9 @@ app_ui <- function(request) {
     useShinyjs(),
     introjsUI(),
     shiny.i18n::usei18n(i18n),
+    # Translates file upload texts (see send_file_input_labels()). Inlined
+    # because the www resource path is only registered by the server.
+    shiny::includeScript(app_sys("app/www/file_input_i18n.js")),
     LATEX_PRE_TAGS,
     tags$script(JS_CODE_SCREEN_SIZE),
     tags$style(HTML("
