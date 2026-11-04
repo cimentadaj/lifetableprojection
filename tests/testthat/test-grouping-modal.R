@@ -87,3 +87,13 @@ test_that("a new upload does not reopen the modal once grouping is confirmed", {
     expect_false(any(grepl("show request registered", out)))
   })
 })
+
+test_that("the modal does not autofocus the column search box", {
+  # Autofocus opens the column menu over the "No grouping" checkbox.
+  shiny::testServer(grouping_test_module, args = list(df = two_regions), {
+    session$flushReact()
+    html <- paste(as.character(output$modal_ui$html), collapse = "")
+    expect_match(html, "column_selection_modal", fixed = TRUE)
+    expect_match(html, "modal('setting', 'autofocus', false)", fixed = TRUE)
+  })
+})

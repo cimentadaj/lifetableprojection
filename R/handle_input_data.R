@@ -109,7 +109,10 @@ handle_group_selection_modal <- function(input, output, session, data, group_sel
         footer = tagList(
           actionButton(ns("confirm_column_selection"), i18n$t("Confirm"), class = "ui button primary"),
           actionButton(ns("cancel_column_selection"), i18n$t("Cancel"), class = "ui button")
-        )
+        ),
+        # Semantic UI focuses the first input when the modal opens: the column
+        # search box, which opens its menu over the "No grouping" checkbox.
+        settings = list(c("autofocus", "false"))
       )
     })
     cat(sprintf("[GROUP_MODAL] modal UI assigned | modal_id=%s; awaiting flush\n", modal_id))
