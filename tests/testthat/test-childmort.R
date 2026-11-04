@@ -210,6 +210,11 @@ test_that("every new module string has French and Spanish translations", {
     "Results for", "Date of observation", "Date column of your data", "Male", "Female",
     "The settings have changed. Click 'Estimate Child Mortality' to update the results.",
     "Only changes the implied life expectancy at birth; the q(x) estimates stay the same.",
+    "Reading the results", "References",
+    "Each point on the chart is an estimate of q(x), the probability of dying before age x, placed at the date it refers to. Estimates from younger women refer to more recent dates.",
+    "The proportion of children dead drives the estimates; the multiplier variant and model life table family only adjust them slightly. The model life table sex changes only the implied life expectancy at birth.",
+    "Implied life expectancy at birth is that of the model life table with the same q(x). It puts the estimates for different ages x on one scale, so you can read the trend over time.",
+    "Give less weight to estimates from women aged 15-19 and 20-24, which are often too high, and to those from women aged 45-49, which refer to distant dates and suffer from recall errors.",
     childmort_diagnostics(data.frame(x = 1, qx = 0.1, date_t = 1970, e0_implied = NA))
   )
   hits <- tr[tr$en %in% module_strings, ]

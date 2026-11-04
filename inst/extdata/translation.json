@@ -2291,11 +2291,6 @@
             "es": "Los multiplicadores de Palloni-Heligman utilizan las tablas modelo de vida de las Naciones Unidas para países en desarrollo (América Latina, Chile, Asia meridional, Lejano Oriente, General) y requieren además la edad media a la maternidad."
         },
         {
-            "en": "Reference: United Nations (1983). Manual X: Indirect Techniques for Demographic Estimation.",
-            "fr": "Référence : Nations Unies (1983). Manuel X : Techniques indirectes d'estimation démographique.",
-            "es": "Referencia: Naciones Unidas (1983). Manual X: Técnicas indirectas de estimación demográfica."
-        },
-        {
             "en": "Multiplier variant",
             "fr": "Variante des multiplicateurs",
             "es": "Variante de multiplicadores"
@@ -2469,6 +2464,36 @@
             "en": "Only changes the implied life expectancy at birth; the q(x) estimates stay the same.",
             "fr": "Ne modifie que l'espérance de vie à la naissance implicite ; les estimations de q(x) restent les mêmes.",
             "es": "Solo cambia la esperanza de vida al nacer implícita; las estimaciones de q(x) no cambian."
+        },
+        {
+            "en": "Reading the results",
+            "fr": "Lire les résultats",
+            "es": "Cómo leer los resultados"
+        },
+        {
+            "en": "References",
+            "fr": "Références",
+            "es": "Referencias"
+        },
+        {
+            "en": "Each point on the chart is an estimate of q(x), the probability of dying before age x, placed at the date it refers to. Estimates from younger women refer to more recent dates.",
+            "fr": "Chaque point du graphique est une estimation de q(x), la probabilité de décéder avant l'âge x, placée à la date à laquelle elle se rapporte. Les estimations issues des femmes les plus jeunes se rapportent aux dates les plus récentes.",
+            "es": "Cada punto del gráfico es una estimación de q(x), la probabilidad de morir antes de la edad x, situada en la fecha a la que se refiere. Las estimaciones de las mujeres más jóvenes se refieren a fechas más recientes."
+        },
+        {
+            "en": "The proportion of children dead drives the estimates; the multiplier variant and model life table family only adjust them slightly. The model life table sex changes only the implied life expectancy at birth.",
+            "fr": "La proportion d'enfants décédés détermine les estimations ; la variante des multiplicateurs et la famille de tables types ne les ajustent que légèrement. Le sexe de la table type ne modifie que l'espérance de vie à la naissance implicite.",
+            "es": "La proporción de hijos fallecidos determina las estimaciones; la variante de multiplicadores y la familia de tablas modelo solo las ajustan ligeramente. El sexo de la tabla modelo solo cambia la esperanza de vida al nacer implícita."
+        },
+        {
+            "en": "Implied life expectancy at birth is that of the model life table with the same q(x). It puts the estimates for different ages x on one scale, so you can read the trend over time.",
+            "fr": "L'espérance de vie à la naissance implicite est celle de la table type ayant le même q(x). Elle place les estimations des différents âges x sur une même échelle, ce qui permet de lire la tendance dans le temps.",
+            "es": "La esperanza de vida al nacer implícita es la de la tabla modelo con el mismo q(x). Pone las estimaciones de las distintas edades x en una misma escala, para poder leer la tendencia en el tiempo."
+        },
+        {
+            "en": "Give less weight to estimates from women aged 15-19 and 20-24, which are often too high, and to those from women aged 45-49, which refer to distant dates and suffer from recall errors.",
+            "fr": "Accordez moins de poids aux estimations issues des femmes de 15-19 et 20-24 ans, souvent trop élevées, et à celles des femmes de 45-49 ans, qui se rapportent à des dates lointaines et souffrent d'erreurs de mémoire.",
+            "es": "Dé menos peso a las estimaciones de las mujeres de 15-19 y 20-24 años, que suelen ser demasiado altas, y a las de las mujeres de 45-49 años, que se refieren a fechas lejanas y sufren errores de memoria."
         }
     ]
 }

@@ -420,7 +420,22 @@ childmort_module_server <- function(input, output, session) {
               shiny::div(class = "description", i18n$t("Palloni-Heligman multipliers use the United Nations model life tables for developing countries (Latin American, Chilean, South Asian, Far East Asian, General) and also require the mean age at maternity."))
             ))
           ),
-          shiny::p(shiny::tags$em(i18n$t("Reference: United Nations (1983). Manual X: Indirect Techniques for Demographic Estimation.")))
+          shiny::h4(i18n$t("Reading the results")),
+          shiny::tags$ul(
+            shiny::tags$li(i18n$t("Each point on the chart is an estimate of q(x), the probability of dying before age x, placed at the date it refers to. Estimates from younger women refer to more recent dates.")),
+            shiny::tags$li(i18n$t("The proportion of children dead drives the estimates; the multiplier variant and model life table family only adjust them slightly. The model life table sex changes only the implied life expectancy at birth.")),
+            shiny::tags$li(i18n$t("Implied life expectancy at birth is that of the model life table with the same q(x). It puts the estimates for different ages x on one scale, so you can read the trend over time.")),
+            shiny::tags$li(i18n$t("Give less weight to estimates from women aged 15-19 and 20-24, which are often too high, and to those from women aged 45-49, which refer to distant dates and suffer from recall errors."))
+          ),
+          shiny::h4(i18n$t("References")),
+          # Citations are kept in their original language.
+          shiny::tags$ul(
+            class = "childmort-references",
+            shiny::tags$li("United Nations (1983). Manual X: Indirect Techniques for Demographic Estimation. Population Studies No. 81. New York: United Nations."),
+            shiny::tags$li("Brass, W. et al. (1968). The Demography of Tropical Africa. Princeton: Princeton University Press."),
+            shiny::tags$li("Trussell, T. J. (1975). A re-estimation of the multiplying factors for the Brass technique for determining childhood survivorship rates. Population Studies 29(1): 97-107."),
+            shiny::tags$li("Palloni, A. and Heligman, L. (1985). Re-estimation of structural parameters to obtain estimates of mortality in developing countries. Population Bulletin of the United Nations 18: 10-33.")
+          )
         )
       })
 
