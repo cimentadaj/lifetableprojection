@@ -1247,6 +1247,9 @@ orphanhood_module_server <- function(input, output, session) {
       shinyjs::show(id = session$ns("plot_container"))
       if (is.null(result$error)) {
         shinyjs::show(id = session$ns("download_container"))
+      } else {
+        # The previous results were cleared, so there is nothing to download
+        shinyjs::hide(id = session$ns("download_container"))
       }
     },
 

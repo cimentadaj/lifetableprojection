@@ -398,6 +398,8 @@ test_that("diagnostics flag HIV adjustment and implausible estimates", {
   two_notes <- orphanhood_diagnostics(two$estimates, two$params, panama$Age)
   expect_true(any(grepl("two-census methods only cover", two_notes)))
   expect_false(any(grepl("for one census", two_notes)))
+  # Timaeus two-census estimates start at respondents aged 20-24
+  expect_false(any(grepl("adoption effect", two_notes)))
   expect_length(orphanhood_diagnostics(NULL, res$params), 0)
 })
 
@@ -459,7 +461,7 @@ test_that("every string the module translates has French and Spanish", {
   two <- run_orphanhood(panama, method = "preston_chen", mac = 27, date1 = 1977, date2 = 1980)$params
   items <- rbind(orphanhood_settings_items(params), orphanhood_settings_items(two),
                  orphanhood_settings_items(modifyList(two, list(date1 = NULL))))
-  est <- data.frame(Age = 20, plausible = FALSE)
+  est <- data.frame(Age = c(5, 20), plausible = FALSE)
   notes <- c(
     orphanhood_diagnostics(est, params, c(0, 20), list(c(0.9, 0.95))),
     orphanhood_diagnostics(est, two, c(0, 20))

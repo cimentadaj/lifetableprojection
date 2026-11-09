@@ -671,9 +671,10 @@ orphanhood_diagnostics <- function(estimates, params, input_ages = NULL, input_p
   if (is.null(estimates) || nrow(estimates) == 0) {
     return(character(0))
   }
-  notes <- c(
-    "Estimates from respondents aged 5-9 and 10-14 often understate adult mortality, because orphans are frequently adopted and reported as having their parent alive (adoption effect)."
-  )
+  notes <- character(0)
+  if (any(estimates$Age < 15)) {
+    notes <- c(notes, "Estimates from respondents aged 5-9 and 10-14 often understate adult mortality, because orphans are frequently adopted and reported as having their parent alive (adoption effect).")
+  }
   if (!isTRUE(params$maternal)) {
     notes <- c(notes, "Paternal orphanhood estimates are less reliable than maternal ones, because fathers' ages at the birth of their children vary more.")
   }
