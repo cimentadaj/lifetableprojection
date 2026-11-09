@@ -17,6 +17,8 @@ Imports:
     magrittr,
     MortIndEst,
     MortCast,
+    purrr,
+    tidyr,
     DemoToolsData,
     ODAPbackend (>= 00.01.002),
     OPPPserver (>= 0.0.6.9006),
