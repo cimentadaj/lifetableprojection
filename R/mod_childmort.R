@@ -533,7 +533,7 @@ childmort_module_server <- function(input, output, session) {
           ),
           shiny::p(
             class = "childmort-control-hint",
-            style = "font-size: 0.9em; color: #666; margin-top: -0.5em;",
+            style = "font-size: 0.9em; color: #666; margin-top: 0.4em;",
             i18n$t("Only changes the implied life expectancy at birth; the q(x) estimates stay the same.")
           ),
           if (has_date_col) {
