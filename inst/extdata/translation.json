@@ -2591,11 +2591,6 @@
             "es": "Tabla de mortalidad estándar"
         },
         {
-            "en": "The survival probabilities are turned into a life table with a one-parameter Brass logit fit against a standard: a model life table of the chosen family and level (female tables for mothers, male tables for fathers), or a standard you enter.",
-            "fr": "Les probabilités de survie sont transformées en table de mortalité par un ajustement logit de Brass à un paramètre sur un standard : une table type de la famille et du niveau choisis (tables féminines pour les mères, masculines pour les pères), ou un standard que vous saisissez.",
-            "es": "Las probabilidades de supervivencia se convierten en una tabla de mortalidad mediante un ajuste logit de Brass de un parámetro sobre un estándar: una tabla modelo de la familia y el nivel elegidos (tablas femeninas para las madres, masculinas para los padres), o un estándar que usted introduce."
-        },
-        {
             "en": "HIV/AIDS adjustment",
             "fr": "Ajustement pour le VIH/sida",
             "es": "Ajuste por VIH/sida"
@@ -3014,6 +3009,71 @@
             "en": "Enter at least one year with a value for PMTCT in the HIV series",
             "fr": "Saisissez au moins une année avec une valeur de PMTCT dans les séries VIH",
             "es": "Introduzca al menos un año con un valor de PMTCT en las series de VIH"
+        },
+        {
+            "en": "The survival probabilities are turned into a life table with a one-parameter Brass logit fit against a standard: a model life table of the chosen family, at a level set by e0 or by 5q0 (female tables for mothers, male tables for fathers); a standard you enter; or, where HIV is common, life tables from the Spectrum HIV model (Stover et al. 2012) given HIV prevalence, ART coverage and 5q0.",
+            "fr": "Les probabilités de survie sont transformées en table de mortalité par un ajustement logit de Brass à un paramètre sur un standard : une table type de la famille choisie, à un niveau fixé par e0 ou par 5q0 (tables féminines pour les mères, masculines pour les pères) ; un standard que vous saisissez ; ou, là où le VIH est répandu, des tables issues du modèle VIH Spectrum (Stover et al. 2012) selon la prévalence du VIH, la couverture du TAR et le 5q0.",
+            "es": "Las probabilidades de supervivencia se convierten en una tabla de mortalidad mediante un ajuste logit de Brass de un parámetro sobre un estándar: una tabla modelo de la familia elegida, con un nivel fijado por e0 o por 5q0 (tablas femeninas para las madres, masculinas para los padres); un estándar que usted introduce; o, donde el VIH es frecuente, tablas del modelo de VIH Spectrum (Stover et al. 2012) según la prevalencia del VIH, la cobertura de TAR y el 5q0."
+        },
+        {
+            "en": "HIV model life tables (Spectrum)",
+            "fr": "Tables de mortalité VIH (Spectrum)",
+            "es": "Tablas de mortalidad con VIH (Spectrum)"
+        },
+        {
+            "en": "Life tables from the Spectrum HIV model (Stover et al. 2012) for the period between the two observations, given the HIV prevalence, ART coverage and 5q0 below.",
+            "fr": "Tables de mortalité du modèle VIH Spectrum (Stover et al. 2012) pour la période entre les deux observations, selon la prévalence du VIH, la couverture du TAR et le 5q0 ci-dessous.",
+            "es": "Tablas de mortalidad del modelo de VIH Spectrum (Stover et al. 2012) para el periodo entre las dos observaciones, según la prevalencia del VIH, la cobertura de TAR y el 5q0 indicados abajo."
+        },
+        {
+            "en": "Life tables from the Spectrum HIV model (Stover et al. 2012), given the HIV prevalence by age group in the HIVPrev column of your data, and the ART coverage and 5q0 below.",
+            "fr": "Tables de mortalité du modèle VIH Spectrum (Stover et al. 2012), selon la prévalence du VIH par groupe d'âges de la colonne HIVPrev de vos données, et la couverture du TAR et le 5q0 ci-dessous.",
+            "es": "Tablas de mortalidad del modelo de VIH Spectrum (Stover et al. 2012), según la prevalencia del VIH por grupo de edad de la columna HIVPrev de sus datos, y la cobertura de TAR y el 5q0 indicados abajo."
+        },
+        {
+            "en": "HIV prevalence among adults",
+            "fr": "Prévalence du VIH chez les adultes",
+            "es": "Prevalencia del VIH en adultos"
+        },
+        {
+            "en": "ART coverage",
+            "fr": "Couverture du TAR",
+            "es": "Cobertura de TAR"
+        },
+        {
+            "en": "Enter the HIV prevalence among adults as a proportion between 0 and 1",
+            "fr": "Saisissez la prévalence du VIH chez les adultes comme une proportion entre 0 et 1",
+            "es": "Introduzca la prevalencia del VIH en adultos como una proporción entre 0 y 1"
+        },
+        {
+            "en": "Enter the ART coverage as a proportion between 0 and 1",
+            "fr": "Saisissez la couverture du TAR comme une proportion entre 0 et 1",
+            "es": "Introduzca la cobertura de TAR como una proporción entre 0 y 1"
+        },
+        {
+            "en": "Enter 5q0 as a probability between 0 and 1 (for example 0.08)",
+            "fr": "Saisissez 5q0 comme une probabilité entre 0 et 1 (par exemple 0.08)",
+            "es": "Introduzca 5q0 como una probabilidad entre 0 y 1 (por ejemplo 0.08)"
+        },
+        {
+            "en": "5q0",
+            "fr": "5q0",
+            "es": "5q0"
+        },
+        {
+            "en": "The life tables come from the Spectrum HIV model (Stover et al. 2012), given HIV prevalence, ART coverage and 5q0.",
+            "fr": "Les tables de mortalité proviennent du modèle VIH Spectrum (Stover et al. 2012), selon la prévalence du VIH, la couverture du TAR et le 5q0.",
+            "es": "Las tablas de mortalidad provienen del modelo de VIH Spectrum (Stover et al. 2012), según la prevalencia del VIH, la cobertura de TAR y el 5q0."
+        },
+        {
+            "en": "Use a model life table or a custom standard with the Masquelier-Timaeus method",
+            "fr": "Utilisez une table type ou un standard personnalisé avec la méthode de Masquelier-Timaeus",
+            "es": "Use una tabla modelo o un estándar personalizado con el método de Masquelier-Timaeus"
+        },
+        {
+            "en": "The Spectrum HIV life tables need an HIVPrev column (HIV prevalence by age group)",
+            "fr": "Les tables VIH Spectrum nécessitent une colonne HIVPrev (prévalence du VIH par groupe d'âges)",
+            "es": "Las tablas de VIH Spectrum necesitan una columna HIVPrev (prevalencia del VIH por grupo de edad)"
         }
     ]
 }

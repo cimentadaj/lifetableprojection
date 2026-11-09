@@ -260,7 +260,11 @@ orphanhood_info_text <- function(params, n_groups = NULL) {
       } else {
         "Description: Indirect estimation of adult mortality from the proportion of respondents with a living parent in one census or survey (Timaeus 1992, IUSSP Tools for Demographic Estimation), using MortIndEst::orphanhood_one()."
       },
-      "Fitting: one-parameter Brass logit against the standard life table (orphanhood_standard.csv).",
+      if (identical(params$standard_type, "spectrum")) {
+        "Fitting: one-parameter Brass logit against life tables from the Spectrum HIV model (Stover et al. 2012), given HIV prevalence, ART coverage and 5q0."
+      } else {
+        "Fitting: one-parameter Brass logit against the standard life table (orphanhood_standard.csv)."
+      },
       "",
       sprintf("%s: %s", items$label, items$value),
       if (isTRUE(params$masquelier)) {
@@ -316,7 +320,8 @@ orphanhood_control_values <- function(input, data, hiv_series = NULL) {
   obs <- orphanhood_observations(prepared)
   mac_from_data <- "MAC" %in% has || (obs == 2 && all(c("MAC1", "MAC2") %in% has))
   hiv <- obs == 1 && "HIVPrev" %in% has
-  model <- !identical(input$standard_type, "custom")
+  spectrum <- identical(input$standard_type, "spectrum")
+  model <- !identical(input$standard_type, "custom") && !spectrum
   by_q5 <- identical(input$std_level, "q5")
   masquelier <- obs == 2 && identical(input$method, "masquelier_timaeus")
   list(
@@ -325,7 +330,10 @@ orphanhood_control_values <- function(input, data, hiv_series = NULL) {
     standard_type = input$standard_type,
     family = if (model) input$family else NULL,
     std_level = if (model) input$std_level else NULL,
-    std_e0 = if (model && !by_q5) input$std_e0 else NULL,
+    std_e0 = if ((model && !by_q5) || spectrum) input$std_e0 else NULL,
+    spectrum_prev = if (spectrum && obs == 2) input$spectrum_prev else NULL,
+    spectrum_art = if (spectrum) input$spectrum_art else NULL,
+    spectrum_q5 = if (spectrum) input$spectrum_q5 else NULL,
     std_q5 = if (model && by_q5) input$std_q5 else NULL,
     hiv_series = if (masquelier) hiv_series else NULL,
     hiv_period = if (masquelier) input$hiv_period else NULL,
@@ -461,7 +469,7 @@ orphanhood_module_server <- function(input, output, session) {
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", i18n$t("Standard life table")),
-              shiny::div(class = "description", i18n$t("The survival probabilities are turned into a life table with a one-parameter Brass logit fit against a standard: a model life table of the chosen family and level (female tables for mothers, male tables for fathers), or a standard you enter."))
+              shiny::div(class = "description", i18n$t("The survival probabilities are turned into a life table with a one-parameter Brass logit fit against a standard: a model life table of the chosen family, at a level set by e0 or by 5q0 (female tables for mothers, male tables for fathers); a standard you enter; or, where HIV is common, life tables from the Spectrum HIV model (Stover et al. 2012) given HIV prevalence, ART coverage and 5q0."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", i18n$t("HIV/AIDS adjustment")),
@@ -483,6 +491,8 @@ orphanhood_module_server <- function(input, output, session) {
             shiny::tags$li("Timaeus, I. M. (1992). Estimation of adult mortality from paternal orphanhood: a reassessment and a new approach. Population Bulletin of the United Nations 33: 47-63."),
             shiny::tags$li("Timaeus, I. M. (1991). Estimation of mortality from orphanhood in adulthood. Demography 28(2): 213-227."),
             shiny::tags$li("Preston, S. H. and Chen, N. (1984). Two-census orphanhood methods for estimating adult mortality, with applications to Latin America. Population Studies 38(1): 1-23."),
+            # As cited in MortIndEst::orphanhood_one()
+            shiny::tags$li("Stover, J. and others (2012). The Spectrum model, as implemented in MortIndEst."),
             shiny::tags$li("Timaeus, I. M. and Nunn, A. J. (1997). Measurement of adult mortality in populations affected by AIDS: an assessment of the orphanhood method. Health Transition Review 7(Suppl. 2): 23-43."),
             # As cited in MortIndEst::orphanhood_two()
             shiny::tags$li("Masquelier, B. and Timaeus, I. M. HIV/AIDS correction method for maternal orphanhood in two inquiries.")
@@ -587,8 +597,9 @@ orphanhood_module_server <- function(input, output, session) {
             ns("standard_type"),
             i18n$t("Standard life table"),
             choices = stats::setNames(
-              c("model", "custom"),
-              c(i18n$t("Model life table"), i18n$t("Custom standard (enter lx)"))
+              c("model", "custom", "spectrum"),
+              c(i18n$t("Model life table"), i18n$t("Custom standard (enter lx)"),
+                i18n$t("HIV model life tables (Spectrum)"))
             ),
             selected = shiny::isolate(input$standard_type) %||% "model"
           )
@@ -606,6 +617,45 @@ orphanhood_module_server <- function(input, output, session) {
         language_dep()
         if (identical(input$standard_type, "custom")) {
           return(NULL)
+        }
+        if (identical(input$standard_type, "spectrum")) {
+          two <- data_info()$obs == 2
+          return(shiny::tagList(
+            shiny::p(
+              class = "orphanhood-control-hint",
+              if (two) {
+                i18n$t("Life tables from the Spectrum HIV model (Stover et al. 2012) for the period between the two observations, given the HIV prevalence, ART coverage and 5q0 below.")
+              } else {
+                i18n$t("Life tables from the Spectrum HIV model (Stover et al. 2012), given the HIV prevalence by age group in the HIVPrev column of your data, and the ART coverage and 5q0 below.")
+              }
+            ),
+            shiny::numericInput(
+              ns("std_e0"),
+              i18n$t("Life expectancy at birth of the standard"),
+              value = shiny::isolate(input$std_e0) %||% 60,
+              min = 20, max = 100, step = 2.5
+            ),
+            if (two) {
+              shiny::numericInput(
+                ns("spectrum_prev"),
+                i18n$t("HIV prevalence among adults"),
+                value = shiny::isolate(input$spectrum_prev) %||% 0.05,
+                min = 0, max = 1, step = 0.01
+              )
+            },
+            shiny::numericInput(
+              ns("spectrum_art"),
+              i18n$t("ART coverage"),
+              value = shiny::isolate(input$spectrum_art) %||% 0,
+              min = 0, max = 1, step = 0.05
+            ),
+            shiny::numericInput(
+              ns("spectrum_q5"),
+              "5q0",
+              value = shiny::isolate(input$spectrum_q5) %||% 0.1,
+              min = 0.001, max = 0.5, step = 0.005
+            )
+          ))
         }
         shiny::tagList(
           shiny.semantic::selectInput(
@@ -810,7 +860,7 @@ orphanhood_module_server <- function(input, output, session) {
           shiny::numericInput(
             ns("hiv_vert_transm"),
             i18n$t("Proportion of children infected by their mothers"),
-            value = shiny::isolate(input$hiv_vert_transm) %||% 0.33, min = 0, max = 1, step = 0.01
+            value = shiny::isolate(input$hiv_vert_transm) %||% round(1 / 3, 4), min = 0, max = 1, step = 0.0001
           ),
           shiny::numericInput(
             ns("hiv_fert_ratio"),
@@ -1063,9 +1113,12 @@ orphanhood_module_server <- function(input, output, session) {
         lx_file <- file.path(temp_dir, sprintf("orphanhood_life_tables%s.csv", suffix))
         utils::write.csv(add_labels(lx), lx_file, row.names = FALSE)
         files <- c(files, lx_file)
-        std_file <- file.path(temp_dir, "orphanhood_standard.csv")
-        utils::write.csv(latest$standard, std_file, row.names = FALSE)
-        c(files, std_file)
+        if (!is.null(latest$standard)) {
+          std_file <- file.path(temp_dir, "orphanhood_standard.csv")
+          utils::write.csv(latest$standard, std_file, row.names = FALSE)
+          files <- c(files, std_file)
+        }
+        files
       }
 
       # Helper function to download single group
@@ -1226,7 +1279,11 @@ orphanhood_module_server <- function(input, output, session) {
         hiv_prop_partner = values$hiv_prop_partner %||% 0.5,
         std_q5 = values$std_q5,
         hiv_series = values$hiv_series,
-        hiv_period = values$hiv_period %||% "midpoint"
+        hiv_period = values$hiv_period %||% "midpoint",
+        spectrum = if (identical(values$standard_type, "spectrum")) {
+          list(prev = values$spectrum_prev, art = values$spectrum_art, q5 = values$spectrum_q5)
+        },
+        two_observations = !is.null(values$method)
       )
     },
 
@@ -1245,7 +1302,17 @@ orphanhood_module_server <- function(input, output, session) {
         if (!isTRUE(params$maternal)) {
           problems <- c(problems, "The Masquelier-Timaeus method is for maternal orphanhood only")
         }
+        if (!is.null(params$spectrum)) {
+          problems <- c(problems, "Use a model life table or a custom standard with the Masquelier-Timaeus method")
+        }
         problems <- c(problems, check_orphanhood_hiv_series(params$hiv_series))
+      }
+      if (!is.null(params$spectrum)) {
+        problems <- c(problems, check_orphanhood_spectrum(params$spectrum, two = isTRUE(params$two_observations)))
+        has_hiv <- "HIVPrev" %in% names(prepare_orphanhood_input(data_full))
+        if (!isTRUE(params$two_observations) && !has_hiv) {
+          problems <- c(problems, "The Spectrum HIV life tables need an HIVPrev column (HIV prevalence by age group)")
+        }
       }
       if (length(problems) > 0) {
         shared$last_result(NULL)
@@ -1268,7 +1335,8 @@ orphanhood_module_server <- function(input, output, session) {
           hiv_prop_partner = params$hiv_prop_partner,
           std_q5 = params$std_q5,
           hiv_series = params$hiv_series,
-          hiv_period = params$hiv_period
+          hiv_period = params$hiv_period,
+          spectrum = params$spectrum
         ),
         error = function(e) {
           list(error = paste0(i18n$t("Estimation failed: "), conditionMessage(e)))

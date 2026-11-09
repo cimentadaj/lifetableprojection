@@ -14,23 +14,25 @@ NULL
 #' purrr and tidyr functions without importing them, so they only work when
 #' those packages are attached. Without dplyr, `lag()` silently resolves to
 #' `stats::lag()` and gives wrong results instead of an error. This attaches
-#' the packages that are not attached yet, evaluates `expr` and detaches them
-#' again.
+#' the packages that are not attached yet, evaluates `expr` and then detaches
+#' everything that was added to the search path meanwhile.
 #'
 #' @param expr Expression to evaluate.
+#' @param extra Further packages to attach, before dplyr so that dplyr's
+#'   functions come first (see `ORPHANHOOD_SPECTRUM_PACKAGES`).
 #' @return The value of `expr`.
 #' @noRd
-with_mortindest_deps <- function(expr) {
-  attached_here <- character(0)
+with_mortindest_deps <- function(expr, extra = character(0)) {
+  before <- search()
   on.exit({
-    for (pkg in rev(attached_here)) {
-      try(detach(paste0("package:", pkg), character.only = TRUE), silent = TRUE)
+    added <- setdiff(search(), before)
+    for (entry in added[startsWith(added, "package:")]) {
+      try(detach(entry, character.only = TRUE), silent = TRUE)
     }
   }, add = TRUE)
-  for (pkg in c("dplyr", "purrr", "tidyr")) {
+  for (pkg in c(extra, "tidyr", "purrr", "dplyr")) {
     if (!paste0("package:", pkg) %in% search()) {
       suppressPackageStartupMessages(attachNamespace(pkg))
-      attached_here <- c(attached_here, pkg)
     }
   }
   force(expr)

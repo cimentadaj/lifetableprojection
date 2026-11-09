@@ -492,8 +492,16 @@ test_that("every string the module translates has French and Spanish", {
     check_orphanhood_hiv_series(NULL),
     check_orphanhood_hiv_series(orphanhood_blank_hiv_series()),
     check_orphanhood_hiv_series(bad_series),
-    "The Masquelier-Timaeus method is for maternal orphanhood only"
+    "The Masquelier-Timaeus method is for maternal orphanhood only",
+    "Use a model life table or a custom standard with the Masquelier-Timaeus method",
+    "The Spectrum HIV life tables need an HIVPrev column (HIV prevalence by age group)",
+    check_orphanhood_spectrum(list(prev = NA, art = NA, q5 = NA), two = TRUE)
   )
+  # Spectrum settings and note
+  spec <- run_orphanhood(panama, mac = 27, date1 = 1977.5, date2 = 1980.36,
+                         spectrum = list(prev = 0.05, art = 0.1, q5 = 0.08))
+  items <- rbind(items, orphanhood_settings_items(spec$params))
+  notes <- c(notes, orphanhood_diagnostics(spec$estimates, spec$params))
   wanted <- unique(c(literals, items$label, items$value[items$translate_value], notes, problems))
   missing <- setdiff(wanted, tr$en)
   expect_equal(missing, character(0))
@@ -722,4 +730,112 @@ test_that("a MAC per age group is used for every method", {
     out <- run_orphanhood(two, method = method, date1 = 1977.5, date2 = 1980.36)
     expect_equal(nrow(out$group_errors), 0)
   }
+})
+
+# Spectrum HIV model life tables (MortIndEst's second HIV option)
+kenya_general <- data.frame(
+  Age = seq(5, 45, 5),
+  NotOrphaned = kenya$NotOrphaned,
+  HIVPrev = c(0.07, 0.08, 0.08, 0.07, 0.05, 0.03, 0.02, 0.01, 0.01)
+)
+
+test_that("one census with Spectrum life tables matches MortIndEst", {
+  before <- search()
+  res <- run_orphanhood(kenya_general, mac = 26.75, date_obs = 1999.64, std_e0 = 55,
+                        spectrum = list(art = 0, q5 = 0.11))
+  expect_equal(search(), before)
+  expect_equal(nrow(res$group_errors), 0)
+  expect_null(res$standard)
+  expect_equal(res$params$standard_type, "spectrum")
+  direct <- with_mortindest_deps(MortIndEst::orphanhood_one(
+    prop_not_orphan = kenya_general$NotOrphaned, age = kenya_general$Age, mac = 26.75,
+    maternal = TRUE, date = 1999.64, brass_logit = TRUE, brass_logit_e0 = 55,
+    HIV_prev = kenya_general$HIVPrev, HIV_art = rep(0, 9), brass_logit_5q0 = rep(0.11, 9),
+    verbose = FALSE
+  ), extra = ORPHANHOOD_SPECTRUM_PACKAGES)
+  expect_equal(res$estimates$q15_45, direct$adult_mort_index$q15_45)
+  expect_equal(search(), before)
+
+  paternal <- run_orphanhood(kenya_general, maternal = FALSE, mac = 33, date_obs = 1999.64,
+                             spectrum = list(art = 0.2, q5 = 0.08), hiv_prop_partner = 0.5)
+  expect_equal(nrow(paternal$group_errors), 0)
+  expect_equal(paternal$estimates$Age, seq(5, 35, 5))
+
+  # Spectrum needs the HIVPrev column with one census
+  no_hiv <- run_orphanhood(iraq, mac = 28, date_obs = 1997.79, spectrum = list(art = 0, q5 = 0.1))
+  expect_match(no_hiv$group_errors$message, "need an HIVPrev column")
+})
+
+test_that("two censuses with Spectrum life tables: Timaeus and Preston-Chen", {
+  spec <- list(prev = 0.05, art = 0.1, q5 = 0.08)
+  for (method in c("timaeus", "preston_chen")) {
+    res <- run_orphanhood(panama, method = method, mac = 27, date1 = 1977.5, date2 = 1980.36,
+                          spectrum = spec)
+    expect_equal(nrow(res$group_errors), 0)
+    expect_true(all(res$estimates$plausible))
+    expect_equal(res$params$spectrum_prev, 0.05)
+  }
+  # Higher HIV prevalence in the model gives higher adult mortality
+  low <- run_orphanhood(panama, mac = 27, date1 = 1977.5, date2 = 1980.36, spectrum = spec)
+  high <- run_orphanhood(panama, mac = 27, date1 = 1977.5, date2 = 1980.36,
+                         spectrum = modifyList(spec, list(prev = 0.2)))
+  expect_false(isTRUE(all.equal(low$estimates$q15_45, high$estimates$q15_45)))
+
+  expect_error(run_orphanhood(panama, mac = 27, date1 = 1977.5, date2 = 1980.36,
+                              spectrum = list(art = 0.1, q5 = 0.08)), "HIV prevalence among adults")
+  sa <- utils::read.csv(system.file("extdata", "orphanhood_sample_sa.csv", package = "lifetableprojection"))
+  series <- utils::read.csv(system.file("extdata", "orphanhood_sample_sa_hiv_series.csv", package = "lifetableprojection"))
+  expect_error(run_orphanhood(sa, method = "masquelier_timaeus", hiv_series = series, spectrum = spec),
+               "model life table or a custom standard")
+})
+
+test_that("Spectrum inputs are checked", {
+  expect_length(check_orphanhood_spectrum(list(art = 0.1, q5 = 0.08)), 0)
+  expect_length(check_orphanhood_spectrum(list(art = 0.1, q5 = 0.08), two = TRUE), 1)
+  expect_match(check_orphanhood_spectrum(list(art = 10, q5 = 0.08)), "ART coverage")
+  expect_match(check_orphanhood_spectrum(list(art = 0.1, q5 = 1)), "5q0")
+  expect_error(run_orphanhood(kenya_general, mac = 26.75, date_obs = 1999.64,
+                              spectrum = list(art = NA, q5 = 0.1)), "ART coverage")
+})
+
+test_that("Spectrum settings, change detection, notes and info text", {
+  one <- run_orphanhood(kenya_general, mac = 26.75, date_obs = 1999.64, std_e0 = 55,
+                        spectrum = list(art = 0, q5 = 0.11))$params
+  items <- orphanhood_settings_items(one)
+  expect_equal(items$value[items$label == "Standard"], "HIV model life tables (Spectrum)")
+  expect_equal(items$value[items$label == "ART coverage"], "0")
+  expect_equal(items$value[items$label == "5q0"], "0.11")
+  expect_false("HIV prevalence among adults" %in% items$label)
+  two <- run_orphanhood(panama, mac = 27, date1 = 1977.5, date2 = 1980.36,
+                        spectrum = list(prev = 0.05, art = 0.1, q5 = 0.08))$params
+  expect_equal(orphanhood_settings_items(two)$value[orphanhood_settings_items(two)$label == "HIV prevalence among adults"], "0.05")
+
+  now <- list(parent = "maternal", standard_type = "spectrum", std_e0 = 55,
+              spectrum_art = 0, spectrum_q5 = 0.11, mac = 26.75, date_obs = 1999.64)
+  expect_false(orphanhood_settings_changed(one, now))
+  expect_true(orphanhood_settings_changed(one, modifyList(now, list(spectrum_q5 = 0.12))))
+  expect_true(orphanhood_settings_changed(one, modifyList(now, list(spectrum_art = 0.3))))
+  expect_true(orphanhood_settings_changed(one, modifyList(now, list(std_e0 = 65))))
+  expect_true(orphanhood_settings_changed(one, modifyList(now, list(standard_type = "model"))))
+  now2 <- list(parent = "maternal", method = "timaeus", standard_type = "spectrum", std_e0 = 60,
+               spectrum_prev = 0.05, spectrum_art = 0.1, spectrum_q5 = 0.08,
+               mac = 27, date1 = 1977.5, date2 = 1980.36)
+  expect_false(orphanhood_settings_changed(two, now2))
+  expect_true(orphanhood_settings_changed(two, modifyList(now2, list(spectrum_prev = 0.1))))
+
+  res <- run_orphanhood(kenya_general, mac = 26.75, date_obs = 1999.64,
+                        spectrum = list(art = 0, q5 = 0.11))
+  expect_true(any(grepl("Spectrum HIV model", orphanhood_diagnostics(res$estimates, res$params))))
+  expect_match(orphanhood_info_text(res$params), "Spectrum HIV model", fixed = TRUE)
+  expect_false(grepl("orphanhood_standard.csv", orphanhood_info_text(res$params), fixed = TRUE))
+
+  input <- list(parent = "maternal", method = "timaeus", standard_type = "spectrum",
+                family = "UN_General", std_e0 = 55, spectrum_prev = 0.05, spectrum_art = 0.1,
+                spectrum_q5 = 0.08, std_level = "q5", std_q5 = 0.2)
+  v1 <- orphanhood_control_values(input, kenya_general)
+  expect_null(v1$spectrum_prev)
+  expect_equal(c(v1$std_e0, v1$spectrum_art, v1$spectrum_q5), c(55, 0.1, 0.08))
+  expect_null(v1$family)
+  expect_null(v1$std_q5)
+  expect_equal(orphanhood_control_values(input, panama)$spectrum_prev, 0.05)
 })

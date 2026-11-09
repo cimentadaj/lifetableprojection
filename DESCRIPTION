@@ -19,6 +19,8 @@ Imports:
     MortCast,
     purrr,
     tidyr,
+    rms,
+    DemoTools,
     DemoToolsData,
     ODAPbackend (>= 00.01.002),
     OPPPserver (>= 0.0.6.9006),
@@ -49,5 +51,6 @@ Remotes:
     github::timriffe/ODAPbackend,
     github::IvanWilli/MortIndEst,
     github::timriffe/DemoToolsData,
+    github::timriffe/DemoTools,
     github::cimentadaj/untheme,
     github::PPgp/OPPPserver@dev

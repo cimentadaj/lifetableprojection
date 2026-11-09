@@ -51,6 +51,12 @@ ORPHANHOOD_METHOD_LABELS <- c(
 #' @noRd
 ORPHANHOOD_STANDARD_AGES <- seq(15, 85, 5)
 
+#' Packages the Spectrum HIV life tables need on the search path:
+#' `rms::rcs()`, DemoTools' life table functions, and MortIndEst itself for
+#' its `mods.r` data set (lazy-loaded data, only visible when attached)
+#' @noRd
+ORPHANHOOD_SPECTRUM_PACKAGES <- c("rms", "DemoTools", "MortIndEst")
+
 #' Series of the HIV table used by the Masquelier-Timaeus method
 #' @noRd
 ORPHANHOOD_HIV_SERIES <- c("HIVPrev", "ART", "PMTCT")
@@ -118,6 +124,30 @@ orphanhood_hiv_series_input <- function(series, col) {
   out <- data.frame(year = year[keep], value = value[keep])
   out <- out[order(out$year), , drop = FALSE]
   if (nrow(out) == 1) out$value else out
+}
+
+#' Check the inputs of the Spectrum HIV model life tables
+#'
+#' @param spectrum List with `prev` (two observations only), `art` and `q5`.
+#' @param two `TRUE` for two observations, which need `prev`.
+#' @return Character vector of problems (empty when the inputs are usable).
+#' @noRd
+check_orphanhood_spectrum <- function(spectrum, two = FALSE) {
+  valid <- function(x, low, high, open = FALSE) {
+    x <- suppressWarnings(as.numeric(x))
+    length(x) == 1 && !is.na(x) && (if (open) x > low && x < high else x >= low && x <= high)
+  }
+  problems <- character(0)
+  if (two && !valid(spectrum$prev, 0, 1)) {
+    problems <- c(problems, "Enter the HIV prevalence among adults as a proportion between 0 and 1")
+  }
+  if (!valid(spectrum$art, 0, 1)) {
+    problems <- c(problems, "Enter the ART coverage as a proportion between 0 and 1")
+  }
+  if (!valid(spectrum$q5, 0, 1, open = TRUE)) {
+    problems <- c(problems, "Enter 5q0 as a probability between 0 and 1 (for example 0.08)")
+  }
+  problems
 }
 
 #' Life expectancy level of the model life table with a given 5q0
@@ -485,6 +515,8 @@ orphanhood_group_mac <- function(df, cols, fallback) {
 #'   the Masquelier-Timaeus method.
 #' @param hiv_period How period HIV and ART covariates are evaluated in the
 #'   Masquelier-Timaeus method: `"midpoint"` or `"average"`.
+#' @param spectrum `NULL`, or a list (`prev`, `art`, `q5`, `e0`) to use the
+#'   Spectrum HIV model life tables instead of `standard`.
 #' @return List with `estimates` (one row per age group of respondents), `lx`
 #'   (fitted life tables) and, for Masquelier-Timaeus, `hiv_adjustment`.
 #' @noRd
@@ -500,33 +532,52 @@ orphanhood_estimate_group <- function(df,
                                       hiv_fert_ratio = 3 / 4,
                                       hiv_prop_partner = 1 / 2,
                                       hiv_series = NULL,
-                                      hiv_period = "midpoint") {
+                                      hiv_period = "midpoint",
+                                      spectrum = NULL) {
   df <- df[order(orphanhood_num(df$Age)), , drop = FALSE]
   age <- orphanhood_num(df$Age)
   obs <- orphanhood_observations(df)
-  std <- data.frame(age = orphanhood_num(standard$age), lx = orphanhood_num(standard$lx))
+  std <- if (is.null(standard)) NULL else {
+    data.frame(age = orphanhood_num(standard$age), lx = orphanhood_num(standard$lx))
+  }
 
   if (obs == 1) {
     date_obs <- orphanhood_group_value(df, "Date", date_obs, "date of observation")
     mac <- orphanhood_group_mac(df, "MAC", mac)
     hiv <- if ("HIVPrev" %in% names(df)) orphanhood_num(df$HIVPrev) else NULL
-    # Rows with implausible values are flagged below, so the NaN warnings
-    # they raise inside MortIndEst are not needed.
-    res <- with_mortindest_deps(suppressWarnings(suppressMessages(MortIndEst::orphanhood_one(
+    args <- list(
       prop_not_orphan = orphanhood_num(df$NotOrphaned),
       age = age,
       maternal = maternal,
       mac = mac,
       date = date_obs,
-      mlt_data_input = std,
       brass_logit = TRUE,
-      HIV_prev_antenatal = if (!is.null(hiv) && maternal) hiv else NULL,
-      HIV_prev = if (!is.null(hiv) && !maternal) hiv else NULL,
       HIV_vert_transm = hiv_vert_transm,
       HIV_fert_ratio = hiv_fert_ratio,
       HIV_prop_partner = hiv_prop_partner,
       verbose = FALSE
-    ))))
+    )
+    if (is.null(spectrum)) {
+      args$mlt_data_input <- std
+      args$HIV_prev_antenatal <- if (!is.null(hiv) && maternal) hiv
+      args$HIV_prev <- if (!is.null(hiv) && !maternal) hiv
+    } else {
+      # Spectrum model life tables built from HIV prevalence (HIVPrev, by age
+      # group of respondents), ART coverage and 5q0
+      if (is.null(hiv)) {
+        stop("The Spectrum HIV life tables need an HIVPrev column (HIV prevalence by age group)")
+      }
+      args$brass_logit_e0 <- spectrum$e0
+      args$brass_logit_5q0 <- rep(spectrum$q5, length(age))
+      args$HIV_prev <- hiv
+      args$HIV_art <- rep(spectrum$art, length(age))
+    }
+    # Rows with implausible values are flagged below, so the NaN warnings
+    # they raise inside MortIndEst are not needed.
+    res <- with_mortindest_deps(
+      suppressWarnings(suppressMessages(do.call(MortIndEst::orphanhood_one, args))),
+      extra = if (is.null(spectrum)) character(0) else ORPHANHOOD_SPECTRUM_PACKAGES
+    )
     index <- as.data.frame(res$adult_mort_index)
     ref_date <- index$time_location
   } else {
@@ -544,9 +595,10 @@ orphanhood_estimate_group <- function(df,
     if (masquelier && !maternal) {
       stop("The Masquelier-Timaeus method is for maternal orphanhood only")
     }
-    # Rows with implausible values are flagged below, so the NaN warnings
-    # they raise inside MortIndEst are not needed.
-    res <- with_mortindest_deps(suppressWarnings(suppressMessages(MortIndEst::orphanhood_two(
+    if (masquelier && !is.null(spectrum)) {
+      stop("Use a model life table or a custom standard with the Masquelier-Timaeus method")
+    }
+    args <- list(
       prop1_not_orphan = orphanhood_num(df$NotOrphaned1),
       prop2_not_orphan = orphanhood_num(df$NotOrphaned2),
       age1 = age,
@@ -557,14 +609,30 @@ orphanhood_estimate_group <- function(df,
       method = method,
       mac1 = mac1,
       mac2 = mac2,
-      mlt_data_input = std,
       brass_logit = TRUE,
-      HIV_prev = if (masquelier) orphanhood_hiv_series_input(hiv_series, "HIVPrev") else NULL,
-      HIV_art = if (masquelier) orphanhood_hiv_series_input(hiv_series, "ART") else NULL,
-      HIV_pmtct = if (masquelier) orphanhood_hiv_series_input(hiv_series, "PMTCT") else NULL,
       HIV_period_covariates = hiv_period,
       verbose = FALSE
-    ))))
+    )
+    if (is.null(spectrum)) {
+      args$mlt_data_input <- std
+    } else {
+      # Spectrum model life tables for the period between the observations
+      args$brass_logit_e0 <- spectrum$e0
+      args$HIV_prev <- spectrum$prev
+      args$HIV_art <- spectrum$art
+      args$HIV_5q0 <- spectrum$q5
+    }
+    if (masquelier) {
+      args$HIV_prev <- orphanhood_hiv_series_input(hiv_series, "HIVPrev")
+      args$HIV_art <- orphanhood_hiv_series_input(hiv_series, "ART")
+      args$HIV_pmtct <- orphanhood_hiv_series_input(hiv_series, "PMTCT")
+    }
+    # Rows with implausible values are flagged below, so the NaN warnings
+    # they raise inside MortIndEst are not needed.
+    res <- with_mortindest_deps(
+      suppressWarnings(suppressMessages(do.call(MortIndEst::orphanhood_two, args))),
+      extra = if (is.null(spectrum)) character(0) else ORPHANHOOD_SPECTRUM_PACKAGES
+    )
     index <- as.data.frame(res$adult_mort_index)
     # Two-census estimates refer to the period between the observations
     ref_date <- rep((date1 + date2) / 2, nrow(index))
@@ -654,6 +722,11 @@ orphanhood_estimate_group <- function(df,
 #'   series is used for every group.
 #' @param hiv_period `"midpoint"` (default) or `"average"`: how period HIV and
 #'   ART covariates are evaluated in the Masquelier-Timaeus method.
+#' @param spectrum `NULL`, or a list with `art` (ART coverage), `q5` (5q0) and,
+#'   for two observations, `prev` (HIV prevalence among adults) to use the
+#'   Spectrum HIV model life tables (Stover et al. 2012) instead of a standard.
+#'   With one observation the HIV prevalence by age group comes from the
+#'   HIVPrev column. The level is chosen by `std_e0`.
 #' @return List with `estimates` (all groups, with `.id`), `lx` (fitted life
 #'   tables), `standard` (the standard life table used), `hiv_adjustment`
 #'   (Masquelier-Timaeus only), `group_errors` (data frame of `.id` and
@@ -674,7 +747,8 @@ run_orphanhood <- function(data,
                            hiv_prop_partner = 1 / 2,
                            std_q5 = NULL,
                            hiv_series = NULL,
-                           hiv_period = "midpoint") {
+                           hiv_period = "midpoint",
+                           spectrum = NULL) {
   if (!method %in% ORPHANHOOD_METHODS) {
     stop(sprintf(
       "Unknown two-census method '%s'. Choose one of: %s",
@@ -684,7 +758,20 @@ run_orphanhood <- function(data,
   maternal <- isTRUE(maternal)
   hiv_period <- match.arg(hiv_period, c("midpoint", "average"))
 
-  if (is.null(standard)) {
+  if (!is.null(spectrum)) {
+    problems <- check_orphanhood_spectrum(spectrum, two = FALSE)
+    if (length(problems) > 0) {
+      stop(paste(problems, collapse = "; "))
+    }
+    std_e0 <- orphanhood_snap_e0(std_e0)
+    std_q5 <- NULL
+    spectrum <- list(
+      prev = if (is.null(spectrum$prev)) NULL else as.numeric(spectrum$prev),
+      art = as.numeric(spectrum$art), q5 = as.numeric(spectrum$q5), e0 = std_e0
+    )
+    std <- NULL
+    standard <- NULL
+  } else if (is.null(standard)) {
     std_e0 <- if (is.null(std_q5)) {
       orphanhood_snap_e0(std_e0)
     } else {
@@ -702,10 +789,19 @@ run_orphanhood <- function(data,
 
   data <- prepare_orphanhood_input(data)
   obs <- orphanhood_observations(data)
+  if (!is.null(spectrum) && obs == 2) {
+    problems <- check_orphanhood_spectrum(spectrum, two = TRUE)
+    if (length(problems) > 0) {
+      stop(paste(problems, collapse = "; "))
+    }
+  }
   masquelier <- obs == 2 && identical(method, "masquelier_timaeus")
   if (masquelier) {
     if (!maternal) {
       stop("The Masquelier-Timaeus method is for maternal orphanhood only")
+    }
+    if (!is.null(spectrum)) {
+      stop("Use a model life table or a custom standard with the Masquelier-Timaeus method")
     }
     problems <- check_orphanhood_hiv_series(hiv_series)
     if (length(problems) > 0) {
@@ -726,6 +822,7 @@ run_orphanhood <- function(data,
     hiv_prop_partner = hiv_prop_partner,
     hiv_series = if (masquelier) hiv_series else NULL,
     hiv_period = hiv_period,
+    spectrum = spectrum,
     check = check_orphanhood_group
   )
 
@@ -740,10 +837,13 @@ run_orphanhood <- function(data,
       observations = obs,
       maternal = maternal,
       method = if (obs == 2) method else NA_character_,
-      standard_type = if (is.null(standard)) "model" else "custom",
-      family = if (is.null(standard)) family else NA_character_,
+      standard_type = if (!is.null(spectrum)) "spectrum" else if (is.null(standard)) "model" else "custom",
+      family = if (is.null(standard) && is.null(spectrum)) family else NA_character_,
       std_e0 = if (is.null(standard)) std_e0 else NA_real_,
       std_q5 = if (is.null(standard) && !is.null(std_q5)) as.numeric(std_q5) else NA_real_,
+      spectrum_prev = if (!is.null(spectrum) && obs == 2) spectrum$prev else NA_real_,
+      spectrum_art = if (!is.null(spectrum)) spectrum$art else NA_real_,
+      spectrum_q5 = if (!is.null(spectrum)) spectrum$q5 else NA_real_,
       mac = mac,
       date_obs = if (obs == 1) date_obs else NULL,
       date1 = if (obs == 2) date1 else NULL,
@@ -786,6 +886,14 @@ orphanhood_settings_items <- function(params) {
   }
   if (identical(params$standard_type, "custom")) {
     items[[length(items) + 1]] <- item("Standard", "Custom standard", TRUE)
+  } else if (identical(params$standard_type, "spectrum")) {
+    items[[length(items) + 1]] <- item("Standard", "HIV model life tables (Spectrum)", TRUE)
+    items[[length(items) + 1]] <- item("Life expectancy at birth of the standard", format(params$std_e0))
+    if (!is.null(params$spectrum_prev) && !all(is.na(params$spectrum_prev))) {
+      items[[length(items) + 1]] <- item("HIV prevalence among adults", format(params$spectrum_prev))
+    }
+    items[[length(items) + 1]] <- item("ART coverage", format(params$spectrum_art))
+    items[[length(items) + 1]] <- item("5q0", format(params$spectrum_q5))
   } else {
     level <- if (is.null(params$std_q5) || all(is.na(params$std_q5))) {
       sprintf("e0 = %s", format(params$std_e0))
@@ -839,7 +947,8 @@ orphanhood_settings_items <- function(params) {
 #'   (`"maternal"` / `"paternal"`), `method`, `standard_type`, `family`,
 #'   `std_level` (`"e0"` / `"q5"`), `std_e0`, `std_q5`, `mac`, `date_obs`,
 #'   `date1`, `date2`, `hiv_vert_transm`, `hiv_fert_ratio`, `hiv_prop_partner`,
-#'   `hiv_series` and `hiv_period`.
+#'   `hiv_series`, `hiv_period`, `spectrum_prev`, `spectrum_art` and
+#'   `spectrum_q5`.
 #' @return `TRUE` when the shown results no longer match the controls.
 #' @noRd
 orphanhood_settings_changed <- function(params, current) {
@@ -852,6 +961,7 @@ orphanhood_settings_changed <- function(params, current) {
   }
   two <- identical(as.integer(params$observations), 2L)
   model <- identical(params$standard_type, "model")
+  spectrum <- identical(params$standard_type, "spectrum")
   parent <- if (isTRUE(params$maternal)) "maternal" else "paternal"
   by_q5 <- !is.null(params$std_q5) && !all(is.na(params$std_q5))
   level_now <- current$std_level
@@ -874,6 +984,10 @@ orphanhood_settings_changed <- function(params, current) {
     (model && !is.null(level_now) && !identical(level_now, if (by_q5) "q5" else "e0")) ||
     (model && !by_q5 && !identical(level_now, "q5") && differs_num(params$std_e0, e0_now)) ||
     (model && by_q5 && !identical(level_now, "e0") && differs_num(params$std_q5, current$std_q5)) ||
+    (spectrum && differs_num(params$std_e0, e0_now)) ||
+    (spectrum && two && differs_num(params$spectrum_prev, current$spectrum_prev)) ||
+    (spectrum && differs_num(params$spectrum_art, current$spectrum_art)) ||
+    (spectrum && differs_num(params$spectrum_q5, current$spectrum_q5)) ||
     (masquelier && differs(params$hiv_period, current$hiv_period)) ||
     (masquelier && !is.null(current$hiv_series) &&
        !identical(series_key(params$hiv_series), series_key(current$hiv_series))) ||
@@ -913,6 +1027,9 @@ orphanhood_diagnostics <- function(estimates, params, input_ages = NULL, input_p
     notes <- c(notes, "Estimates from older respondents refer to more distant dates; the chart places each estimate at the date it refers to.")
   } else {
     notes <- c(notes, "Two-census estimates describe mortality between the two observations; they are placed at the midpoint of that period.")
+  }
+  if (identical(params$standard_type, "spectrum")) {
+    notes <- c(notes, "The life tables come from the Spectrum HIV model (Stover et al. 2012), given HIV prevalence, ART coverage and 5q0.")
   }
   if (isTRUE(params$masquelier)) {
     notes <- c(notes, "Proportions not orphaned were adjusted for HIV/AIDS, PMTCT and ART with the Masquelier-Timaeus method; the same HIV series is used for every group.")
