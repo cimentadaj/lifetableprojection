@@ -395,6 +395,9 @@ test_that("diagnostics flag HIV adjustment and implausible estimates", {
   expect_true(any(grepl("outside the range 0 to 1", orphanhood_diagnostics(est, res$params))))
   two <- run_orphanhood(panama, mac = 27, date1 = 1977.5, date2 = 1980.36)
   expect_true(any(grepl("midpoint", orphanhood_diagnostics(two$estimates, two$params))))
+  two_notes <- orphanhood_diagnostics(two$estimates, two$params, panama$Age)
+  expect_true(any(grepl("two-census methods only cover", two_notes)))
+  expect_false(any(grepl("for one census", two_notes)))
   expect_length(orphanhood_diagnostics(NULL, res$params), 0)
 })
 
@@ -424,4 +427,100 @@ test_that("MortIndEst calls leave the search path as they found it", {
   out <- with_mortindest_deps("package:dplyr" %in% search())
   expect_true(out)
   expect_equal(search(), before)
+})
+
+test_that("module is registered and its UI builds", {
+  i18n <- usei18n_local()
+  mods <- get_app_modules(i18n)
+  expect_true("orphanhood" %in% names(mods))
+  expect_identical(mods$orphanhood$server_fun, orphanhood_module_server)
+  html <- as.character(orphanhood_module_ui(i18n))
+  for (id in c("orphanhood_module_page", "orphanhood-file1", "orphanhood-orphanhood_plot",
+               "orphanhood-orphanhood_table", "orphanhood-custom_standard",
+               "orphanhood-orphanhood_controls", "orphanhood-orphanhood_hiv_ui")) {
+    expect_match(html, id, fixed = TRUE)
+  }
+  # The custom standard table shows only when that standard is chosen
+  expect_match(html, "input.standard_type == &#39;custom&#39;", fixed = TRUE)
+})
+
+test_that("every string the module translates has French and Spanish", {
+  tr <- jsonlite::fromJSON(app_sys("extdata", "translation.json"))$translation
+  src <- testthat::test_path("..", "..", "R", "mod_orphanhood.R")
+  skip_if_not(file.exists(src), "package sources not available")
+  code <- paste(readLines(src, warn = FALSE), collapse = "\n")
+  literals <- regmatches(code, gregexpr('i18n\\$t\\("((?:[^"\\\\]|\\\\.)*)"\\)', code, perl = TRUE))[[1]]
+  literals <- sub('^i18n\\$t\\("', "", sub('"\\)$', "", literals))
+  literals <- gsub("\\\\u2190", "←", literals)
+
+  # Strings built in the backend and translated by the module
+  params <- run_orphanhood(transform(kenya, Date = 1999.64, MAC = 26.75), maternal = FALSE,
+                           standard = iussp_standard_aids)$params
+  two <- run_orphanhood(panama, method = "preston_chen", mac = 27, date1 = 1977, date2 = 1980)$params
+  items <- rbind(orphanhood_settings_items(params), orphanhood_settings_items(two),
+                 orphanhood_settings_items(modifyList(two, list(date1 = NULL))))
+  est <- data.frame(Age = 20, plausible = FALSE)
+  notes <- c(
+    orphanhood_diagnostics(est, params, c(0, 20), list(c(0.9, 0.95))),
+    orphanhood_diagnostics(est, two, c(0, 20))
+  )
+  problems <- c(
+    check_orphanhood_standard(NULL),
+    check_orphanhood_standard(iussp_standard[1:3, ]),
+    check_orphanhood_standard(transform(iussp_standard, lx = lx * 10)),
+    check_orphanhood_standard(transform(iussp_standard, lx = rev(lx)))
+  )
+  wanted <- unique(c(literals, items$label, items$value[items$translate_value], notes, problems))
+  missing <- setdiff(wanted, tr$en)
+  expect_equal(missing, character(0))
+  hits <- tr[tr$en %in% wanted, ]
+  expect_true(all(nzchar(hits$fr) & nzchar(hits$es)))
+  expect_gt(length(wanted), 100)
+})
+
+test_that("controls overridden by the data or not applying are not used", {
+  input <- list(parent = "maternal", method = "preston_chen", standard_type = "model",
+                family = "UN_General", std_e0 = 65, mac = 27, date_obs = 2020,
+                date1 = 2010, date2 = 2020, hiv_vert_transm = 0.3,
+                hiv_fert_ratio = 0.7, hiv_prop_partner = 0.4)
+  one <- orphanhood_control_values(input, transform(iraq, MAC = 28, Date = 1997.79))
+  expect_null(one$mac)
+  expect_null(one$date_obs)
+  expect_null(one$method)
+  expect_null(one$hiv_vert_transm)
+  expect_equal(one$family, "UN_General")
+
+  plain <- orphanhood_control_values(input, iraq)
+  expect_equal(c(plain$mac, plain$date_obs), c(27, 2020))
+  expect_null(plain$date1)
+
+  two <- orphanhood_control_values(input, transform(panama, Date1 = 1977.5))
+  expect_equal(two$method, "preston_chen")
+  expect_null(two$date1)
+  expect_equal(two$date2, 2020)
+  expect_null(two$date_obs)
+
+  hiv <- orphanhood_control_values(modifyList(input, list(parent = "paternal", standard_type = "custom")), kenya)
+  expect_equal(c(hiv$hiv_vert_transm, hiv$hiv_fert_ratio, hiv$hiv_prop_partner), c(0.3, 0.7, 0.4))
+  expect_null(hiv$family)
+  expect_null(hiv$std_e0)
+  expect_equal(orphanhood_control_values(input, NULL)$date_obs, 2020)
+})
+
+test_that("analysis info text documents the run parameters", {
+  one <- run_orphanhood(kenya, maternal = FALSE, standard = iussp_standard_aids, mac = 33,
+                        date_obs = 1999.64, hiv_prop_partner = 0.4)$params
+  txt <- orphanhood_info_text(one)
+  expect_match(txt, "orphanhood_one", fixed = TRUE)
+  expect_match(txt, "Parent: Father")
+  expect_match(txt, "Standard: Custom standard")
+  expect_match(txt, "whose partner is infected: 0.4")
+  expect_match(txt, "years_before")
+  two <- run_orphanhood(panama, method = "timaeus", mac = 27, date1 = 1977.5, date2 = 1980.36)$params
+  txt <- orphanhood_info_text(two, n_groups = 2)
+  expect_match(txt, "orphanhood_two", fixed = TRUE)
+  expect_match(txt, "Method: Timaeus")
+  expect_match(txt, "Dates of observation: 1977.5 / 1980.36")
+  expect_match(txt, "Number of Groups: 2")
+  expect_false(grepl("years_before", txt))
 })

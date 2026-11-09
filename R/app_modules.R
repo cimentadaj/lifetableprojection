@@ -70,6 +70,17 @@ get_app_modules <- function(i18n) {
       status_label = i18n$t("Active"),
       ui = childmort_module_ui(i18n),
       server_fun = childmort_module_server
+    ),
+    orphanhood = list(
+      id = "orphanhood",
+      name = i18n$t("Adult Mortality from Orphanhood"),
+      description = i18n$t("Estimate adult mortality from the proportion of respondents whose mother or father is alive, in one or two censuses or surveys."),
+      icon = "hand holding heart",
+      status = "active",
+      button_label = i18n$t("Go to module"),
+      status_label = i18n$t("Active"),
+      ui = orphanhood_module_ui(i18n),
+      server_fun = orphanhood_module_server
     )
   )
 }

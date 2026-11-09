@@ -685,7 +685,11 @@ orphanhood_diagnostics <- function(estimates, params, input_ages = NULL, input_p
   if (!is.null(input_ages)) {
     unused <- setdiff(stats::na.omit(orphanhood_num(input_ages)), estimates$Age)
     if (length(unused) > 0) {
-      notes <- c(notes, "Some age groups in your data give no estimate: the method only covers certain ages of respondents (for one census, 5-9 to 45-49 for maternal and 5-9 to 35-39 for paternal orphanhood).")
+      notes <- c(notes, if (identical(as.integer(params$observations), 1L)) {
+        "Some age groups in your data give no estimate: the method only covers certain ages of respondents (for one census, 5-9 to 45-49 for maternal and 5-9 to 35-39 for paternal orphanhood)."
+      } else {
+        "Some age groups in your data give no estimate: the two-census methods only cover certain ages of respondents."
+      })
     }
   }
   if (!is.null(input_props)) {
@@ -724,7 +728,11 @@ orphanhood_plot <- function(estimates,
                             title = "Adult mortality estimates",
                             x_label = "Reference date",
                             y_label = "Probability of dying between 15 and 60, 45q15") {
+  # geom_path joins the points in the order of the rows (age of respondents);
+  # geom_line would join them in date order, which zigzags because the dates
+  # of the oldest groups are not monotone.
   estimates <- estimates[estimates$plausible, , drop = FALSE]
+  estimates <- estimates[order(estimates$Age), , drop = FALSE]
   estimates$hover <- sprintf(
     "Respondents %s<br>45q15 = %.4f<br>35q15 = %.4f<br>Date = %.1f",
     estimates$age_label, estimates$q15_45, estimates$q15_35, estimates$ref_date
@@ -748,7 +756,7 @@ orphanhood_plot <- function(estimates,
       )
   }
   p +
-    ggplot2::geom_line(ggplot2::aes(group = 1), color = "#1b6ec2", linewidth = 0.8) +
+    ggplot2::geom_path(ggplot2::aes(group = 1), color = "#1b6ec2", linewidth = 0.8) +
     ggplot2::geom_point(color = "#1b6ec2", size = 3) +
     ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.05, 0.15))) +
     ggplot2::labs(title = title, x = x_label, y = y_label) +

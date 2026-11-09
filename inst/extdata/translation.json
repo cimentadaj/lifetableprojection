@@ -2514,6 +2514,391 @@
             "en": "no file selected",
             "fr": "aucun fichier sélectionné",
             "es": "ningún archivo seleccionado"
+        },
+        {
+            "en": "Adult Mortality from Orphanhood",
+            "fr": "Mortalité adulte à partir de l'orphelinat",
+            "es": "Mortalidad adulta a partir de la orfandad"
+        },
+        {
+            "en": "Estimate adult mortality (45q15) from the proportion of respondents whose mother or father is still alive, reported in one census or survey or in two.",
+            "fr": "Estimez la mortalité adulte (45q15) à partir de la proportion de répondants dont la mère ou le père est encore en vie, déclarée dans un ou deux recensements ou enquêtes.",
+            "es": "Estime la mortalidad adulta (45q15) a partir de la proporción de encuestados cuya madre o padre sigue con vida, declarada en uno o dos censos o encuestas."
+        },
+        {
+            "en": "Required columns (one census or survey):",
+            "fr": "Colonnes requises (un recensement ou une enquête) :",
+            "es": "Columnas obligatorias (un censo o encuesta):"
+        },
+        {
+            "en": "Age (lower bound of the respondents' five-year age groups, e.g. 5, 10, ..., 45)",
+            "fr": "Age (borne inférieure des groupes d'âges quinquennaux des répondants, p. ex. 5, 10, ..., 45)",
+            "es": "Age (límite inferior de los grupos quinquenales de edad de los encuestados, p. ej. 5, 10, ..., 45)"
+        },
+        {
+            "en": "NotOrphaned (proportion of respondents whose mother, or father, is alive, between 0 and 1)",
+            "fr": "NotOrphaned (proportion de répondants dont la mère, ou le père, est en vie, entre 0 et 1)",
+            "es": "NotOrphaned (proporción de encuestados cuya madre, o padre, está con vida, entre 0 y 1)"
+        },
+        {
+            "en": "Two censuses or surveys:",
+            "fr": "Deux recensements ou enquêtes :",
+            "es": "Dos censos o encuestas:"
+        },
+        {
+            "en": "NotOrphaned1 and NotOrphaned2 instead of NotOrphaned, one per observation",
+            "fr": "NotOrphaned1 et NotOrphaned2 au lieu de NotOrphaned, une par observation",
+            "es": "NotOrphaned1 y NotOrphaned2 en lugar de NotOrphaned, una por observación"
+        },
+        {
+            "en": "Date, or Date1 and Date2 (dates of the observations as decimal years, e.g. 1997.8). If absent, set them in the analysis step.",
+            "fr": "Date, ou Date1 et Date2 (dates des observations en années décimales, p. ex. 1997.8). Si elles sont absentes, indiquez-les à l'étape d'analyse.",
+            "es": "Date, o Date1 y Date2 (fechas de las observaciones en años decimales, p. ej. 1997.8). Si no están, indíquelas en el paso de análisis."
+        },
+        {
+            "en": "MAC (mean age of mothers, or fathers, at the birth of their children). If absent, set it in the analysis step.",
+            "fr": "MAC (âge moyen des mères, ou des pères, à la naissance de leurs enfants). S'il est absent, indiquez-le à l'étape d'analyse.",
+            "es": "MAC (edad media de las madres, o de los padres, al nacimiento de sus hijos). Si no está, indíquela en el paso de análisis."
+        },
+        {
+            "en": "HIVPrev (one census or survey only): HIV prevalence at the time of the respondents' birth, by age group, among pregnant women (maternal) or men (paternal). Turns on the HIV/AIDS adjustment.",
+            "fr": "HIVPrev (un seul recensement ou enquête) : prévalence du VIH au moment de la naissance des répondants, par groupe d'âges, parmi les femmes enceintes (maternel) ou les hommes (paternel). Active l'ajustement pour le VIH/sida.",
+            "es": "HIVPrev (solo un censo o encuesta): prevalencia del VIH en el momento del nacimiento de los encuestados, por grupo de edad, entre las mujeres embarazadas (materna) o los hombres (paterna). Activa el ajuste por VIH/sida."
+        },
+        {
+            "en": "Sample data: Iraq 1997 survey, Panama 1977 and 1980 censuses, and Kenya 1999 census with HIV prevalence (IUSSP Tools for Demographic Estimation).",
+            "fr": "Données d'exemple : enquête Irak 1997, recensements Panama 1977 et 1980, et recensement Kenya 1999 avec prévalence du VIH (IUSSP Tools for Demographic Estimation).",
+            "es": "Datos de ejemplo: encuesta de Irak 1997, censos de Panamá 1977 y 1980, y censo de Kenia 1999 con prevalencia del VIH (IUSSP Tools for Demographic Estimation)."
+        },
+        {
+            "en": "Orphanhood Method",
+            "fr": "Méthode de l'orphelinat",
+            "es": "Método de orfandad"
+        },
+        {
+            "en": "The proportion of respondents whose mother (or father) is still alive measures the survival of parents from the birth of their children to the date of the census or survey. The orphanhood method converts these proportions, together with the mean age of parents at the birth of their children, into conditional probabilities of survival in adulthood, and then into 45q15, the probability of dying between exact ages 15 and 60.",
+            "fr": "La proportion de répondants dont la mère (ou le père) est encore en vie mesure la survie des parents depuis la naissance de leurs enfants jusqu'à la date du recensement ou de l'enquête. La méthode de l'orphelinat convertit ces proportions, avec l'âge moyen des parents à la naissance de leurs enfants, en probabilités conditionnelles de survie à l'âge adulte, puis en 45q15, la probabilité de décéder entre les âges exacts 15 et 60 ans.",
+            "es": "La proporción de encuestados cuya madre (o padre) sigue con vida mide la supervivencia de los progenitores desde el nacimiento de sus hijos hasta la fecha del censo o encuesta. El método de orfandad convierte estas proporciones, junto con la edad media de los progenitores al nacimiento de sus hijos, en probabilidades condicionales de supervivencia en la edad adulta y, luego, en 45q15, la probabilidad de morir entre las edades exactas 15 y 60."
+        },
+        {
+            "en": "One census or survey",
+            "fr": "Un recensement ou une enquête",
+            "es": "Un censo o encuesta"
+        },
+        {
+            "en": "Timaeus (1992) regression coefficients, as in the IUSSP Tools for Demographic Estimation. Each age group of respondents gives an estimate that refers to a date a number of years before the census or survey.",
+            "fr": "Coefficients de régression de Timaeus (1992), comme dans les IUSSP Tools for Demographic Estimation. Chaque groupe d'âges de répondants donne une estimation qui se rapporte à une date située un certain nombre d'années avant le recensement ou l'enquête.",
+            "es": "Coeficientes de regresión de Timaeus (1992), como en las IUSSP Tools for Demographic Estimation. Cada grupo de edad de los encuestados da una estimación referida a una fecha situada cierto número de años antes del censo o encuesta."
+        },
+        {
+            "en": "Two censuses or surveys",
+            "fr": "Deux recensements ou enquêtes",
+            "es": "Dos censos o encuestas"
+        },
+        {
+            "en": "Synthetic-cohort methods that use the change in the proportions not orphaned between the two observations: Timaeus (default) or Preston-Chen. The estimates describe mortality between the two observations.",
+            "fr": "Méthodes de cohorte fictive qui utilisent la variation des proportions de non-orphelins entre les deux observations : Timaeus (par défaut) ou Preston-Chen. Les estimations décrivent la mortalité entre les deux observations.",
+            "es": "Métodos de cohorte sintética que usan el cambio en las proporciones de no huérfanos entre las dos observaciones: Timaeus (por defecto) o Preston-Chen. Las estimaciones describen la mortalidad entre las dos observaciones."
+        },
+        {
+            "en": "Standard life table",
+            "fr": "Table de mortalité standard",
+            "es": "Tabla de mortalidad estándar"
+        },
+        {
+            "en": "The survival probabilities are turned into a life table with a one-parameter Brass logit fit against a standard: a model life table of the chosen family and level (female tables for mothers, male tables for fathers), or a standard you enter.",
+            "fr": "Les probabilités de survie sont transformées en table de mortalité par un ajustement logit de Brass à un paramètre sur un standard : une table type de la famille et du niveau choisis (tables féminines pour les mères, masculines pour les pères), ou un standard que vous saisissez.",
+            "es": "Las probabilidades de supervivencia se convierten en una tabla de mortalidad mediante un ajuste logit de Brass de un parámetro sobre un estándar: una tabla modelo de la familia y el nivel elegidos (tablas femeninas para las madres, masculinas para los padres), o un estándar que usted introduce."
+        },
+        {
+            "en": "HIV/AIDS adjustment",
+            "fr": "Ajustement pour le VIH/sida",
+            "es": "Ajuste por VIH/sida"
+        },
+        {
+            "en": "Where HIV is common, orphans are more likely to be infected and to die, so surviving respondents overstate parental survival. With an HIVPrev column, the proportions are adjusted following Timaeus and Nunn (1997).",
+            "fr": "Là où le VIH est répandu, les orphelins ont plus de risques d'être infectés et de décéder ; les répondants survivants surestiment donc la survie des parents. Avec une colonne HIVPrev, les proportions sont ajustées selon Timaeus et Nunn (1997).",
+            "es": "Donde el VIH es frecuente, los huérfanos tienen más probabilidades de estar infectados y de morir, por lo que los encuestados supervivientes sobrestiman la supervivencia de los progenitores. Con una columna HIVPrev, las proporciones se ajustan según Timaeus y Nunn (1997)."
+        },
+        {
+            "en": "Each point is an estimate of 45q15 from one age group of respondents. With one census or survey, it is placed at the date it refers to: estimates from older respondents refer to earlier dates.",
+            "fr": "Chaque point est une estimation de 45q15 issue d'un groupe d'âges de répondants. Avec un seul recensement ou enquête, il est placé à la date à laquelle il se rapporte : les estimations des répondants plus âgés se rapportent à des dates plus anciennes.",
+            "es": "Cada punto es una estimación de 45q15 obtenida de un grupo de edad de encuestados. Con un solo censo o encuesta, se sitúa en la fecha a la que se refiere: las estimaciones de los encuestados de más edad se refieren a fechas más antiguas."
+        },
+        {
+            "en": "The mean age at childbearing locates the estimates in time and adjusts their level; use the mean age of mothers (or fathers) at the births of the respondents' cohorts.",
+            "fr": "L'âge moyen à la procréation situe les estimations dans le temps et ajuste leur niveau ; utilisez l'âge moyen des mères (ou des pères) aux naissances des cohortes de répondants.",
+            "es": "La edad media a la procreación sitúa las estimaciones en el tiempo y ajusta su nivel; use la edad media de las madres (o de los padres) en los nacimientos de las cohortes de encuestados."
+        },
+        {
+            "en": "Give less weight to estimates from respondents aged 5-9 and 10-14: orphans are often adopted and reported as having their parent alive, which makes mortality look lower.",
+            "fr": "Accordez moins de poids aux estimations des répondants âgés de 5-9 et 10-14 ans : les orphelins sont souvent adoptés et déclarés comme ayant leur parent en vie, ce qui fait paraître la mortalité plus faible.",
+            "es": "Dé menos peso a las estimaciones de los encuestados de 5-9 y 10-14 años: los huérfanos a menudo son adoptados y declarados con su progenitor con vida, lo que hace que la mortalidad parezca menor."
+        },
+        {
+            "en": "Paternal orphanhood gives estimates for men; they are less reliable than the maternal ones.",
+            "fr": "L'orphelinat paternel donne des estimations pour les hommes ; elles sont moins fiables que les estimations maternelles.",
+            "es": "La orfandad paterna da estimaciones para los hombres; son menos fiables que las maternas."
+        },
+        {
+            "en": "One survey: Iraq 1997",
+            "fr": "Une enquête : Irak 1997",
+            "es": "Una encuesta: Irak 1997"
+        },
+        {
+            "en": "Two censuses: Panama 1977-1980",
+            "fr": "Deux recensements : Panama 1977-1980",
+            "es": "Dos censos: Panamá 1977-1980"
+        },
+        {
+            "en": "One census with HIV: Kenya 1999",
+            "fr": "Un recensement avec VIH : Kenya 1999",
+            "es": "Un censo con VIH: Kenia 1999"
+        },
+        {
+            "en": "Parent",
+            "fr": "Parent",
+            "es": "Progenitor"
+        },
+        {
+            "en": "Mother (maternal orphanhood)",
+            "fr": "Mère (orphelinat maternel)",
+            "es": "Madre (orfandad materna)"
+        },
+        {
+            "en": "Father (paternal orphanhood)",
+            "fr": "Père (orphelinat paternel)",
+            "es": "Padre (orfandad paterna)"
+        },
+        {
+            "en": "Two-census method",
+            "fr": "Méthode à deux recensements",
+            "es": "Método de dos censos"
+        },
+        {
+            "en": "Model life table",
+            "fr": "Table type de mortalité",
+            "es": "Tabla modelo de mortalidad"
+        },
+        {
+            "en": "Custom standard (enter lx)",
+            "fr": "Standard personnalisé (saisir lx)",
+            "es": "Estándar personalizado (introducir lx)"
+        },
+        {
+            "en": "How the two observations are combined:<br><br>'Timaeus' - converts the change in the proportions not orphaned with Timaeus coefficients; needs respondents aged 15-19 and 20-24<br>'Preston-Chen' - adjusts the average proportions with the growth rates between the observations, then applies the one-census method",
+            "fr": "Comment les deux observations sont combinées :<br><br>'Timaeus' - convertit la variation des proportions de non-orphelins avec les coefficients de Timaeus ; nécessite des répondants de 15-19 et 20-24 ans<br>'Preston-Chen' - ajuste les proportions moyennes avec les taux de croissance entre les observations, puis applique la méthode à un recensement",
+            "es": "Cómo se combinan las dos observaciones:<br><br>'Timaeus' - convierte el cambio en las proporciones de no huérfanos con los coeficientes de Timaeus; necesita encuestados de 15-19 y 20-24 años<br>'Preston-Chen' - ajusta las proporciones medias con las tasas de crecimiento entre las observaciones y luego aplica el método de un censo"
+        },
+        {
+            "en": "Life expectancy at birth of the standard",
+            "fr": "Espérance de vie à la naissance du standard",
+            "es": "Esperanza de vida al nacer del estándar"
+        },
+        {
+            "en": "Female tables are used for mothers and male tables for fathers. The level is rounded to the nearest 2.5 years.",
+            "fr": "Les tables féminines sont utilisées pour les mères et les tables masculines pour les pères. Le niveau est arrondi aux 2,5 ans les plus proches.",
+            "es": "Se usan tablas femeninas para las madres y masculinas para los padres. El nivel se redondea a los 2,5 años más cercanos."
+        },
+        {
+            "en": "Type or paste lx (survivors out of 1, e.g. 0.8868) for ages 15 to 85 of the parents.",
+            "fr": "Saisissez ou collez lx (survivants sur 1, p. ex. 0.8868) pour les âges 15 à 85 des parents.",
+            "es": "Escriba o pegue lx (supervivientes sobre 1, p. ej. 0.8868) para las edades 15 a 85 de los progenitores."
+        },
+        {
+            "en": "Mean age at childbearing will be taken from your data",
+            "fr": "L'âge moyen à la procréation sera pris dans vos données",
+            "es": "La edad media a la procreación se tomará de sus datos"
+        },
+        {
+            "en": "Mean age of fathers at childbearing",
+            "fr": "Âge moyen des pères à la procréation",
+            "es": "Edad media de los padres a la procreación"
+        },
+        {
+            "en": "Mean age of mothers at childbearing",
+            "fr": "Âge moyen des mères à la procréation",
+            "es": "Edad media de las madres a la procreación"
+        },
+        {
+            "en": "Date of the first observation (decimal year)",
+            "fr": "Date de la première observation (année décimale)",
+            "es": "Fecha de la primera observación (año decimal)"
+        },
+        {
+            "en": "Date of the second observation (decimal year)",
+            "fr": "Date de la seconde observation (année décimale)",
+            "es": "Fecha de la segunda observación (año decimal)"
+        },
+        {
+            "en": "Your data include HIVPrev, so the proportions not orphaned are adjusted for HIV/AIDS (Timaeus and Nunn 1997).",
+            "fr": "Vos données contiennent HIVPrev : les proportions de non-orphelins sont donc ajustées pour le VIH/sida (Timaeus et Nunn 1997).",
+            "es": "Sus datos incluyen HIVPrev, por lo que las proporciones de no huérfanos se ajustan por VIH/sida (Timaeus y Nunn 1997)."
+        },
+        {
+            "en": "Proportion of children infected by their mothers",
+            "fr": "Proportion d'enfants infectés par leur mère",
+            "es": "Proporción de hijos infectados por sus madres"
+        },
+        {
+            "en": "Fertility of HIV-positive relative to HIV-negative women",
+            "fr": "Fécondité des femmes séropositives par rapport aux femmes séronégatives",
+            "es": "Fecundidad de las mujeres VIH-positivas respecto de las VIH-negativas"
+        },
+        {
+            "en": "Proportion of HIV-positive men whose partner is infected",
+            "fr": "Proportion d'hommes séropositifs dont la partenaire est infectée",
+            "es": "Proporción de hombres VIH-positivos cuya pareja está infectada"
+        },
+        {
+            "en": "Estimate Adult Mortality",
+            "fr": "Estimer la mortalité adulte",
+            "es": "Estimar la mortalidad adulta"
+        },
+        {
+            "en": "The settings have changed. Click 'Estimate Adult Mortality' to update the results.",
+            "fr": "Les paramètres ont changé. Cliquez sur 'Estimer la mortalité adulte' pour mettre à jour les résultats.",
+            "es": "La configuración ha cambiado. Haga clic en 'Estimar la mortalidad adulta' para actualizar los resultados."
+        },
+        {
+            "en": "Adult mortality estimates",
+            "fr": "Estimations de la mortalité adulte",
+            "es": "Estimaciones de la mortalidad adulta"
+        },
+        {
+            "en": "Age group of respondents",
+            "fr": "Groupe d'âges des répondants",
+            "es": "Grupo de edad de los encuestados"
+        },
+        {
+            "en": "Probability of dying between ages 15 and 60, 45q15",
+            "fr": "Probabilité de décéder entre 15 et 60 ans, 45q15",
+            "es": "Probabilidad de morir entre los 15 y los 60 años, 45q15"
+        },
+        {
+            "en": "Estimate adult mortality from the proportion of respondents whose mother or father is alive, in one or two censuses or surveys.",
+            "fr": "Estimez la mortalité adulte à partir de la proportion de répondants dont la mère ou le père est en vie, dans un ou deux recensements ou enquêtes.",
+            "es": "Estime la mortalidad adulta a partir de la proporción de encuestados cuya madre o padre está con vida, en uno o dos censos o encuestas."
+        },
+        {
+            "en": "Standard",
+            "fr": "Standard",
+            "es": "Estándar"
+        },
+        {
+            "en": "Mean age at childbearing",
+            "fr": "Âge moyen à la procréation",
+            "es": "Edad media a la procreación"
+        },
+        {
+            "en": "Dates of observation",
+            "fr": "Dates d'observation",
+            "es": "Fechas de observación"
+        },
+        {
+            "en": "HIV adjustment",
+            "fr": "Ajustement VIH",
+            "es": "Ajuste por VIH"
+        },
+        {
+            "en": "Estimates from respondents aged 5-9 and 10-14 often understate adult mortality, because orphans are frequently adopted and reported as having their parent alive (adoption effect).",
+            "fr": "Les estimations issues des répondants âgés de 5-9 et 10-14 ans sous-estiment souvent la mortalité adulte, car les orphelins sont fréquemment adoptés et déclarés comme ayant leur parent en vie (effet d'adoption).",
+            "es": "Las estimaciones de los encuestados de 5-9 y 10-14 años suelen subestimar la mortalidad adulta, porque los huérfanos a menudo son adoptados y declarados con su progenitor con vida (efecto de adopción)."
+        },
+        {
+            "en": "Paternal orphanhood estimates are less reliable than maternal ones, because fathers' ages at the birth of their children vary more.",
+            "fr": "Les estimations par l'orphelinat paternel sont moins fiables que les maternelles, car l'âge des pères à la naissance de leurs enfants varie davantage.",
+            "es": "Las estimaciones de orfandad paterna son menos fiables que las maternas, porque la edad de los padres al nacimiento de sus hijos varía más."
+        },
+        {
+            "en": "Estimates from older respondents refer to more distant dates; the chart places each estimate at the date it refers to.",
+            "fr": "Les estimations des répondants plus âgés se rapportent à des dates plus lointaines ; le graphique place chaque estimation à la date à laquelle elle se rapporte.",
+            "es": "Las estimaciones de los encuestados de más edad se refieren a fechas más lejanas; el gráfico sitúa cada estimación en la fecha a la que se refiere."
+        },
+        {
+            "en": "Two-census estimates describe mortality between the two observations; they are placed at the midpoint of that period.",
+            "fr": "Les estimations à deux recensements décrivent la mortalité entre les deux observations ; elles sont placées au milieu de cette période.",
+            "es": "Las estimaciones de dos censos describen la mortalidad entre las dos observaciones; se sitúan en el punto medio de ese periodo."
+        },
+        {
+            "en": "Some age groups in your data give no estimate: the method only covers certain ages of respondents (for one census, 5-9 to 45-49 for maternal and 5-9 to 35-39 for paternal orphanhood).",
+            "fr": "Certains groupes d'âges de vos données ne donnent pas d'estimation : la méthode ne couvre que certains âges de répondants (pour un recensement, 5-9 à 45-49 pour l'orphelinat maternel et 5-9 à 35-39 pour l'orphelinat paternel).",
+            "es": "Algunos grupos de edad de sus datos no dan estimación: el método solo cubre ciertas edades de los encuestados (para un censo, de 5-9 a 45-49 en la orfandad materna y de 5-9 a 35-39 en la paterna)."
+        },
+        {
+            "en": "The proportions not orphaned rise between some consecutive age groups; check your data for those ages.",
+            "fr": "Les proportions de non-orphelins augmentent entre certains groupes d'âges consécutifs ; vérifiez vos données pour ces âges.",
+            "es": "Las proporciones de no huérfanos aumentan entre algunos grupos de edad consecutivos; revise sus datos para esas edades."
+        },
+        {
+            "en": "Some estimates fall outside the range 0 to 1 and are left out of the chart; check the proportions not orphaned for those ages.",
+            "fr": "Certaines estimations sortent de l'intervalle 0 à 1 et sont exclues du graphique ; vérifiez les proportions de non-orphelins pour ces âges.",
+            "es": "Algunas estimaciones quedan fuera del rango de 0 a 1 y no se muestran en el gráfico; revise las proporciones de no huérfanos para esas edades."
+        },
+        {
+            "en": "Proportions not orphaned were adjusted for HIV/AIDS (Timaeus and Nunn 1997) using the HIVPrev column.",
+            "fr": "Les proportions de non-orphelins ont été ajustées pour le VIH/sida (Timaeus et Nunn 1997) à l'aide de la colonne HIVPrev.",
+            "es": "Las proporciones de no huérfanos se ajustaron por VIH/sida (Timaeus y Nunn 1997) con la columna HIVPrev."
+        },
+        {
+            "en": "Mother",
+            "fr": "Mère",
+            "es": "Madre"
+        },
+        {
+            "en": "Father",
+            "fr": "Père",
+            "es": "Padre"
+        },
+        {
+            "en": "Custom standard",
+            "fr": "Standard personnalisé",
+            "es": "Estándar personalizado"
+        },
+        {
+            "en": "MAC column of your data",
+            "fr": "colonne MAC de vos données",
+            "es": "columna MAC de sus datos"
+        },
+        {
+            "en": "Date1 and Date2 columns of your data",
+            "fr": "colonnes Date1 et Date2 de vos données",
+            "es": "columnas Date1 y Date2 de sus datos"
+        },
+        {
+            "en": "Yes",
+            "fr": "Oui",
+            "es": "Sí"
+        },
+        {
+            "en": "The custom standard must cover ages 15 to 85 in five-year steps",
+            "fr": "Le standard personnalisé doit couvrir les âges 15 à 85 par pas de cinq ans",
+            "es": "El estándar personalizado debe cubrir las edades de 15 a 85 en intervalos de cinco años"
+        },
+        {
+            "en": "Enter lx for every age of the custom standard",
+            "fr": "Saisissez lx pour chaque âge du standard personnalisé",
+            "es": "Introduzca lx para cada edad del estándar personalizado"
+        },
+        {
+            "en": "Custom standard lx values must be survivors out of 1 (between 0 and 1)",
+            "fr": "Les valeurs lx du standard personnalisé doivent être des survivants sur 1 (entre 0 et 1)",
+            "es": "Los valores lx del estándar personalizado deben ser supervivientes sobre 1 (entre 0 y 1)"
+        },
+        {
+            "en": "Custom standard lx values must not increase with age",
+            "fr": "Les valeurs lx du standard personnalisé ne doivent pas augmenter avec l'âge",
+            "es": "Los valores lx del estándar personalizado no deben aumentar con la edad"
+        },
+        {
+            "en": "The custom standard needs columns age and lx",
+            "fr": "Le standard personnalisé nécessite les colonnes age et lx",
+            "es": "El estándar personalizado necesita las columnas age y lx"
+        },
+        {
+            "en": "Some age groups in your data give no estimate: the two-census methods only cover certain ages of respondents.",
+            "fr": "Certains groupes d'âges de vos données ne donnent pas d'estimation : les méthodes à deux recensements ne couvrent que certains âges de répondants.",
+            "es": "Algunos grupos de edad de sus datos no dan estimación: los métodos de dos censos solo cubren ciertas edades de los encuestados."
         }
     ]
 }
