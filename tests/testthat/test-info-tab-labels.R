@@ -1,4 +1,4 @@
-module_ids <- c("heaping", "smoothing", "graduation", "odap", "childmort")
+module_ids <- c("heaping", "smoothing", "graduation", "odap", "childmort", "orphanhood")
 
 test_that("every module builds its info tabs with translatable labels", {
   i18n <- usei18n_local()
