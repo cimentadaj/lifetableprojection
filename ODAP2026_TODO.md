@@ -185,6 +185,84 @@ Panama numbers in the UI match Manual X.
 - Built-in checks: roxygen examples for Iraq 1997 (published 45q15) and Kenya 1999 AIDS-adjusted.
 - Output: `adult_mort_index` (q15_45 by respondent age with date). Chart: 45q15 vs reference date.
 
+**Status: DONE except Masquelier-Timaeus (9 Nov 2026)** on branch `dev/orphanhood-module`, which starts from
+`dev/childmort-module` because it needs the T1 layer. Commits: `d95005c` (backend), `806214c` (module), `4a9f7fb`
+(fixes from the Chrome run), `fb9321b`. Not pushed.
+
+- Backend `R/backend_orphanhood.R`, module `R/mod_orphanhood.R`, landing card, navigation, 77 EN/FR/ES strings.
+- **Template** (one row per five-year age group of respondents):
+  - One census or survey: `Age`, `NotOrphaned` (proportion with the parent alive).
+  - Two censuses or surveys: `NotOrphaned1` and `NotOrphaned2` instead. The module detects this from `NotOrphaned2`.
+  - Optional columns:
+    - `Date`, or `Date1` and `Date2`: decimal years.
+    - `MAC`, or `MAC1` and `MAC2`: mean age at childbearing.
+    - `HIVPrev`: one census only; turns on the HIV adjustment.
+  - Each optional column overrides its control, per group.
+  - It's a wide format because the grouping check (`ODAPbackend:::check_groupid`) needs `Age` to be unique within
+    each group, so a long format with two rows per age would fail grouped uploads.
+- **Controls:**
+  - Parent: mother or father.
+  - Two-census method: Timaeus or Preston-Chen.
+  - Standard: either a model life table (9 families, plus e0 snapped to the 2.5 grid), or a custom `lx` standard for
+    ages 15–85, typed or pasted into a table.
+  - MAC and dates.
+  - HIV panel: vertical transmission, fertility ratio, and the proportion of men with an infected partner (paternal
+    only).
+- **Samples** (picked next to the sample button):
+  - Iraq 1997 (IUSSP).
+  - Panama 1977–1980 (Preston-Chen example).
+  - Kenya 1999 with `HIVPrev` (IUSSP AIDS).
+- **Every run uses a Brass logit fit against a standard that the wrapper builds.** It passes that standard as
+  `mlt_data_input` with `brass_logit = TRUE`, using female tables for mothers and male tables for fathers. This works
+  around the MortIndEst bug below.
+- **Not built:**
+  - **Masquelier-Timaeus** needs calendar-year series for HIV prevalence, ART coverage and PMTCT coverage
+    (`data.frame(year, value)`), which do not fit the per-age template. It needs a decision on how users supply them:
+    a second upload, or an editable table in the HIV panel.
+  - **Two-census HIV** (the Spectrum path: `HIV_prev`, `HIV_art`, `HIV_5q0`) is not exposed.
+  - **The "interpolate between model life table levels" path** (`brass_logit = FALSE`) is not exposed: it has no
+    workaround for the sex bug.
+- **MortIndEst issues to report to Ivan:**
+  1. `orphanhood_one()` and `orphanhood_two_timaeus()` filter `MortCast::MLTlookup` with
+     `sex == ifelse(sex == "f", 2, 1)`. Inside `filter()`, `sex` is the column, so this always selects the **male**
+     tables, also for maternal orphanhood. Preston-Chen goes through `orphanhood_one()`, so it is affected too;
+     Masquelier-Timaeus hard-codes `sex == 2` and is fine.
+     - Size: up to 0.019 in 45q15 (Iraq, CD West, e0 60).
+     - Fix: compute the sex code before the pipe and use `sex == !!code`.
+     - `test-orphanhood.R` pins the current upstream behaviour, so that test fails once this is fixed.
+  2. The orphanhood code calls dplyr, purrr and tidyr functions without importing them; NAMESPACE imports only `%>%`.
+     Without dplyr attached, `lag()` silently becomes `stats::lag()` and Preston-Chen gives wrong proportions.
+     - The app wraps each call in `with_mortindest_deps()`, which attaches those packages for the duration of the
+       call.
+     - Checked from an installed build in a clean R session.
+     - `childmort_brass()` is not affected.
+  3. `orphanhood_one(mac = NULL)` fails with "arguments imply differing number of rows". The app requires a MAC.
+- **Unit tests:** `tests/testthat/test-orphanhood.R`, 31 tests and 190 expectations.
+  - Iraq 1997 reproduces the published IUSSP 45q15 within 0.0007.
+  - Kenya 1999 with HIV is within 0.3%.
+  - The Salomons paternal two-census example is kept as a snapshot.
+  - Also covered: validation (including proportions that rise with age, i.e. the proportion orphaned entered by
+    mistake), grouped runs with a failing group, column overrides, settings and diagnostics, and translation coverage.
+  - Full suite: 79 tests, 346 expectations, 0 failures, 1 golem skip.
+- **Chrome e2e (9 Nov 2026):**
+  - All three samples.
+  - Iraq with the IUSSP standard typed into the custom table reproduces the published values in the UI.
+  - Timaeus and Preston-Chen; paternal with HIV.
+  - Two-region one-census upload grouped by Region: group switch, plus single and all-groups ZIPs with contents
+    checked.
+  - Two-province two-census upload with dates and MAC from the controls, including a group that fails Timaeus: the
+    error is shown in the chart and `orphanhood_errors.csv` is in the ZIP.
+  - FR and ES across both steps and the docs; back and re-entry navigation.
+  - Invalid files: percentages, proportion orphaned, missing column.
+  - No new console errors; only the known `inputBinding.receiveMessage()` error on a language switch.
+- **Found in shared code, not caused by T3, left as is:**
+  - After a language switch, the group selector goes back to the first group (confirmed in child mortality too).
+  - In all six upload modules, `shinyjs::show/hide(id = ns(...))` inside module observers namespaces the id twice,
+    so those calls do nothing.
+    - Users don't hit it today: the Previous button hides the results with jQuery, and uploads happen on the upload
+      step.
+    - Orphanhood now hides the download button itself when a run fails.
+
 ## T4: Intercensal survival
 
 - Two censuses (c1, c2, exact dates, 5-year ages with open group), sex, family, `method`
@@ -196,6 +274,7 @@ Panama numbers in the UI match Manual X.
 
 ## T5: Translations
 FR/ES for every string added in T2–T4, reviewed in the UI in both languages.
+T2 and T3 are done (T3: 77 strings, checked in the UI in FR and ES on 9 Nov 2026); T4 is pending.
 
 ## T6: Task 1 acceptance demo
 Ask Patrick for the target country and its published census and survey tables. Build a subnational bulk dataset for each of
@@ -219,6 +298,14 @@ Trussell / West), reproduced to 4 decimals in `test-childmort.R`. That is not a 
 we have no Mortpak (CEBCD) or Division R outputs yet, and no Palloni-Heligman reference values.
 Needed from Ivan / Patrick: Mortpak outputs for a few CEB/CD datasets, including at least one Palloni-Heligman case.
 
+**Orphanhood status (9 Nov 2026):** the references so far are the IUSSP spreadsheet values for Iraq 1997 (one census)
+and Kenya 1999 (HIV), both reproduced in `test-orphanhood.R`.
+- There are no published values for the two-census variants; the Salomons and Panama examples are snapshots only.
+- Mortpak outputs are still needed for one and two censuses (maternal and paternal), plus Preston-Chen and Timaeus
+  two-census reference values.
+- MortIndEst's built-in family lookup uses male tables for mothers (see T3), so any comparison must use the app's
+  wrapper or pass the standard explicitly.
+
 ## T11: Performance + user testing
 Profile bulk runs with many groups (parallel downloads already exist). Run a session with selected national counterparts
 and fix what they find.
@@ -238,6 +325,16 @@ in the app's existing docs/info-button pattern.
 **Child mortality: DONE (4 Nov 2026)** (`5728ad9`). The Method Documentation tab covers the method, both variants,
 how to read the chart and the implied e0, the less reliable age groups, and references (Manual X, Brass 1968,
 Trussell 1975, Palloni-Heligman 1985). Inputs and the template are in the Upload Instructions tab. EN/FR/ES.
+
+**Orphanhood: DONE (9 Nov 2026)** (`806214c`). The Method Documentation tab covers:
+- the method;
+- one and two censuses;
+- the standard life table;
+- the HIV adjustment;
+- how to read the chart, the adoption effect, and paternal reliability;
+- references: IUSSP Tools 2013, Timaeus 1991 and 1992, Preston-Chen 1984, Timaeus-Nunn 1997.
+
+The Upload Instructions tab lists both templates and the optional columns. EN/FR/ES.
 
 ---
 
