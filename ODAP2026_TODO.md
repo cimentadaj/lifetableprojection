@@ -185,43 +185,45 @@ Panama numbers in the UI match Manual X.
 - Built-in checks: roxygen examples for Iraq 1997 (published 45q15) and Kenya 1999 AIDS-adjusted.
 - Output: `adult_mort_index` (q15_45 by respondent age with date). Chart: 45q15 vs reference date.
 
-**Status: DONE except Masquelier-Timaeus (9 Nov 2026)** on branch `dev/orphanhood-module`, which starts from
-`dev/childmort-module` because it needs the T1 layer. Commits: `d95005c` (backend), `806214c` (module), `4a9f7fb`
-(fixes from the Chrome run), `fb9321b`. Not pushed.
+**Status: DONE (9 Nov 2026)** on branch `dev/orphanhood-module`, which starts from `dev/childmort-module` because it
+needs the T1 layer. Commits: `d95005c` (backend), `806214c` (module), `4a9f7fb` (fixes from the Chrome run),
+`fb9321b`, `78ee128`, `24d0652` (Masquelier-Timaeus), `35578f6` (Spectrum). Not pushed.
 
-- Backend `R/backend_orphanhood.R`, module `R/mod_orphanhood.R`, landing card, navigation, 77 EN/FR/ES strings.
+- Backend `R/backend_orphanhood.R`, module `R/mod_orphanhood.R`, landing card, navigation, 112 EN/FR/ES strings.
 - **Template** (one row per five-year age group of respondents):
   - One census or survey: `Age`, `NotOrphaned` (proportion with the parent alive).
   - Two censuses or surveys: `NotOrphaned1` and `NotOrphaned2` instead. The module detects this from `NotOrphaned2`.
   - Optional columns:
     - `Date`, or `Date1` and `Date2`: decimal years.
-    - `MAC`, or `MAC1` and `MAC2`: mean age at childbearing.
-    - `HIVPrev`: one census only; turns on the HIV adjustment.
+    - `MAC`, or `MAC1` and `MAC2`: mean age at childbearing, one value or one per age group.
+    - `HIVPrev`: one census only.
   - Each optional column overrides its control, per group.
   - It's a wide format because the grouping check (`ODAPbackend:::check_groupid`) needs `Age` to be unique within
     each group, so a long format with two rows per age would fail grouped uploads.
-- **Controls:**
-  - Parent: mother or father.
-  - Two-census method: Timaeus or Preston-Chen.
-  - Standard: either a model life table (9 families, plus e0 snapped to the 2.5 grid), or a custom `lx` standard for
-    ages 15–85, typed or pasted into a table.
-  - MAC and dates.
-  - HIV panel: vertical transmission, fertility ratio, and the proportion of men with an infected partner (paternal
-    only).
+- **Methods:**
+  - One census: `orphanhood_one`.
+  - Two censuses: `orphanhood_two` with all three variants, Timaeus (default), Preston-Chen and Masquelier-Timaeus.
+- **Brass logit standard:**
+  - A model life table: 9 families, level by e0 or by 5q0 (the level with the closest 5q0), female tables for mothers
+    and male tables for fathers.
+  - Or a custom `lx` for ages 15–85, typed or pasted into a table.
+  - Or the Spectrum HIV model life tables: HIV prevalence, ART coverage and 5q0; this covers `brass_logit_5q0`.
+  - The wrapper builds the model standard and passes it as `mlt_data_input` with `brass_logit = TRUE`. This works
+    around MortIndEst bug 1 below.
+- **HIV, both MortIndEst options:**
+  - Timaeus and Nunn: one census, `HIVPrev` column (antenatal prevalence for mothers, male prevalence for fathers),
+    vertical transmission (default 1/3), fertility ratio, and the proportion of men with an infected partner.
+  - Spectrum life tables: one census, or two censuses with Timaeus or Preston-Chen.
+  - Masquelier-Timaeus: HIV prevalence, ART and PMTCT series by calendar year, typed or pasted into a table (blank
+    cells allowed), plus the period-covariates option (midpoint or average).
+    - The same series is used for every group; per-group series would need another input.
 - **Samples** (picked next to the sample button):
   - Iraq 1997 (IUSSP).
   - Panama 1977–1980 (Preston-Chen example).
   - Kenya 1999 with `HIVPrev` (IUSSP AIDS).
-- **Every run uses a Brass logit fit against a standard that the wrapper builds.** It passes that standard as
-  `mlt_data_input` with `brass_logit = TRUE`, using female tables for mothers and male tables for fathers. This works
-  around the MortIndEst bug below.
-- **Not built:**
-  - **Masquelier-Timaeus** needs calendar-year series for HIV prevalence, ART coverage and PMTCT coverage
-    (`data.frame(year, value)`), which do not fit the per-age template. It needs a decision on how users supply them:
-    a second upload, or an editable table in the HIV panel.
-  - **Two-census HIV** (the Spectrum path: `HIV_prev`, `HIV_art`, `HIV_5q0`) is not exposed.
-  - **The "interpolate between model life table levels" path** (`brass_logit = FALSE`) is not exposed: it has no
-    workaround for the sex bug.
+  - South Africa 2007–2016, whose HIV series fills the table.
+- **Not exposed:** interpolation between model life table levels (`brass_logit = FALSE`). For mothers it would use the
+  male tables (bug 1 below), and there is no workaround from outside MortIndEst.
 - **MortIndEst issues to report to Ivan:**
   1. `orphanhood_one()` and `orphanhood_two_timaeus()` filter `MortCast::MLTlookup` with
      `sex == ifelse(sex == "f", 2, 1)`. Inside `filter()`, `sex` is the column, so this always selects the **male**
@@ -237,17 +239,34 @@ Panama numbers in the UI match Manual X.
      - Checked from an installed build in a clean R session.
      - `childmort_brass()` is not affected.
   3. `orphanhood_one(mac = NULL)` fails with "arguments imply differing number of rows". The app requires a MAC.
-- **Unit tests:** `tests/testthat/test-orphanhood.R`, 31 tests and 190 expectations.
+  4. The Spectrum path calls `rms::rcs()` and DemoTools functions without importing them, and reads `mods.r` (lazy
+     package data) without `MortIndEst::`, so it only works with rms, DemoTools and MortIndEst attached.
+     - `with_mortindest_deps(extra = ORPHANHOOD_SPECTRUM_PACKAGES)` attaches them for the call and detaches everything
+       it added.
+- **Unit tests:** `tests/testthat/test-orphanhood.R`, 42 tests and 302 expectations.
   - Iraq 1997 reproduces the published IUSSP 45q15 within 0.0007.
   - Kenya 1999 with HIV is within 0.3%.
+  - South Africa Masquelier-Timaeus p25 matches the workbook within 0.001.
+  - The Spectrum results equal the direct MortIndEst call.
   - The Salomons paternal two-census example is kept as a snapshot.
   - Also covered: validation (including proportions that rise with age, i.e. the proportion orphaned entered by
-    mistake), grouped runs with a failing group, column overrides, settings and diagnostics, and translation coverage.
-  - Full suite: 79 tests, 346 expectations, 0 failures, 1 golem skip.
+    mistake), HIV series checks, grouped runs with a failing group, column overrides, settings and diagnostics, and
+    translation coverage.
+  - Full suite: 90 tests, 460 expectations, 0 failures, 1 golem skip.
 - **Chrome e2e (9 Nov 2026):**
-  - All three samples.
-  - Iraq with the IUSSP standard typed into the custom table reproduces the published values in the UI.
+  - All four samples.
+  - Typed into the custom table, the IUSSP standards reproduce the published values in the UI: Iraq exactly, and
+    Kenya with HIV within 0.3%.
   - Timaeus and Preston-Chen; paternal with HIV.
+  - Masquelier-Timaeus:
+    - South Africa with the pre-filled series matches the backend.
+    - Editing the series or the period option shows the out-of-date warning.
+    - Mother-only rule; empty series; HIV files in the ZIPs.
+    - Two provinces with the series typed in, plus an all-groups ZIP.
+  - 5q0 level.
+  - Spectrum for one census (Kenya) and two censuses (Timaeus, Preston-Chen), with the Masquelier-Timaeus combination
+    refused.
+  - FR and ES for the new controls.
   - Two-region one-census upload grouped by Region: group switch, plus single and all-groups ZIPs with contents
     checked.
   - Two-province two-census upload with dates and MAC from the controls, including a group that fails Timaeus: the
@@ -274,7 +293,7 @@ Panama numbers in the UI match Manual X.
 
 ## T5: Translations
 FR/ES for every string added in T2–T4, reviewed in the UI in both languages.
-T2 and T3 are done (T3: 77 strings, checked in the UI in FR and ES on 9 Nov 2026); T4 is pending.
+T2 and T3 are done (T3: 112 strings, checked in the UI in FR and ES on 9 Nov 2026); T4 is pending.
 
 ## T6: Task 1 acceptance demo
 Ask Patrick for the target country and its published census and survey tables. Build a subnational bulk dataset for each of
@@ -300,7 +319,9 @@ Needed from Ivan / Patrick: Mortpak outputs for a few CEB/CD datasets, including
 
 **Orphanhood status (9 Nov 2026):** the references so far are the IUSSP spreadsheet values for Iraq 1997 (one census)
 and Kenya 1999 (HIV), both reproduced in `test-orphanhood.R`.
-- There are no published values for the two-census variants; the Salomons and Panama examples are snapshots only.
+- Masquelier-Timaeus: the South Africa p25 values match the workbook figures quoted in MortIndEst.
+- There are no published values for the Timaeus and Preston-Chen two-census variants, or for the Spectrum life tables;
+  the Salomons and Panama examples are snapshots only.
 - Mortpak outputs are still needed for one and two censuses (maternal and paternal), plus Preston-Chen and Timaeus
   two-census reference values.
 - MortIndEst's built-in family lookup uses male tables for mothers (see T3), so any comparison must use the app's
