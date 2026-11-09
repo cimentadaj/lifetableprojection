@@ -24,6 +24,15 @@ CHILDMORT_FAMILIES <- list(
 #' @noRd
 CHILDMORT_X <- c(1, 2, 3, 5, 10, 15, 20)
 
+#' Messages with values (column names), as templates for translation
+#' @noRd
+CHILDMORT_MESSAGE_TEMPLATES <- c(
+  "Missing required columns: %s. Provide Age, Women, CEB and either CD or CS",
+  "Columns must be numeric: %s",
+  "Missing values in columns: %s",
+  "%s must take a single value within each group"
+)
+
 #' Model life table families for a multiplier variant
 #'
 #' @param variant Either `"trussell"` or `"palloni_helligman"`.
@@ -343,7 +352,7 @@ childmort_settings_items <- function(params) {
       if (identical(params$sex, "female")) "Female" else "Male",
       date_value
     ),
-    translate_value = c(FALSE, FALSE, TRUE, is.null(params$date_obs)),
+    translate_value = c(FALSE, TRUE, TRUE, is.null(params$date_obs)),
     stringsAsFactors = FALSE
   )
   if (pal) {
@@ -407,15 +416,19 @@ childmort_diagnostics <- function(estimates) {
 #' @param estimates Estimates for a single group.
 #' @param title Plot title.
 #' @param x_label,y_label Axis labels.
+#' @param hover_labels Words used in the hover text (`women`, `date`), so the
+#'   module can pass them translated.
 #' @return A ggplot object of q(x) against the reference date.
 #' @noRd
 childmort_plot <- function(estimates,
                            title = "Child mortality estimates",
                            x_label = "Reference date",
-                           y_label = "Probability of dying, q(x)") {
+                           y_label = "Probability of dying, q(x)",
+                           hover_labels = list(women = "Women", date = "Date")) {
   estimates$hover <- sprintf(
-    "%s<br>Women %s<br>q(x) = %.4f<br>Date = %.1f",
-    estimates$q_label, estimates$age_label, estimates$qx, estimates$date_t
+    "%s<br>%s %s<br>q(x) = %.4f<br>%s = %.1f",
+    estimates$q_label, hover_labels$women, estimates$age_label, estimates$qx,
+    hover_labels$date, estimates$date_t
   )
   # Offset labels in data units: plotly ignores vjust but keeps nudges
   q_range <- diff(range(estimates$qx, na.rm = TRUE))

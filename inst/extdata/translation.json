@@ -3074,6 +3074,361 @@
             "en": "The Spectrum HIV life tables need an HIVPrev column (HIV prevalence by age group)",
             "fr": "Les tables VIH Spectrum nécessitent une colonne HIVPrev (prévalence du VIH par groupe d'âges)",
             "es": "Las tablas de VIH Spectrum necesitan una columna HIVPrev (prevalencia del VIH por grupo de edad)"
+        },
+        {
+            "en": "Missing required columns: %s. Provide Age, Women, CEB and either CD or CS",
+            "fr": "Colonnes requises manquantes : %s. Fournissez Age, Women, CEB et soit CD, soit CS",
+            "es": "Faltan columnas obligatorias: %s. Incluya Age, Women, CEB y CD o CS"
+        },
+        {
+            "en": "Columns must be numeric: %s",
+            "fr": "Ces colonnes doivent être numériques : %s",
+            "es": "Estas columnas deben ser numéricas: %s"
+        },
+        {
+            "en": "Missing values in columns: %s",
+            "fr": "Valeurs manquantes dans les colonnes : %s",
+            "es": "Valores faltantes en las columnas: %s"
+        },
+        {
+            "en": "Missing required columns: %s. Provide Age and NotOrphaned (one census or survey), or Age, NotOrphaned1 and NotOrphaned2 (two censuses or surveys)",
+            "fr": "Colonnes requises manquantes : %s. Fournissez Age et NotOrphaned (un recensement ou une enquête), ou Age, NotOrphaned1 et NotOrphaned2 (deux recensements ou enquêtes)",
+            "es": "Faltan columnas obligatorias: %s. Incluya Age y NotOrphaned (un censo o encuesta), o Age, NotOrphaned1 y NotOrphaned2 (dos censos o encuestas)"
+        },
+        {
+            "en": "%s must be proportions above 0 and up to 1 (for example 0.95, not 95)",
+            "fr": "%s doit contenir des proportions supérieures à 0 et au plus égales à 1 (par exemple 0.95, et non 95)",
+            "es": "%s debe contener proporciones mayores que 0 y hasta 1 (por ejemplo 0.95, no 95)"
+        },
+        {
+            "en": "%s must decline with age: give the proportion of respondents whose parent is alive, not the proportion orphaned",
+            "fr": "%s doit diminuer avec l'âge : indiquez la proportion de répondants dont le parent est en vie, et non la proportion d'orphelins",
+            "es": "%s debe disminuir con la edad: indique la proporción de encuestados cuyo progenitor está con vida, no la proporción de huérfanos"
+        },
+        {
+            "en": "%s (mean age at childbearing) must be between 15 and 50: one value per group, or one per age group",
+            "fr": "%s (âge moyen à la procréation) doit être compris entre 15 et 50 : une valeur par groupe, ou une par groupe d'âges",
+            "es": "%s (edad media a la procreación) debe estar entre 15 y 50: un valor por grupo, o uno por grupo de edad"
+        },
+        {
+            "en": "%s must be a single decimal year (for example 1997.8) in each group",
+            "fr": "%s doit être une seule année décimale (par exemple 1997.8) dans chaque groupe",
+            "es": "%s debe ser un único año decimal (por ejemplo 1997.8) en cada grupo"
+        },
+        {
+            "en": "%s must take a single value within each group",
+            "fr": "%s doit avoir une seule valeur dans chaque groupe",
+            "es": "%s debe tener un único valor en cada grupo"
+        },
+        {
+            "en": "Age must contain exactly the seven five-year groups of women 15, 20, 25, 30, 35, 40 and 45",
+            "fr": "Age doit contenir exactement les sept groupes quinquennaux de femmes 15, 20, 25, 30, 35, 40 et 45",
+            "es": "Age debe contener exactamente los siete grupos quinquenales de mujeres 15, 20, 25, 30, 35, 40 y 45"
+        },
+        {
+            "en": "Women must be greater than zero in every age group",
+            "fr": "Women doit être supérieur à zéro dans chaque groupe d'âges",
+            "es": "Women debe ser mayor que cero en cada grupo de edad"
+        },
+        {
+            "en": "Children ever born and children dead cannot be negative",
+            "fr": "Les enfants nés vivants et les enfants décédés ne peuvent pas être négatifs",
+            "es": "Los hijos nacidos vivos y los hijos fallecidos no pueden ser negativos"
+        },
+        {
+            "en": "Children dead cannot exceed children ever born",
+            "fr": "Les enfants décédés ne peuvent pas dépasser les enfants nés vivants",
+            "es": "Los hijos fallecidos no pueden superar a los hijos nacidos vivos"
+        },
+        {
+            "en": "Children ever born must be greater than zero for women aged 15-19, 20-24 and 25-29",
+            "fr": "Les enfants nés vivants doivent être supérieurs à zéro pour les femmes de 15-19, 20-24 et 25-29 ans",
+            "es": "Los hijos nacidos vivos deben ser mayores que cero para las mujeres de 15-19, 20-24 y 25-29 años"
+        },
+        {
+            "en": "check required columns",
+            "fr": "colonnes requises",
+            "es": "columnas obligatorias"
+        },
+        {
+            "en": "check numeric columns",
+            "fr": "colonnes numériques",
+            "es": "columnas numéricas"
+        },
+        {
+            "en": "check missing values",
+            "fr": "valeurs manquantes",
+            "es": "valores faltantes"
+        },
+        {
+            "en": "check age groups",
+            "fr": "groupes d'âges",
+            "es": "grupos de edad"
+        },
+        {
+            "en": "check women counts",
+            "fr": "effectifs de femmes",
+            "es": "número de mujeres"
+        },
+        {
+            "en": "check non-negative children",
+            "fr": "enfants non négatifs",
+            "es": "hijos no negativos"
+        },
+        {
+            "en": "check children dead within children ever born",
+            "fr": "enfants décédés inférieurs aux enfants nés vivants",
+            "es": "hijos fallecidos dentro de los nacidos vivos"
+        },
+        {
+            "en": "check children ever born in younger ages",
+            "fr": "enfants nés vivants aux jeunes âges",
+            "es": "hijos nacidos vivos en las edades jóvenes"
+        },
+        {
+            "en": "A date of observation is required",
+            "fr": "Une date d'observation est requise",
+            "es": "Se requiere una fecha de observación"
+        },
+        {
+            "en": "Age must hold consecutive five-year groups of respondents (lower bounds 0, 5, 10, ...), each once, including at least three groups between 5 and 45",
+            "fr": "Age doit contenir des groupes quinquennaux consécutifs de répondants (bornes inférieures 0, 5, 10, ...), chacun une seule fois, dont au moins trois groupes entre 5 et 45",
+            "es": "Age debe contener grupos quinquenales consecutivos de encuestados (límites inferiores 0, 5, 10, ...), cada uno una vez, con al menos tres grupos entre 5 y 45"
+        },
+        {
+            "en": "Date2 must be later than Date1",
+            "fr": "Date2 doit être postérieure à Date1",
+            "es": "Date2 debe ser posterior a Date1"
+        },
+        {
+            "en": "HIVPrev must be a proportion between 0 and 1 in every age group",
+            "fr": "HIVPrev doit être une proportion entre 0 et 1 dans chaque groupe d'âges",
+            "es": "HIVPrev debe ser una proporción entre 0 y 1 en cada grupo de edad"
+        },
+        {
+            "en": "The HIV adjustment (HIVPrev) is available only for one census or survey",
+            "fr": "L'ajustement VIH (HIVPrev) n'est disponible que pour un seul recensement ou enquête",
+            "es": "El ajuste por VIH (HIVPrev) solo está disponible para un censo o encuesta"
+        },
+        {
+            "en": "check proportions",
+            "fr": "proportions",
+            "es": "proporciones"
+        },
+        {
+            "en": "check proportions decline with age",
+            "fr": "baisse des proportions avec l'âge",
+            "es": "descenso de las proporciones con la edad"
+        },
+        {
+            "en": "check MAC",
+            "fr": "MAC",
+            "es": "MAC"
+        },
+        {
+            "en": "check MAC1",
+            "fr": "MAC1",
+            "es": "MAC1"
+        },
+        {
+            "en": "check MAC2",
+            "fr": "MAC2",
+            "es": "MAC2"
+        },
+        {
+            "en": "check Date",
+            "fr": "Date",
+            "es": "Date"
+        },
+        {
+            "en": "check Date1",
+            "fr": "Date1",
+            "es": "Date1"
+        },
+        {
+            "en": "check Date2",
+            "fr": "Date2",
+            "es": "Date2"
+        },
+        {
+            "en": "check date order",
+            "fr": "ordre des dates",
+            "es": "orden de las fechas"
+        },
+        {
+            "en": "check HIVPrev",
+            "fr": "HIVPrev",
+            "es": "HIVPrev"
+        },
+        {
+            "en": "A mean age at childbearing is required",
+            "fr": "Un âge moyen à la procréation est requis",
+            "es": "Se requiere una edad media a la procreación"
+        },
+        {
+            "en": "A date of the first observation is required",
+            "fr": "Une date pour la première observation est requise",
+            "es": "Se requiere una fecha para la primera observación"
+        },
+        {
+            "en": "A date of the second observation is required",
+            "fr": "Une date pour la seconde observation est requise",
+            "es": "Se requiere una fecha para la segunda observación"
+        },
+        {
+            "en": "The second observation must be later than the first",
+            "fr": "La seconde observation doit être postérieure à la première",
+            "es": "La segunda observación debe ser posterior a la primera"
+        },
+        {
+            "en": "The Timaeus two-census method needs respondents aged 15-19 and 20-24",
+            "fr": "La méthode de Timaeus à deux recensements nécessite des répondants de 15-19 et 20-24 ans",
+            "es": "El método de Timaeus de dos censos necesita encuestados de 15-19 y 20-24 años"
+        },
+        {
+            "en": "The method returned no estimates for these age groups",
+            "fr": "La méthode n'a donné aucune estimation pour ces groupes d'âges",
+            "es": "El método no dio estimaciones para estos grupos de edad"
+        },
+        {
+            "en": "No plausible estimates: 45q15 fell outside 0-1 in every age group. Check that the proportions not orphaned are proportions that decline with age",
+            "fr": "Aucune estimation plausible : 45q15 sort de l'intervalle 0-1 dans tous les groupes d'âges. Vérifiez que les proportions de non-orphelins sont des proportions qui diminuent avec l'âge",
+            "es": "No hay estimaciones plausibles: 45q15 queda fuera de 0-1 en todos los grupos de edad. Compruebe que las proporciones de no huérfanos son proporciones que disminuyen con la edad"
+        },
+        {
+            "en": "North",
+            "fr": "Nord",
+            "es": "Norte"
+        },
+        {
+            "en": "South",
+            "fr": "Sud",
+            "es": "Sur"
+        },
+        {
+            "en": "East",
+            "fr": "Est",
+            "es": "Este"
+        },
+        {
+            "en": "West",
+            "fr": "Ouest",
+            "es": "Oeste"
+        },
+        {
+            "en": "Latin American",
+            "fr": "Latino-américaine",
+            "es": "Latinoamericana"
+        },
+        {
+            "en": "Chilean",
+            "fr": "Chilienne",
+            "es": "Chilena"
+        },
+        {
+            "en": "South Asian",
+            "fr": "Asie du Sud",
+            "es": "Asia del Sur"
+        },
+        {
+            "en": "Far East Asian",
+            "fr": "Extrême-Orient",
+            "es": "Lejano Oriente"
+        },
+        {
+            "en": "General",
+            "fr": "Générale",
+            "es": "General"
+        },
+        {
+            "en": "Coale-Demeny West",
+            "fr": "Coale-Demeny Ouest",
+            "es": "Coale-Demeny Oeste"
+        },
+        {
+            "en": "Coale-Demeny North",
+            "fr": "Coale-Demeny Nord",
+            "es": "Coale-Demeny Norte"
+        },
+        {
+            "en": "Coale-Demeny South",
+            "fr": "Coale-Demeny Sud",
+            "es": "Coale-Demeny Sur"
+        },
+        {
+            "en": "Coale-Demeny East",
+            "fr": "Coale-Demeny Est",
+            "es": "Coale-Demeny Este"
+        },
+        {
+            "en": "UN General",
+            "fr": "ONU Générale",
+            "es": "ONU General"
+        },
+        {
+            "en": "UN Latin American",
+            "fr": "ONU Latino-américaine",
+            "es": "ONU Latinoamericana"
+        },
+        {
+            "en": "UN Chilean",
+            "fr": "ONU Chilienne",
+            "es": "ONU Chilena"
+        },
+        {
+            "en": "UN South Asian",
+            "fr": "ONU Asie du Sud",
+            "es": "ONU Asia del Sur"
+        },
+        {
+            "en": "UN Far East Asian",
+            "fr": "ONU Extrême-Orient",
+            "es": "ONU Lejano Oriente"
+        },
+        {
+            "en": "Pass",
+            "fr": "Réussi",
+            "es": "Correcto"
+        },
+        {
+            "en": "Fail",
+            "fr": "Échec",
+            "es": "Error"
+        },
+        {
+            "en": "Check",
+            "fr": "Contrôle",
+            "es": "Verificación"
+        },
+        {
+            "en": "Showing _START_ to _END_ of _TOTAL_ entries",
+            "fr": "Affichage de _START_ à _END_ sur _TOTAL_ lignes",
+            "es": "Mostrando _START_ a _END_ de _TOTAL_ filas"
+        },
+        {
+            "en": "Previous",
+            "fr": "Précédent",
+            "es": "Anterior"
+        },
+        {
+            "en": "Next",
+            "fr": "Suivant",
+            "es": "Siguiente"
+        },
+        {
+            "en": "Women",
+            "fr": "Femmes",
+            "es": "Mujeres"
+        },
+        {
+            "en": "Respondents",
+            "fr": "Répondants",
+            "es": "Encuestados"
+        },
+        {
+            "en": "Date",
+            "fr": "Date",
+            "es": "Fecha"
         }
     ]
 }

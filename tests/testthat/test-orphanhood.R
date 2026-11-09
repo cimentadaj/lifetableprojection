@@ -342,9 +342,9 @@ test_that("a custom standard is checked before running", {
 test_that("settings summary lists what the run used", {
   one <- run_orphanhood(iraq, mac = 28.28, date_obs = 1997.79, std_e0 = 62.5)$params
   items <- orphanhood_settings_items(one)
-  expect_equal(items$label, c("Parent", "Standard", "Mean age at childbearing", "Date of observation"))
-  expect_equal(items$value[1:2], c("Mother", "Coale-Demeny West, e0 = 62.5"))
-  expect_equal(items$translate_value, c(TRUE, FALSE, FALSE, FALSE))
+  expect_equal(items$label, c("Parent", "Standard", "Level of the standard", "Mean age at childbearing", "Date of observation"))
+  expect_equal(items$value[1:3], c("Mother", "Coale-Demeny West", "e0 = 62.5"))
+  expect_equal(items$translate_value, c(TRUE, TRUE, FALSE, FALSE, FALSE))
 
   two <- run_orphanhood(panama, maternal = FALSE, method = "preston_chen", standard = iussp_standard,
                         mac = 33, date1 = 1977.5, date2 = 1980.36)$params
@@ -711,7 +711,7 @@ test_that("the level of the standard can come from 5q0", {
   res <- run_orphanhood(iraq, std_q5 = 0.08, std_e0 = 30, mac = 28.28, date_obs = 1997.79)
   expect_equal(res$params$std_e0, e0)
   expect_equal(res$params$std_q5, 0.08)
-  expect_match(orphanhood_settings_items(res$params)$value[2], "(5q0 = 0.08)", fixed = TRUE)
+  expect_match(orphanhood_settings_items(res$params)$value[3], "(5q0 = 0.08)", fixed = TRUE)
   now <- list(parent = "maternal", standard_type = "model", family = "CD_West",
               std_level = "q5", std_q5 = 0.08, mac = 28.28, date_obs = 1997.79)
   expect_false(orphanhood_settings_changed(res$params, now))

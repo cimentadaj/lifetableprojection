@@ -111,3 +111,37 @@ run_by_group <- function(data, fun, ..., check = NULL) {
   )
   results
 }
+
+#' Translate messages that may carry values
+#'
+#' Validation and estimation messages are built in English and some carry
+#' values (column names, numbers). Each message is looked up as a whole; when
+#' it is not a translation key it is matched against `templates`, English
+#' strings with `%s` placeholders: the template is translated and the values
+#' are put back. Messages joined with "; " are translated part by part, and
+#' unknown messages are returned unchanged.
+#'
+#' @param messages Character vector of English messages.
+#' @param i18n Translator object.
+#' @param templates Character vector of English templates with `%s`.
+#' @return Character vector of translated messages.
+#' @noRd
+translate_messages <- function(messages, i18n, templates = character(0)) {
+  escape <- function(x) gsub("([][.|()\\^{}+$*?\\\\])", "\\\\\\1", x, perl = TRUE)
+  patterns <- paste0("^", gsub("%s", "(.+)", escape(templates), fixed = TRUE), "$")
+  translate_one <- function(msg) {
+    for (i in seq_along(templates)) {
+      hit <- regmatches(msg, regexec(patterns[i], msg, perl = TRUE))[[1]]
+      if (length(hit) > 1) {
+        translated <- suppressWarnings(i18n$t(templates[i]))
+        return(do.call(sprintf, c(list(translated), as.list(hit[-1]))))
+      }
+    }
+    suppressWarnings(i18n$t(msg))
+  }
+  vapply(messages, function(msg) {
+    if (is.na(msg) || !nzchar(msg)) return(msg)
+    parts <- strsplit(msg, "; ", fixed = TRUE)[[1]]
+    paste(vapply(parts, translate_one, character(1)), collapse = "; ")
+  }, character(1), USE.NAMES = FALSE)
+}

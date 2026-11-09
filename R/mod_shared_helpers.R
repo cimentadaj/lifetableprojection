@@ -386,3 +386,84 @@ create_shared_data_context <- function(module_id, input, output, session, i18n, 
     raw_data = raw_data
   )
 }
+
+#' Validation results as a table in the selected language
+#'
+#' @param results Validation results (`check`, `message`, `pass`).
+#' @param i18n Translator object.
+#' @param templates Message templates with `%s` (see [translate_messages()]).
+#' @return Data frame with translated check names, messages and results, and
+#'   translated column names.
+#' @noRd
+translated_validation_table <- function(results, i18n, templates) {
+  tbl <- data.frame(
+    translate_messages(results$check, i18n),
+    ifelse(is.na(results$message), "", translate_messages(results$message, i18n, templates)),
+    ifelse(results$pass == "Pass", i18n$t("Pass"), i18n$t("Fail")),
+    stringsAsFactors = FALSE
+  )
+  names(tbl) <- c(i18n$t("Check"), i18n$t("Message"), i18n$t("Result"))
+  tbl
+}
+
+#' Validation summary and table in the selected language
+#'
+#' Replaces the `validation_summary` and `validation_table` outputs of
+#' [create_shared_data_context()] for modules whose validation messages are
+#' translated with [translate_messages()]: check names, messages, the
+#' pass/fail column and the table controls follow the selected language.
+#'
+#' @param output,session Module output and session.
+#' @param i18n Translator object.
+#' @param shared The shared data context.
+#' @param templates Message templates with `%s` (see [translate_messages()]).
+#' @noRd
+render_translated_validation <- function(output, session, i18n, shared, templates) {
+  language_dep <- function() {
+    if (!is.null(session$userData$language_version)) {
+      session$userData$language_version()
+    }
+  }
+  failures <- function() {
+    req(shared$group_selection_passed())
+    results <- shared$validation_details()
+    if (is.null(results) || nrow(results) == 0) return(NULL)
+    results
+  }
+
+  output$validation_summary <- renderUI({
+    language_dep()
+    results <- failures()
+    if (is.null(results)) return(NULL)
+    if (all(results$pass == "Pass")) {
+      return(displayValidationResults(results, i18n))
+    }
+    failed <- results[results$pass != "Pass", , drop = FALSE]
+    messages <- htmltools::htmlEscape(translate_messages(failed$message, i18n, templates))
+    shiny::wellPanel(
+      class = "danger",
+      HTML(paste0(i18n$t("Check Failures:"), "<br>")),
+      HTML(paste("❌", messages, collapse = "<br>"))
+    )
+  })
+
+  output$validation_table <- DT::renderDT({
+    language_dep()
+    results <- failures()
+    if (is.null(results) || all(results$pass == "Pass")) return(NULL)
+    DT::datatable(
+      translated_validation_table(results, i18n, templates),
+      rownames = FALSE,
+      options = list(
+        pageLength = 5,
+        searching = FALSE,
+        lengthChange = FALSE,
+        dom = "tip",
+        language = list(
+          info = i18n$t("Showing _START_ to _END_ of _TOTAL_ entries"),
+          paginate = list(previous = i18n$t("Previous"), `next` = i18n$t("Next"))
+        )
+      )
+    )
+  })
+}

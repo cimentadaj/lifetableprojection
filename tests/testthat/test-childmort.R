@@ -247,7 +247,8 @@ test_that("settings summary lists what the run used", {
   ph_items <- childmort_settings_items(ph)
   expect_equal(ph_items$value, c("Palloni-Heligman", "Far East Asian", "Male",
                                  "Date column of your data", "28.5"))
-  expect_equal(ph_items$translate_value, c(FALSE, FALSE, TRUE, TRUE, FALSE))
+  # The family name is translated (e.g. "Latino-américaine"), the variant is a name
+  expect_equal(ph_items$translate_value, c(FALSE, TRUE, TRUE, TRUE, FALSE))
 })
 
 test_that("changed settings are detected only when they affect the run", {

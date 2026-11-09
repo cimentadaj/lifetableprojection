@@ -383,6 +383,8 @@ orphanhood_module_server <- function(input, output, session) {
       )
       shared$last_result <- shiny::reactiveVal(NULL)
       download_scope_choice <- shiny::reactiveVal("single")
+      # Validation messages in the selected language
+      render_translated_validation(output, session, i18n, shared, ORPHANHOOD_MESSAGE_TEMPLATES)
 
       ns <- session$ns
       data_step_id <- ns("data_step")
@@ -661,7 +663,7 @@ orphanhood_module_server <- function(input, output, session) {
           shiny.semantic::selectInput(
             ns("family"),
             i18n$t("Model life table family"),
-            choices = stats::setNames(ORPHANHOOD_FAMILIES, unname(ORPHANHOOD_FAMILY_LABELS[ORPHANHOOD_FAMILIES])),
+            choices = stats::setNames(ORPHANHOOD_FAMILIES, i18n$t(unname(ORPHANHOOD_FAMILY_LABELS[ORPHANHOOD_FAMILIES]))),
             selected = shiny::isolate(input$family) %||% "CD_West"
           ),
           shiny.semantic::selectInput(
@@ -1089,7 +1091,8 @@ orphanhood_module_server <- function(input, output, session) {
           observations = observations,
           title = paste0(labels$title, " - ", group_label_for(gid)),
           x_label = labels$x_label,
-          y_label = labels$y_label
+          y_label = labels$y_label,
+          hover_labels = list(respondents = i18n$t("Respondents"), date = i18n$t("Date"))
         )
         ggplot2::ggsave(plot_file, plot = plot_obj, width = 10, height = 6, dpi = 300)
       }
@@ -1339,7 +1342,10 @@ orphanhood_module_server <- function(input, output, session) {
           spectrum = params$spectrum
         ),
         error = function(e) {
-          list(error = paste0(i18n$t("Estimation failed: "), conditionMessage(e)))
+          list(error = paste0(
+            i18n$t("Estimation failed: "),
+            translate_messages(conditionMessage(e), i18n, ORPHANHOOD_MESSAGE_TEMPLATES)
+          ))
         }
       )
       shared$last_result(if (is.null(result$error)) result else NULL)
@@ -1366,7 +1372,7 @@ orphanhood_module_server <- function(input, output, session) {
         current_gid <- shared$active_group_id()
         group_error <- result$group_errors$message[result$group_errors$.id == as.character(current_gid)]
         if (length(group_error) > 0) {
-          return(childmort_error_plot(group_error[1], i18n))
+          return(childmort_error_plot(translate_messages(group_error[1], i18n, ORPHANHOOD_MESSAGE_TEMPLATES), i18n))
         }
         estimates <- group_rows(result$estimates)
         if (is.null(estimates) || nrow(estimates) == 0) {
@@ -1382,7 +1388,8 @@ orphanhood_module_server <- function(input, output, session) {
           observations = observations,
           title = i18n$t("Adult mortality estimates"),
           x_label = labels,
-          y_label = i18n$t("Probability of dying between ages 15 and 60, 45q15")
+          y_label = i18n$t("Probability of dying between ages 15 and 60, 45q15"),
+          hover_labels = list(respondents = i18n$t("Respondents"), date = i18n$t("Date"))
         )
         plotly::ggplotly(plot_obj, tooltip = "text") |>
           plotly::config(displayModeBar = FALSE)

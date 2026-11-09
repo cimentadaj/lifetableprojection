@@ -347,6 +347,8 @@ childmort_module_server <- function(input, output, session) {
       )
       shared$last_result <- shiny::reactiveVal(NULL)
       download_scope_choice <- shiny::reactiveVal("single")
+      # Validation messages in the selected language
+      render_translated_validation(output, session, i18n, shared, CHILDMORT_MESSAGE_TEMPLATES)
 
       ns <- session$ns
       data_step_id <- ns("data_step")
@@ -565,7 +567,7 @@ childmort_module_server <- function(input, output, session) {
         shiny.semantic::selectInput(
           ns("mlt_model"),
           i18n$t("Model life table family"),
-          choices = stats::setNames(families, family_labels[families]),
+          choices = stats::setNames(families, i18n$t(unname(family_labels[families]))),
           selected = if (!is.null(current) && current %in% families) current else default
         )
       })
@@ -823,7 +825,8 @@ childmort_module_server <- function(input, output, session) {
           estimates,
           title = paste0(i18n$t("Child mortality estimates"), " - ", group_label_for(gid)),
           x_label = i18n$t("Reference date"),
-          y_label = i18n$t("Probability of dying, q(x)")
+          y_label = i18n$t("Probability of dying, q(x)"),
+          hover_labels = list(women = i18n$t("Women"), date = i18n$t("Date"))
         )
         ggplot2::ggsave(plot_file, plot = plot_obj, width = 10, height = 6, dpi = 300)
       }
@@ -1037,7 +1040,10 @@ childmort_module_server <- function(input, output, session) {
           mam = params$mam
         ),
         error = function(e) {
-          list(error = paste0(i18n$t("Estimation failed: "), conditionMessage(e)))
+          list(error = paste0(
+            i18n$t("Estimation failed: "),
+            translate_messages(conditionMessage(e), i18n, CHILDMORT_MESSAGE_TEMPLATES)
+          ))
         }
       )
       shared$last_result(if (is.null(result$error)) result else NULL)
@@ -1056,7 +1062,7 @@ childmort_module_server <- function(input, output, session) {
 
         group_error <- result$group_errors$message[result$group_errors$.id == as.character(current_gid)]
         if (length(group_error) > 0) {
-          return(childmort_error_plot(group_error[1], i18n))
+          return(childmort_error_plot(translate_messages(group_error[1], i18n, CHILDMORT_MESSAGE_TEMPLATES), i18n))
         }
 
         estimates <- result$estimates
@@ -1072,7 +1078,8 @@ childmort_module_server <- function(input, output, session) {
           estimates,
           title = i18n$t("Child mortality estimates"),
           x_label = i18n$t("Reference date"),
-          y_label = i18n$t("Probability of dying, q(x)")
+          y_label = i18n$t("Probability of dying, q(x)"),
+          hover_labels = list(women = i18n$t("Women"), date = i18n$t("Date"))
         )
         plotly::ggplotly(plot_obj, tooltip = "text") |>
           plotly::config(displayModeBar = FALSE)

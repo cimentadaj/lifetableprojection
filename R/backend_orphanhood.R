@@ -47,6 +47,19 @@ ORPHANHOOD_METHOD_LABELS <- c(
   masquelier_timaeus = "Masquelier-Timaeus (HIV/AIDS)"
 )
 
+#' Messages with values (column names), as templates for translation
+#' @noRd
+ORPHANHOOD_MESSAGE_TEMPLATES <- c(
+  "Missing required columns: %s. Provide Age and NotOrphaned (one census or survey), or Age, NotOrphaned1 and NotOrphaned2 (two censuses or surveys)",
+  "Columns must be numeric: %s",
+  "Missing values in columns: %s",
+  "%s must be proportions above 0 and up to 1 (for example 0.95, not 95)",
+  "%s must decline with age: give the proportion of respondents whose parent is alive, not the proportion orphaned",
+  "%s (mean age at childbearing) must be between 15 and 50: one value per group, or one per age group",
+  "%s must be a single decimal year (for example 1997.8) in each group",
+  "%s must take a single value within each group"
+)
+
 #' Ages of a user-entered standard life table
 #' @noRd
 ORPHANHOOD_STANDARD_AGES <- seq(15, 85, 5)
@@ -286,7 +299,7 @@ check_orphanhood_group <- function(df) {
     "check proportions",
     any(!is.na(props) & (props <= 0 | props > 1)),
     paste0(
-      paste(prop_cols, collapse = " and "),
+      paste(prop_cols, collapse = ", "),
       " must be proportions above 0 and up to 1 (for example 0.95, not 95)"
     )
   )
@@ -304,7 +317,7 @@ check_orphanhood_group <- function(df) {
     "check proportions decline with age",
     any(rising),
     paste0(
-      paste(prop_cols[rising], collapse = " and "),
+      paste(prop_cols[rising], collapse = ", "),
       " must decline with age: give the proportion of respondents whose parent is alive, not the proportion orphaned"
     )
   )
@@ -900,10 +913,8 @@ orphanhood_settings_items <- function(params) {
     } else {
       sprintf("e0 = %s (5q0 = %s)", format(params$std_e0), format(params$std_q5))
     }
-    items[[length(items) + 1]] <- item(
-      "Standard",
-      sprintf("%s, %s", unname(ORPHANHOOD_FAMILY_LABELS[params$family]), level)
-    )
+    items[[length(items) + 1]] <- item("Standard", unname(ORPHANHOOD_FAMILY_LABELS[params$family]), TRUE)
+    items[[length(items) + 1]] <- item("Level of the standard", level)
   }
   mac <- data_value(params$mac)
   items[[length(items) + 1]] <- item(
@@ -1077,21 +1088,25 @@ orphanhood_diagnostics <- function(estimates, params, input_ages = NULL, input_p
 #' @param observations `1` or `2`.
 #' @param title Plot title.
 #' @param x_label,y_label Axis labels.
+#' @param hover_labels Words used in the hover text (`respondents`, `date`),
+#'   so the module can pass them translated.
 #' @return A ggplot object.
 #' @noRd
 orphanhood_plot <- function(estimates,
                             observations = 1,
                             title = "Adult mortality estimates",
                             x_label = "Reference date",
-                            y_label = "Probability of dying between 15 and 60, 45q15") {
+                            y_label = "Probability of dying between 15 and 60, 45q15",
+                            hover_labels = list(respondents = "Respondents", date = "Date")) {
   # geom_path joins the points in the order of the rows (age of respondents);
   # geom_line would join them in date order, which zigzags because the dates
   # of the oldest groups are not monotone.
   estimates <- estimates[estimates$plausible, , drop = FALSE]
   estimates <- estimates[order(estimates$Age), , drop = FALSE]
   estimates$hover <- sprintf(
-    "Respondents %s<br>45q15 = %.4f<br>35q15 = %.4f<br>Date = %.1f",
-    estimates$age_label, estimates$q15_45, estimates$q15_35, estimates$ref_date
+    "%s %s<br>45q15 = %.4f<br>35q15 = %.4f<br>%s = %.1f",
+    hover_labels$respondents, estimates$age_label, estimates$q15_45, estimates$q15_35,
+    hover_labels$date, estimates$ref_date
   )
   q_range <- diff(range(estimates$q15_45, na.rm = TRUE))
   label_nudge <- if (is.finite(q_range) && q_range > 0) 0.06 * q_range else 0.005

@@ -294,6 +294,20 @@ needs the T1 layer. Commits: `d95005c` (backend), `806214c` (module), `4a9f7fb` 
 ## T5: Translations
 FR/ES for every string added in T2–T4, reviewed in the UI in both languages.
 T2 and T3 are done (T3: 112 strings, checked in the UI in FR and ES on 9 Nov 2026); T4 is pending.
+On 9 Nov 2026 the messages the two modules build while the app runs were translated too:
+- validation messages, check names, the pass/fail column and the table controls;
+- per-group error messages;
+- chart hover text;
+- model life table family names.
+
+How: messages that carry values (column names) are translated through `%s` templates (`translate_messages()`), and
+`render_translated_validation()` replaces the shared validation outputs for these two modules. Tested in
+`tests/testthat/test-message-translation.R` and checked in Chrome.
+
+Still English by design: the downloaded files (CSV headers, `analysis_info.txt`), data column names, and the rare
+error messages that come from inside MortIndEst.
+Shared, not changed: the other upload modules still show validation failures in English, because
+`displayValidationResults()` looks up the Title-Cased message, which is never a dictionary key.
 
 ## T6: Task 1 acceptance demo
 Ask Patrick for the target country and its published census and survey tables. Build a subnational bulk dataset for each of
