@@ -8,6 +8,34 @@
 #' @noRd
 NULL
 
+#' Evaluate a MortIndEst call with the packages it expects on the search path
+#'
+#' Several MortIndEst functions (the orphanhood ones among them) call dplyr,
+#' purrr and tidyr functions without importing them, so they only work when
+#' those packages are attached. Without dplyr, `lag()` silently resolves to
+#' `stats::lag()` and gives wrong results instead of an error. This attaches
+#' the packages that are not attached yet, evaluates `expr` and detaches them
+#' again.
+#'
+#' @param expr Expression to evaluate.
+#' @return The value of `expr`.
+#' @noRd
+with_mortindest_deps <- function(expr) {
+  attached_here <- character(0)
+  on.exit({
+    for (pkg in rev(attached_here)) {
+      try(detach(paste0("package:", pkg), character.only = TRUE), silent = TRUE)
+    }
+  }, add = TRUE)
+  for (pkg in c("dplyr", "purrr", "tidyr")) {
+    if (!paste0("package:", pkg) %in% search()) {
+      suppressPackageStartupMessages(attachNamespace(pkg))
+      attached_here <- c(attached_here, pkg)
+    }
+  }
+  force(expr)
+}
+
 #' Run an estimation function separately for each group
 #'
 #' Splits `data` on `.id`, checks each group, calls `fun` on it and binds the
