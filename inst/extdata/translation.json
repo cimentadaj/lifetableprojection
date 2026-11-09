@@ -2556,19 +2556,9 @@
             "es": "Date, o Date1 y Date2 (fechas de las observaciones en años decimales, p. ej. 1997.8). Si no están, indíquelas en el paso de análisis."
         },
         {
-            "en": "MAC (mean age of mothers, or fathers, at the birth of their children). If absent, set it in the analysis step.",
-            "fr": "MAC (âge moyen des mères, ou des pères, à la naissance de leurs enfants). S'il est absent, indiquez-le à l'étape d'analyse.",
-            "es": "MAC (edad media de las madres, o de los padres, al nacimiento de sus hijos). Si no está, indíquela en el paso de análisis."
-        },
-        {
             "en": "HIVPrev (one census or survey only): HIV prevalence at the time of the respondents' birth, by age group, among pregnant women (maternal) or men (paternal). Turns on the HIV/AIDS adjustment.",
             "fr": "HIVPrev (un seul recensement ou enquête) : prévalence du VIH au moment de la naissance des répondants, par groupe d'âges, parmi les femmes enceintes (maternel) ou les hommes (paternel). Active l'ajustement pour le VIH/sida.",
             "es": "HIVPrev (solo un censo o encuesta): prevalencia del VIH en el momento del nacimiento de los encuestados, por grupo de edad, entre las mujeres embarazadas (materna) o los hombres (paterna). Activa el ajuste por VIH/sida."
-        },
-        {
-            "en": "Sample data: Iraq 1997 survey, Panama 1977 and 1980 censuses, and Kenya 1999 census with HIV prevalence (IUSSP Tools for Demographic Estimation).",
-            "fr": "Données d'exemple : enquête Irak 1997, recensements Panama 1977 et 1980, et recensement Kenya 1999 avec prévalence du VIH (IUSSP Tools for Demographic Estimation).",
-            "es": "Datos de ejemplo: encuesta de Irak 1997, censos de Panamá 1977 y 1980, y censo de Kenia 1999 con prevalencia del VIH (IUSSP Tools for Demographic Estimation)."
         },
         {
             "en": "Orphanhood Method",
@@ -2596,11 +2586,6 @@
             "es": "Dos censos o encuestas"
         },
         {
-            "en": "Synthetic-cohort methods that use the change in the proportions not orphaned between the two observations: Timaeus (default) or Preston-Chen. The estimates describe mortality between the two observations.",
-            "fr": "Méthodes de cohorte fictive qui utilisent la variation des proportions de non-orphelins entre les deux observations : Timaeus (par défaut) ou Preston-Chen. Les estimations décrivent la mortalité entre les deux observations.",
-            "es": "Métodos de cohorte sintética que usan el cambio en las proporciones de no huérfanos entre las dos observaciones: Timaeus (por defecto) o Preston-Chen. Las estimaciones describen la mortalidad entre las dos observaciones."
-        },
-        {
             "en": "Standard life table",
             "fr": "Table de mortalité standard",
             "es": "Tabla de mortalidad estándar"
@@ -2614,11 +2599,6 @@
             "en": "HIV/AIDS adjustment",
             "fr": "Ajustement pour le VIH/sida",
             "es": "Ajuste por VIH/sida"
-        },
-        {
-            "en": "Where HIV is common, orphans are more likely to be infected and to die, so surviving respondents overstate parental survival. With an HIVPrev column, the proportions are adjusted following Timaeus and Nunn (1997).",
-            "fr": "Là où le VIH est répandu, les orphelins ont plus de risques d'être infectés et de décéder ; les répondants survivants surestiment donc la survie des parents. Avec une colonne HIVPrev, les proportions sont ajustées selon Timaeus et Nunn (1997).",
-            "es": "Donde el VIH es frecuente, los huérfanos tienen más probabilidades de estar infectados y de morir, por lo que los encuestados supervivientes sobrestiman la supervivencia de los progenitores. Con una columna HIVPrev, las proporciones se ajustan según Timaeus y Nunn (1997)."
         },
         {
             "en": "Each point is an estimate of 45q15 from one age group of respondents. With one census or survey, it is placed at the date it refers to: estimates from older respondents refer to earlier dates.",
@@ -2684,11 +2664,6 @@
             "en": "Custom standard (enter lx)",
             "fr": "Standard personnalisé (saisir lx)",
             "es": "Estándar personalizado (introducir lx)"
-        },
-        {
-            "en": "How the two observations are combined:<br><br>'Timaeus' - converts the change in the proportions not orphaned with Timaeus coefficients; needs respondents aged 15-19 and 20-24<br>'Preston-Chen' - adjusts the average proportions with the growth rates between the observations, then applies the one-census method",
-            "fr": "Comment les deux observations sont combinées :<br><br>'Timaeus' - convertit la variation des proportions de non-orphelins avec les coefficients de Timaeus ; nécessite des répondants de 15-19 et 20-24 ans<br>'Preston-Chen' - ajuste les proportions moyennes avec les taux de croissance entre les observations, puis applique la méthode à un recensement",
-            "es": "Cómo se combinan las dos observaciones:<br><br>'Timaeus' - convierte el cambio en las proporciones de no huérfanos con los coeficientes de Timaeus; necesita encuestados de 15-19 y 20-24 años<br>'Preston-Chen' - ajusta las proporciones medias con las tasas de crecimiento entre las observaciones y luego aplica el método de un censo"
         },
         {
             "en": "Life expectancy at birth of the standard",
@@ -2899,6 +2874,146 @@
             "en": "Some age groups in your data give no estimate: the two-census methods only cover certain ages of respondents.",
             "fr": "Certains groupes d'âges de vos données ne donnent pas d'estimation : les méthodes à deux recensements ne couvrent que certains âges de répondants.",
             "es": "Algunos grupos de edad de sus datos no dan estimación: los métodos de dos censos solo cubren ciertas edades de los encuestados."
+        },
+        {
+            "en": "MAC (mean age of mothers, or fathers, at the birth of their children): one value, or one per age group. If absent, set it in the analysis step.",
+            "fr": "MAC (âge moyen des mères, ou des pères, à la naissance de leurs enfants) : une valeur, ou une par groupe d'âges. S'il est absent, indiquez-le à l'étape d'analyse.",
+            "es": "MAC (edad media de las madres, o de los padres, al nacimiento de sus hijos): un valor, o uno por grupo de edad. Si no está, indíquela en el paso de análisis."
+        },
+        {
+            "en": "For the Masquelier-Timaeus method (two observations with HIV), the HIV prevalence, ART and PMTCT series by calendar year are entered in the analysis step.",
+            "fr": "Pour la méthode de Masquelier-Timaeus (deux observations avec VIH), les séries de prévalence du VIH, de TAR et de PTME par année civile se saisissent à l'étape d'analyse.",
+            "es": "Para el método de Masquelier-Timaeus (dos observaciones con VIH), las series de prevalencia del VIH, TAR y PTMI por año calendario se introducen en el paso de análisis."
+        },
+        {
+            "en": "Sample data: Iraq 1997 survey, Panama 1977 and 1980 censuses, Kenya 1999 census with HIV prevalence (IUSSP Tools for Demographic Estimation), and South Africa 2007 and 2016 surveys with HIV series (Masquelier and Timaeus).",
+            "fr": "Données d'exemple : enquête Irak 1997, recensements Panama 1977 et 1980, recensement Kenya 1999 avec prévalence du VIH (IUSSP Tools for Demographic Estimation), et enquêtes Afrique du Sud 2007 et 2016 avec séries VIH (Masquelier et Timaeus).",
+            "es": "Datos de ejemplo: encuesta de Irak 1997, censos de Panamá 1977 y 1980, censo de Kenia 1999 con prevalencia del VIH (IUSSP Tools for Demographic Estimation), y encuestas de Sudáfrica 2007 y 2016 con series de VIH (Masquelier y Timaeus)."
+        },
+        {
+            "en": "Synthetic-cohort methods that use the change in the proportions not orphaned between the two observations: Timaeus (default), Preston-Chen, or Masquelier-Timaeus for populations affected by HIV/AIDS. The estimates describe mortality between the two observations.",
+            "fr": "Méthodes de cohorte fictive qui utilisent la variation des proportions de non-orphelins entre les deux observations : Timaeus (par défaut), Preston-Chen, ou Masquelier-Timaeus pour les populations touchées par le VIH/sida. Les estimations décrivent la mortalité entre les deux observations.",
+            "es": "Métodos de cohorte sintética que usan el cambio en las proporciones de no huérfanos entre las dos observaciones: Timaeus (por defecto), Preston-Chen, o Masquelier-Timaeus para poblaciones afectadas por el VIH/sida. Las estimaciones describen la mortalidad entre las dos observaciones."
+        },
+        {
+            "en": "Where HIV is common, orphans are more likely to be infected and to die, so surviving respondents overstate parental survival. With one census or survey and an HIVPrev column, the proportions are adjusted following Timaeus and Nunn (1997). With two, the Masquelier-Timaeus method adjusts them using the HIV prevalence, ART and PMTCT series by calendar year, which also account for prevention of mother-to-child transmission and treatment.",
+            "fr": "Là où le VIH est répandu, les orphelins ont plus de risques d'être infectés et de décéder ; les répondants survivants surestiment donc la survie des parents. Avec un recensement ou une enquête et une colonne HIVPrev, les proportions sont ajustées selon Timaeus et Nunn (1997). Avec deux, la méthode de Masquelier-Timaeus les ajuste à l'aide des séries de prévalence du VIH, de TAR et de PTME par année civile, qui tiennent aussi compte de la prévention de la transmission mère-enfant et du traitement.",
+            "es": "Donde el VIH es frecuente, los huérfanos tienen más probabilidades de estar infectados y de morir, por lo que los encuestados supervivientes sobrestiman la supervivencia de los progenitores. Con un censo o encuesta y una columna HIVPrev, las proporciones se ajustan según Timaeus y Nunn (1997). Con dos, el método de Masquelier-Timaeus las ajusta con las series de prevalencia del VIH, TAR y PTMI por año calendario, que también tienen en cuenta la prevención de la transmisión maternoinfantil y el tratamiento."
+        },
+        {
+            "en": "Two surveys with HIV: South Africa 2007-2016",
+            "fr": "Deux enquêtes avec VIH : Afrique du Sud 2007-2016",
+            "es": "Dos encuestas con VIH: Sudáfrica 2007-2016"
+        },
+        {
+            "en": "Masquelier-Timaeus (HIV/AIDS)",
+            "fr": "Masquelier-Timaeus (VIH/sida)",
+            "es": "Masquelier-Timaeus (VIH/sida)"
+        },
+        {
+            "en": "How the two observations are combined:<br><br>'Timaeus' - converts the change in the proportions not orphaned with Timaeus coefficients; needs respondents aged 15-19 and 20-24<br>'Preston-Chen' - adjusts the average proportions with the growth rates between the observations, then applies the one-census method<br>'Masquelier-Timaeus' - adjusts both proportions for HIV/AIDS, PMTCT and ART with the HIV series you enter; maternal orphanhood only",
+            "fr": "Comment les deux observations sont combinées :<br><br>'Timaeus' - convertit la variation des proportions de non-orphelins avec les coefficients de Timaeus ; nécessite des répondants de 15-19 et 20-24 ans<br>'Preston-Chen' - ajuste les proportions moyennes avec les taux de croissance entre les observations, puis applique la méthode à un recensement<br>'Masquelier-Timaeus' - ajuste les deux proportions pour le VIH/sida, la PTME et le TAR avec les séries VIH que vous saisissez ; orphelinat maternel uniquement",
+            "es": "Cómo se combinan las dos observaciones:<br><br>'Timaeus' - convierte el cambio en las proporciones de no huérfanos con los coeficientes de Timaeus; necesita encuestados de 15-19 y 20-24 años<br>'Preston-Chen' - ajusta las proporciones medias con las tasas de crecimiento entre las observaciones y luego aplica el método de un censo<br>'Masquelier-Timaeus' - ajusta ambas proporciones por VIH/sida, PTMI y TAR con las series de VIH que usted introduce; solo orfandad materna"
+        },
+        {
+            "en": "Level of the standard",
+            "fr": "Niveau du standard",
+            "es": "Nivel del estándar"
+        },
+        {
+            "en": "Life expectancy at birth (e0)",
+            "fr": "Espérance de vie à la naissance (e0)",
+            "es": "Esperanza de vida al nacer (e0)"
+        },
+        {
+            "en": "Child mortality (5q0)",
+            "fr": "Mortalité des enfants (5q0)",
+            "es": "Mortalidad en la niñez (5q0)"
+        },
+        {
+            "en": "5q0 of the standard",
+            "fr": "5q0 du standard",
+            "es": "5q0 del estándar"
+        },
+        {
+            "en": "The model life table level with the closest 5q0 is used.",
+            "fr": "Le niveau de table type dont le 5q0 est le plus proche est utilisé.",
+            "es": "Se usa el nivel de la tabla modelo con el 5q0 más cercano."
+        },
+        {
+            "en": "HIV series (Masquelier-Timaeus)",
+            "fr": "Séries VIH (Masquelier-Timaeus)",
+            "es": "Series de VIH (Masquelier-Timaeus)"
+        },
+        {
+            "en": "By calendar year: HIV prevalence among women aged 15-49, and the ART and PMTCT coverage, as proportions. Leave a cell blank when there is no value; values between years are interpolated. The same series is used for every group.",
+            "fr": "Par année civile : prévalence du VIH chez les femmes de 15 à 49 ans, et couverture du TAR et de la PTME, en proportions. Laissez une cellule vide en l'absence de valeur ; les valeurs entre les années sont interpolées. Les mêmes séries sont utilisées pour tous les groupes.",
+            "es": "Por año calendario: prevalencia del VIH entre las mujeres de 15 a 49 años, y cobertura de TAR y PTMI, en proporciones. Deje una celda vacía si no hay valor; los valores entre años se interpolan. Se usan las mismas series para todos los grupos."
+        },
+        {
+            "en": "Period HIV and ART covariates",
+            "fr": "Covariables VIH et TAR de la période",
+            "es": "Covariables de VIH y TAR del periodo"
+        },
+        {
+            "en": "Midpoint",
+            "fr": "Point médian",
+            "es": "Punto medio"
+        },
+        {
+            "en": "Average of the two dates",
+            "fr": "Moyenne des deux dates",
+            "es": "Promedio de las dos fechas"
+        },
+        {
+            "en": "Proportions not orphaned were adjusted for HIV/AIDS, PMTCT and ART with the Masquelier-Timaeus method; the same HIV series is used for every group.",
+            "fr": "Les proportions de non-orphelins ont été ajustées pour le VIH/sida, la PTME et le TAR avec la méthode de Masquelier-Timaeus ; les mêmes séries VIH sont utilisées pour tous les groupes.",
+            "es": "Las proporciones de no huérfanos se ajustaron por VIH/sida, PTMI y TAR con el método de Masquelier-Timaeus; se usan las mismas series de VIH para todos los grupos."
+        },
+        {
+            "en": "The Masquelier-Timaeus method is meant for observations 3 to 10 years apart.",
+            "fr": "La méthode de Masquelier-Timaeus est prévue pour des observations espacées de 3 à 10 ans.",
+            "es": "El método de Masquelier-Timaeus está pensado para observaciones separadas por 3 a 10 años."
+        },
+        {
+            "en": "HIV series values must be proportions between 0 and 1 (for example 0.23, not 23)",
+            "fr": "Les valeurs des séries VIH doivent être des proportions entre 0 et 1 (par exemple 0.23, et non 23)",
+            "es": "Los valores de las series de VIH deben ser proporciones entre 0 y 1 (por ejemplo 0.23, no 23)"
+        },
+        {
+            "en": "Every row of the HIV series with a value needs a year between 1900 and 2100",
+            "fr": "Chaque ligne des séries VIH qui contient une valeur doit avoir une année entre 1900 et 2100",
+            "es": "Cada fila de las series de VIH con un valor necesita un año entre 1900 y 2100"
+        },
+        {
+            "en": "Each year can appear only once in the HIV series",
+            "fr": "Chaque année ne peut apparaître qu'une fois dans les séries VIH",
+            "es": "Cada año solo puede aparecer una vez en las series de VIH"
+        },
+        {
+            "en": "The Masquelier-Timaeus method is for maternal orphanhood only",
+            "fr": "La méthode de Masquelier-Timaeus ne s'applique qu'à l'orphelinat maternel",
+            "es": "El método de Masquelier-Timaeus es solo para la orfandad materna"
+        },
+        {
+            "en": "The HIV series need the columns Year, HIVPrev, ART and PMTCT",
+            "fr": "Les séries VIH nécessitent les colonnes Year, HIVPrev, ART et PMTCT",
+            "es": "Las series de VIH necesitan las columnas Year, HIVPrev, ART y PMTCT"
+        },
+        {
+            "en": "Enter at least one year with a value for HIVPrev in the HIV series",
+            "fr": "Saisissez au moins une année avec une valeur de HIVPrev dans les séries VIH",
+            "es": "Introduzca al menos un año con un valor de HIVPrev en las series de VIH"
+        },
+        {
+            "en": "Enter at least one year with a value for ART in the HIV series",
+            "fr": "Saisissez au moins une année avec une valeur de ART dans les séries VIH",
+            "es": "Introduzca al menos un año con un valor de ART en las series de VIH"
+        },
+        {
+            "en": "Enter at least one year with a value for PMTCT in the HIV series",
+            "fr": "Saisissez au moins une année avec une valeur de PMTCT dans les séries VIH",
+            "es": "Introduzca al menos un año con un valor de PMTCT en las series de VIH"
         }
     ]
 }

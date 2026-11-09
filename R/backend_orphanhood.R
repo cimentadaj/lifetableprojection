@@ -3,9 +3,10 @@
 #' Server-side helpers for the orphanhood module. They wrap
 #' `MortIndEst::orphanhood_one()` (one census or survey, Timaeus 1992 as
 #' implemented in IUSSP Tools for Demographic Estimation) and
-#' `MortIndEst::orphanhood_two()` (two censuses or surveys, Timaeus or
-#' Preston-Chen variants), which estimate adult mortality (45q15 and 35q15)
-#' from the proportion of respondents whose mother or father is alive.
+#' `MortIndEst::orphanhood_two()` (two censuses or surveys: Timaeus,
+#' Preston-Chen, or the Masquelier-Timaeus HIV/AIDS adaptation), which
+#' estimate adult mortality (45q15 and 35q15) from the proportion of
+#' respondents whose mother or father is alive.
 #'
 #' Every run uses the one-parameter Brass logit fit against a standard life
 #' table that this file builds and passes as `mlt_data_input`: either a model
@@ -36,15 +37,115 @@ ORPHANHOOD_FAMILY_LABELS <- c(
 
 #' Two-census variants
 #' @noRd
-ORPHANHOOD_METHODS <- c("timaeus", "preston_chen")
+ORPHANHOOD_METHODS <- c("timaeus", "preston_chen", "masquelier_timaeus")
 
 #' Display names of the two-census variants
 #' @noRd
-ORPHANHOOD_METHOD_LABELS <- c(timaeus = "Timaeus", preston_chen = "Preston-Chen")
+ORPHANHOOD_METHOD_LABELS <- c(
+  timaeus = "Timaeus",
+  preston_chen = "Preston-Chen",
+  masquelier_timaeus = "Masquelier-Timaeus (HIV/AIDS)"
+)
 
 #' Ages of a user-entered standard life table
 #' @noRd
 ORPHANHOOD_STANDARD_AGES <- seq(15, 85, 5)
+
+#' Series of the HIV table used by the Masquelier-Timaeus method
+#' @noRd
+ORPHANHOOD_HIV_SERIES <- c("HIVPrev", "ART", "PMTCT")
+
+#' An empty HIV series table (calendar years in rows)
+#'
+#' @param rows Number of empty rows.
+#' @return Data frame with `Year`, `HIVPrev`, `ART` and `PMTCT`, all `NA`.
+#' @noRd
+orphanhood_blank_hiv_series <- function(rows = 25) {
+  data.frame(
+    Year = rep(NA_real_, rows),
+    HIVPrev = rep(NA_real_, rows),
+    ART = rep(NA_real_, rows),
+    PMTCT = rep(NA_real_, rows)
+  )
+}
+
+#' Check the HIV series of the Masquelier-Timaeus method
+#'
+#' Each series (HIV prevalence among women 15-49, ART coverage, PMTCT
+#' coverage) needs at least one value with its year. Blank cells are allowed:
+#' each series uses the rows where it has a value.
+#'
+#' @param series Data frame with `Year`, `HIVPrev`, `ART` and `PMTCT`.
+#' @return Character vector of problems (empty when the series are usable).
+#' @noRd
+check_orphanhood_hiv_series <- function(series) {
+  if (is.null(series) || !all(c("Year", ORPHANHOOD_HIV_SERIES) %in% names(series))) {
+    return("The HIV series need the columns Year, HIVPrev, ART and PMTCT")
+  }
+  year <- orphanhood_num(series$Year)
+  problems <- character(0)
+  for (col in ORPHANHOOD_HIV_SERIES) {
+    value <- orphanhood_num(series[[col]])
+    if (!any(!is.na(value) & !is.na(year))) {
+      problems <- c(problems, sprintf("Enter at least one year with a value for %s in the HIV series", col))
+    }
+  }
+  values <- unlist(lapply(ORPHANHOOD_HIV_SERIES, function(col) orphanhood_num(series[[col]])))
+  if (any(!is.na(values) & (values < 0 | values > 1))) {
+    problems <- c(problems, "HIV series values must be proportions between 0 and 1 (for example 0.23, not 23)")
+  }
+  used <- !is.na(year) | Reduce(`|`, lapply(ORPHANHOOD_HIV_SERIES, function(col) !is.na(orphanhood_num(series[[col]]))))
+  if (any(used & (is.na(year) | year < 1900 | year > 2100))) {
+    problems <- c(problems, "Every row of the HIV series with a value needs a year between 1900 and 2100")
+  }
+  if (anyDuplicated(year[!is.na(year)])) {
+    problems <- c(problems, "Each year can appear only once in the HIV series")
+  }
+  problems
+}
+
+#' One series of the HIV table in the form MortIndEst expects
+#'
+#' @param series HIV series table.
+#' @param col Series column.
+#' @return A single number when the series has one value, otherwise a
+#'   `data.frame(year, value)` sorted by year (interpolated by MortIndEst).
+#' @noRd
+orphanhood_hiv_series_input <- function(series, col) {
+  year <- orphanhood_num(series$Year)
+  value <- orphanhood_num(series[[col]])
+  keep <- !is.na(year) & !is.na(value)
+  out <- data.frame(year = year[keep], value = value[keep])
+  out <- out[order(out$year), , drop = FALSE]
+  if (nrow(out) == 1) out$value else out
+}
+
+#' Life expectancy level of the model life table with a given 5q0
+#'
+#' @param family Model life table family.
+#' @param maternal `TRUE` for female tables, `FALSE` for male tables.
+#' @param q5 Probability of dying before age 5 (between 0 and 1).
+#' @return The e0 level (on the 2.5-year grid) whose 5q0 is closest to `q5`.
+#' @noRd
+orphanhood_e0_from_q5 <- function(family, maternal, q5) {
+  q5 <- suppressWarnings(as.numeric(q5))
+  if (length(q5) != 1 || is.na(q5) || q5 <= 0 || q5 >= 1) {
+    stop("5q0 must be a probability between 0 and 1 (for example 0.08)")
+  }
+  if (!family %in% ORPHANHOOD_FAMILIES) {
+    stop(sprintf("Unknown model life table family '%s'", family))
+  }
+  mlt <- MortCast::MLTlookup
+  sex_code <- if (isTRUE(maternal)) 2 else 1
+  sub <- mlt[mlt$type == family & mlt$sex == sex_code & mlt$e0 <= 100, ]
+  levels <- sort(unique(sub$e0))
+  q5_levels <- vapply(levels, function(e0) {
+    lx <- sub$lx[sub$e0 == e0]
+    age <- sub$age[sub$e0 == e0]
+    1 - lx[age == 5] / lx[age == 0]
+  }, numeric(1))
+  levels[which.min(abs(q5_levels - q5))]
+}
 
 #' Standardise orphanhood input columns
 #'
@@ -181,11 +282,11 @@ check_orphanhood_group <- function(df) {
   # Optional columns are checked only when present
   mac_cols <- intersect(if (obs == 2) c("MAC", "MAC1", "MAC2") else "MAC", names(df))
   for (col in mac_cols) {
-    v <- unique(stats::na.omit(orphanhood_num(df[[col]])))
+    v <- stats::na.omit(orphanhood_num(df[[col]]))
     rows[[length(rows) + 1]] <- orphanhood_check_row(
       paste("check", col),
-      length(v) != 1 || v < 15 || v > 50,
-      sprintf("%s (mean age at childbearing) must be a single value between 15 and 50 in each group", col)
+      length(v) == 0 || any(v < 15 | v > 50),
+      sprintf("%s (mean age at childbearing) must be between 15 and 50: one value per group, or one per age group", col)
     )
   }
 
@@ -341,6 +442,31 @@ orphanhood_group_value <- function(df, cols, fallback, what) {
   fallback
 }
 
+#' Mean age at childbearing for one group
+#'
+#' A MAC column may hold one value for the whole group or one value per age
+#' group of respondents (as in the Masquelier-Timaeus examples); blank cells
+#' are allowed in the second case.
+#'
+#' @param df Data for one group, sorted by age.
+#' @param cols Candidate columns, in order of preference.
+#' @param fallback Value used when none of the columns holds a value.
+#' @return A single number, or one number (possibly `NA`) per row of `df`.
+#' @noRd
+orphanhood_group_mac <- function(df, cols, fallback) {
+  for (col in intersect(cols, names(df))) {
+    vals <- orphanhood_num(df[[col]])
+    distinct <- unique(stats::na.omit(vals))
+    if (length(distinct) == 1) {
+      return(distinct)
+    }
+    if (length(distinct) > 1) {
+      return(vals)
+    }
+  }
+  orphanhood_group_value(df, character(0), fallback, "mean age at childbearing")
+}
+
 #' Estimate adult mortality from orphanhood for a single group
 #'
 #' @param df Data frame for one group (already standardised).
@@ -355,8 +481,12 @@ orphanhood_group_value <- function(df, cols, fallback, what) {
 #'   data hold no Date1 / Date2 columns.
 #' @param hiv_vert_transm,hiv_fert_ratio,hiv_prop_partner HIV adjustment
 #'   parameters, used when the data hold an HIVPrev column.
-#' @return List with `estimates` (one row per age group of respondents) and
-#'   `lx` (fitted life tables).
+#' @param hiv_series HIV series table (`Year`, `HIVPrev`, `ART`, `PMTCT`) for
+#'   the Masquelier-Timaeus method.
+#' @param hiv_period How period HIV and ART covariates are evaluated in the
+#'   Masquelier-Timaeus method: `"midpoint"` or `"average"`.
+#' @return List with `estimates` (one row per age group of respondents), `lx`
+#'   (fitted life tables) and, for Masquelier-Timaeus, `hiv_adjustment`.
 #' @noRd
 orphanhood_estimate_group <- function(df,
                                       maternal = TRUE,
@@ -368,7 +498,9 @@ orphanhood_estimate_group <- function(df,
                                       date2 = NULL,
                                       hiv_vert_transm = 1 / 3,
                                       hiv_fert_ratio = 3 / 4,
-                                      hiv_prop_partner = 1 / 2) {
+                                      hiv_prop_partner = 1 / 2,
+                                      hiv_series = NULL,
+                                      hiv_period = "midpoint") {
   df <- df[order(orphanhood_num(df$Age)), , drop = FALSE]
   age <- orphanhood_num(df$Age)
   obs <- orphanhood_observations(df)
@@ -376,7 +508,7 @@ orphanhood_estimate_group <- function(df,
 
   if (obs == 1) {
     date_obs <- orphanhood_group_value(df, "Date", date_obs, "date of observation")
-    mac <- orphanhood_group_value(df, "MAC", mac, "mean age at childbearing")
+    mac <- orphanhood_group_mac(df, "MAC", mac)
     hiv <- if ("HIVPrev" %in% names(df)) orphanhood_num(df$HIVPrev) else NULL
     # Rows with implausible values are flagged below, so the NaN warnings
     # they raise inside MortIndEst are not needed.
@@ -403,10 +535,14 @@ orphanhood_estimate_group <- function(df,
     if (date2 <= date1) {
       stop("The second observation must be later than the first")
     }
-    mac1 <- orphanhood_group_value(df, c("MAC1", "MAC"), mac, "mean age at childbearing")
-    mac2 <- orphanhood_group_value(df, c("MAC2", "MAC"), mac, "mean age at childbearing")
+    mac1 <- orphanhood_group_mac(df, c("MAC1", "MAC"), mac)
+    mac2 <- orphanhood_group_mac(df, c("MAC2", "MAC"), mac)
     if (identical(method, "timaeus") && !all(c(15, 20) %in% age)) {
       stop("The Timaeus two-census method needs respondents aged 15-19 and 20-24")
+    }
+    masquelier <- identical(method, "masquelier_timaeus")
+    if (masquelier && !maternal) {
+      stop("The Masquelier-Timaeus method is for maternal orphanhood only")
     }
     # Rows with implausible values are flagged below, so the NaN warnings
     # they raise inside MortIndEst are not needed.
@@ -423,6 +559,10 @@ orphanhood_estimate_group <- function(df,
       mac2 = mac2,
       mlt_data_input = std,
       brass_logit = TRUE,
+      HIV_prev = if (masquelier) orphanhood_hiv_series_input(hiv_series, "HIVPrev") else NULL,
+      HIV_art = if (masquelier) orphanhood_hiv_series_input(hiv_series, "ART") else NULL,
+      HIV_pmtct = if (masquelier) orphanhood_hiv_series_input(hiv_series, "PMTCT") else NULL,
+      HIV_period_covariates = hiv_period,
       verbose = FALSE
     ))))
     index <- as.data.frame(res$adult_mort_index)
@@ -450,6 +590,8 @@ orphanhood_estimate_group <- function(df,
   )
   if (obs == 1) {
     estimates$years_before <- date_obs - estimates$ref_date
+  } else {
+    estimates$years_between <- rep(date2 - date1, nrow(estimates))
   }
 
   lx_est <- as.data.frame(res$lx_estimates)
@@ -461,7 +603,24 @@ orphanhood_estimate_group <- function(df,
   )
   lx <- lx[!is.na(lx$lx), , drop = FALSE]
 
-  list(estimates = estimates, lx = lx)
+  out <- list(estimates = estimates, lx = lx)
+  if (obs == 2 && identical(method, "masquelier_timaeus")) {
+    # Proportions before and after the HIV adjustment, and the conditional
+    # maternal survival p(25, n) they give
+    p25 <- as.data.frame(res$p25_estimates)
+    out$hiv_adjustment <- data.frame(
+      Age = p25$age,
+      NotOrphaned1 = p25$prop_not_orphanone,
+      NotOrphaned2 = p25$prop_not_orphantwo,
+      NotOrphaned1_adjusted = p25$prop_not_orphan_hiv_adjone,
+      NotOrphaned2_adjusted = p25$prop_not_orphan_hiv_adjtwo,
+      HIV_birth1 = p25$HIV_birthone,
+      HIV_birth2 = p25$HIV_birthtwo,
+      p25_n = p25$p25_n,
+      stringsAsFactors = FALSE
+    )
+  }
+  out
 }
 
 #' Estimate adult mortality from orphanhood for all groups
@@ -487,9 +646,18 @@ orphanhood_estimate_group <- function(df,
 #'   without date columns.
 #' @param hiv_vert_transm,hiv_fert_ratio,hiv_prop_partner HIV adjustment
 #'   parameters (Timaeus and Nunn 1997), used when the data hold `HIVPrev`.
+#' @param std_q5 Optional 5q0 of the standard: when given, the level of the
+#'   model life table is the one with the closest 5q0 and `std_e0` is not
+#'   used.
+#' @param hiv_series HIV series table (`Year`, `HIVPrev`, `ART`, `PMTCT`;
+#'   proportions by calendar year) for the Masquelier-Timaeus method. The same
+#'   series is used for every group.
+#' @param hiv_period `"midpoint"` (default) or `"average"`: how period HIV and
+#'   ART covariates are evaluated in the Masquelier-Timaeus method.
 #' @return List with `estimates` (all groups, with `.id`), `lx` (fitted life
-#'   tables), `standard` (the standard life table used), `group_errors` (data
-#'   frame of `.id` and `message`) and `params`.
+#'   tables), `standard` (the standard life table used), `hiv_adjustment`
+#'   (Masquelier-Timaeus only), `group_errors` (data frame of `.id` and
+#'   `message`) and `params`.
 #' @noRd
 run_orphanhood <- function(data,
                            maternal = TRUE,
@@ -503,7 +671,10 @@ run_orphanhood <- function(data,
                            date2 = NULL,
                            hiv_vert_transm = 1 / 3,
                            hiv_fert_ratio = 3 / 4,
-                           hiv_prop_partner = 1 / 2) {
+                           hiv_prop_partner = 1 / 2,
+                           std_q5 = NULL,
+                           hiv_series = NULL,
+                           hiv_period = "midpoint") {
   if (!method %in% ORPHANHOOD_METHODS) {
     stop(sprintf(
       "Unknown two-census method '%s'. Choose one of: %s",
@@ -511,9 +682,14 @@ run_orphanhood <- function(data,
     ))
   }
   maternal <- isTRUE(maternal)
+  hiv_period <- match.arg(hiv_period, c("midpoint", "average"))
 
   if (is.null(standard)) {
-    std_e0 <- orphanhood_snap_e0(std_e0)
+    std_e0 <- if (is.null(std_q5)) {
+      orphanhood_snap_e0(std_e0)
+    } else {
+      orphanhood_e0_from_q5(family, maternal, std_q5)
+    }
     std <- orphanhood_model_standard(family, maternal, std_e0)
   } else {
     problems <- check_orphanhood_standard(standard)
@@ -526,6 +702,21 @@ run_orphanhood <- function(data,
 
   data <- prepare_orphanhood_input(data)
   obs <- orphanhood_observations(data)
+  masquelier <- obs == 2 && identical(method, "masquelier_timaeus")
+  if (masquelier) {
+    if (!maternal) {
+      stop("The Masquelier-Timaeus method is for maternal orphanhood only")
+    }
+    problems <- check_orphanhood_hiv_series(hiv_series)
+    if (length(problems) > 0) {
+      stop(paste(problems, collapse = "; "))
+    }
+    hiv_series <- as.data.frame(hiv_series)[, c("Year", ORPHANHOOD_HIV_SERIES)]
+    hiv_series[] <- lapply(hiv_series, orphanhood_num)
+    hiv_series <- hiv_series[rowSums(!is.na(hiv_series)) > 0, , drop = FALSE]
+    hiv_series <- hiv_series[order(hiv_series$Year), , drop = FALSE]
+    rownames(hiv_series) <- NULL
+  }
   by_group <- run_by_group(
     data,
     orphanhood_estimate_group,
@@ -533,6 +724,8 @@ run_orphanhood <- function(data,
     mac = mac, date_obs = date_obs, date1 = date1, date2 = date2,
     hiv_vert_transm = hiv_vert_transm, hiv_fert_ratio = hiv_fert_ratio,
     hiv_prop_partner = hiv_prop_partner,
+    hiv_series = if (masquelier) hiv_series else NULL,
+    hiv_period = hiv_period,
     check = check_orphanhood_group
   )
 
@@ -541,6 +734,7 @@ run_orphanhood <- function(data,
     estimates = by_group[["estimates"]],
     lx = by_group[["lx"]],
     standard = std,
+    hiv_adjustment = by_group[["hiv_adjustment"]],
     group_errors = by_group[["group_errors"]],
     params = list(
       observations = obs,
@@ -549,6 +743,7 @@ run_orphanhood <- function(data,
       standard_type = if (is.null(standard)) "model" else "custom",
       family = if (is.null(standard)) family else NA_character_,
       std_e0 = if (is.null(standard)) std_e0 else NA_real_,
+      std_q5 = if (is.null(standard) && !is.null(std_q5)) as.numeric(std_q5) else NA_real_,
       mac = mac,
       date_obs = if (obs == 1) date_obs else NULL,
       date1 = if (obs == 2) date1 else NULL,
@@ -556,7 +751,10 @@ run_orphanhood <- function(data,
       hiv = hiv,
       hiv_vert_transm = if (hiv) hiv_vert_transm else NA_real_,
       hiv_fert_ratio = if (hiv) hiv_fert_ratio else NA_real_,
-      hiv_prop_partner = if (hiv && !maternal) hiv_prop_partner else NA_real_
+      hiv_prop_partner = if (hiv && !maternal) hiv_prop_partner else NA_real_,
+      masquelier = masquelier,
+      hiv_series = if (masquelier) hiv_series else NULL,
+      hiv_period = if (masquelier) hiv_period else NA_character_
     )
   )
 }
@@ -575,20 +773,28 @@ orphanhood_settings_items <- function(params) {
                stringsAsFactors = FALSE)
   }
   data_value <- function(x) {
-    if (is.null(x) || length(x) == 0 || all(is.na(x))) NULL else format(x)
+    if (is.null(x) || length(x) == 0 || all(is.na(x))) NULL else format(round(as.numeric(x), 2))
   }
   items <- list(
     item("Parent", if (isTRUE(params$maternal)) "Mother" else "Father", TRUE)
   )
   if (two) {
-    items[[length(items) + 1]] <- item("Method", unname(ORPHANHOOD_METHOD_LABELS[params$method]))
+    items[[length(items) + 1]] <- item(
+      "Method", unname(ORPHANHOOD_METHOD_LABELS[params$method]),
+      identical(params$method, "masquelier_timaeus")
+    )
   }
   if (identical(params$standard_type, "custom")) {
     items[[length(items) + 1]] <- item("Standard", "Custom standard", TRUE)
   } else {
+    level <- if (is.null(params$std_q5) || all(is.na(params$std_q5))) {
+      sprintf("e0 = %s", format(params$std_e0))
+    } else {
+      sprintf("e0 = %s (5q0 = %s)", format(params$std_e0), format(params$std_q5))
+    }
     items[[length(items) + 1]] <- item(
       "Standard",
-      sprintf("%s, e0 = %s", unname(ORPHANHOOD_FAMILY_LABELS[params$family]), format(params$std_e0))
+      sprintf("%s, %s", unname(ORPHANHOOD_FAMILY_LABELS[params$family]), level)
     )
   }
   mac <- data_value(params$mac)
@@ -612,6 +818,13 @@ orphanhood_settings_items <- function(params) {
   if (isTRUE(params$hiv)) {
     items[[length(items) + 1]] <- item("HIV adjustment", "Yes", TRUE)
   }
+  if (isTRUE(params$masquelier)) {
+    items[[length(items) + 1]] <- item(
+      "Period HIV and ART covariates",
+      if (identical(params$hiv_period, "average")) "Average of the two dates" else "Midpoint",
+      TRUE
+    )
+  }
   do.call(rbind, items)
 }
 
@@ -624,8 +837,9 @@ orphanhood_settings_items <- function(params) {
 #' @param params Parameters of the last run (`run_orphanhood()$params`).
 #' @param current List with the current control values: `parent`
 #'   (`"maternal"` / `"paternal"`), `method`, `standard_type`, `family`,
-#'   `std_e0`, `mac`, `date_obs`, `date1`, `date2`, `hiv_vert_transm`,
-#'   `hiv_fert_ratio`, `hiv_prop_partner`.
+#'   `std_level` (`"e0"` / `"q5"`), `std_e0`, `std_q5`, `mac`, `date_obs`,
+#'   `date1`, `date2`, `hiv_vert_transm`, `hiv_fert_ratio`, `hiv_prop_partner`,
+#'   `hiv_series` and `hiv_period`.
 #' @return `TRUE` when the shown results no longer match the controls.
 #' @noRd
 orphanhood_settings_changed <- function(params, current) {
@@ -639,13 +853,30 @@ orphanhood_settings_changed <- function(params, current) {
   two <- identical(as.integer(params$observations), 2L)
   model <- identical(params$standard_type, "model")
   parent <- if (isTRUE(params$maternal)) "maternal" else "paternal"
+  by_q5 <- !is.null(params$std_q5) && !all(is.na(params$std_q5))
+  level_now <- current$std_level
   e0_now <- if (is.null(current$std_e0)) NULL else tryCatch(orphanhood_snap_e0(current$std_e0), error = function(e) NA)
+  masquelier <- isTRUE(params$masquelier)
+  # Only rows with a value count, so empty rows added to the table do not
+  # mark the results as out of date
+  series_key <- function(x) {
+    if (is.null(x)) return(NULL)
+    x <- as.data.frame(x)[, c("Year", ORPHANHOOD_HIV_SERIES)]
+    x[] <- lapply(x, orphanhood_num)
+    x <- x[rowSums(!is.na(x)) > 0, , drop = FALSE]
+    paste(apply(x[order(x$Year), , drop = FALSE], 1, paste, collapse = ","), collapse = ";")
+  }
 
   differs(parent, current$parent) ||
     (two && differs(params$method, current$method)) ||
     differs(params$standard_type, current$standard_type) ||
     (model && differs(params$family, current$family)) ||
-    (model && differs_num(params$std_e0, e0_now)) ||
+    (model && !is.null(level_now) && !identical(level_now, if (by_q5) "q5" else "e0")) ||
+    (model && !by_q5 && !identical(level_now, "q5") && differs_num(params$std_e0, e0_now)) ||
+    (model && by_q5 && !identical(level_now, "e0") && differs_num(params$std_q5, current$std_q5)) ||
+    (masquelier && differs(params$hiv_period, current$hiv_period)) ||
+    (masquelier && !is.null(current$hiv_series) &&
+       !identical(series_key(params$hiv_series), series_key(current$hiv_series))) ||
     differs_num(params$mac, current$mac) ||
     (!two && differs_num(params$date_obs, current$date_obs)) ||
     (two && differs_num(params$date1, current$date1)) ||
@@ -682,6 +913,13 @@ orphanhood_diagnostics <- function(estimates, params, input_ages = NULL, input_p
     notes <- c(notes, "Estimates from older respondents refer to more distant dates; the chart places each estimate at the date it refers to.")
   } else {
     notes <- c(notes, "Two-census estimates describe mortality between the two observations; they are placed at the midpoint of that period.")
+  }
+  if (isTRUE(params$masquelier)) {
+    notes <- c(notes, "Proportions not orphaned were adjusted for HIV/AIDS, PMTCT and ART with the Masquelier-Timaeus method; the same HIV series is used for every group.")
+    gap <- if ("years_between" %in% names(estimates)) estimates$years_between[1] else NA
+    if (!is.na(gap) && (gap < 3 || gap >= 11)) {
+      notes <- c(notes, "The Masquelier-Timaeus method is meant for observations 3 to 10 years apart.")
+    }
   }
   if (!is.null(input_ages)) {
     unused <- setdiff(stats::na.omit(orphanhood_num(input_ages)), estimates$Age)

@@ -185,6 +185,21 @@ orphanhood_module_ui <- function(i18n) {
                 shiny::uiOutput(ns("orphanhood_mac_ui")),
                 shiny::uiOutput(ns("orphanhood_dates_ui")),
                 shiny::uiOutput(ns("orphanhood_hiv_ui")),
+                # HIV series of the Masquelier-Timaeus method; static for the
+                # same reason as the custom standard table
+                shiny::conditionalPanel(
+                  condition = "output.two_observations && input.method == 'masquelier_timaeus'",
+                  ns = ns,
+                  shiny::div(
+                    class = "orphanhood-hiv-panel",
+                    shiny::uiOutput(ns("orphanhood_hiv_series_header")),
+                    shiny::div(
+                      class = "orphanhood-standard-table",
+                      rhandsontable::rHandsontableOutput(ns("hiv_series"), width = "100%", height = 420)
+                    ),
+                    shiny::uiOutput(ns("orphanhood_hiv_period_ui"))
+                  )
+                ),
                 shiny::br(),
                 shiny::uiOutput(ns("orphanhood_run_button"))
               )
@@ -248,6 +263,12 @@ orphanhood_info_text <- function(params, n_groups = NULL) {
       "Fitting: one-parameter Brass logit against the standard life table (orphanhood_standard.csv).",
       "",
       sprintf("%s: %s", items$label, items$value),
+      if (isTRUE(params$masquelier)) {
+        c(
+          "HIV/AIDS adjustment: Masquelier and Timaeus, with the HIV prevalence, ART and PMTCT series in orphanhood_hiv_series.csv (the same series for every group).",
+          "orphanhood_hiv_adjustment.csv: proportions not orphaned before and after the adjustment, HIV prevalence at the respondents' birth, and p25_n (conditional maternal survival from 25 to 25 + n)."
+        )
+      },
       if (isTRUE(params$hiv)) {
         c(
           sprintf("Proportion of children infected by their mothers: %s", format(params$hiv_vert_transm)),
@@ -264,6 +285,7 @@ orphanhood_info_text <- function(params, n_groups = NULL) {
       "- q15_35: probability of dying between exact ages 15 and 50 (35q15)",
       "- ref_date: date the estimate refers to (decimal year)",
       if (!two) "- years_before: years before the observation date the estimate refers to",
+      if (two) "- years_between: years between the two observations",
       "- plausible: FALSE when the estimate falls outside 0-1 (left out of the chart)",
       "Life table file: age_mlt and lx, the fitted survivorship of the parents for each age group of respondents.",
       "",
@@ -285,21 +307,28 @@ orphanhood_info_text <- function(params, n_groups = NULL) {
 #'
 #' @param input Module input.
 #' @param data Uploaded data (any column names).
+#' @param hiv_series Current HIV series table (Masquelier-Timaeus).
 #' @return Named list of control values.
 #' @noRd
-orphanhood_control_values <- function(input, data) {
+orphanhood_control_values <- function(input, data, hiv_series = NULL) {
   prepared <- if (is.null(data)) data.frame() else prepare_orphanhood_input(data)
   has <- names(prepared)
   obs <- orphanhood_observations(prepared)
   mac_from_data <- "MAC" %in% has || (obs == 2 && all(c("MAC1", "MAC2") %in% has))
   hiv <- obs == 1 && "HIVPrev" %in% has
   model <- !identical(input$standard_type, "custom")
+  by_q5 <- identical(input$std_level, "q5")
+  masquelier <- obs == 2 && identical(input$method, "masquelier_timaeus")
   list(
     parent = input$parent,
     method = if (obs == 2) input$method else NULL,
     standard_type = input$standard_type,
     family = if (model) input$family else NULL,
-    std_e0 = if (model) input$std_e0 else NULL,
+    std_level = if (model) input$std_level else NULL,
+    std_e0 = if (model && !by_q5) input$std_e0 else NULL,
+    std_q5 = if (model && by_q5) input$std_q5 else NULL,
+    hiv_series = if (masquelier) hiv_series else NULL,
+    hiv_period = if (masquelier) input$hiv_period else NULL,
     mac = if (mac_from_data) NULL else input$mac,
     date_obs = if (obs == 1 && !"Date" %in% has) input$date_obs else NULL,
     date1 = if (obs == 2 && !"Date1" %in% has) input$date1 else NULL,
@@ -324,7 +353,8 @@ orphanhood_module_server <- function(input, output, session) {
       sample_files <- c(
         one = "orphanhood_sample.csv",
         two = "orphanhood_sample_two.csv",
-        hiv = "orphanhood_sample_hiv.csv"
+        hiv = "orphanhood_sample_hiv.csv",
+        sa = "orphanhood_sample_sa.csv"
       )
       read_sample <- function(choice) {
         file <- sample_files[[choice %||% "one"]] %||% sample_files[["one"]]
@@ -404,12 +434,13 @@ orphanhood_module_server <- function(input, output, session) {
           shiny::p(shiny::strong(i18n$t("Optional columns:"))),
           shiny::tags$ul(
             shiny::tags$li(i18n$t("Date, or Date1 and Date2 (dates of the observations as decimal years, e.g. 1997.8). If absent, set them in the analysis step.")),
-            shiny::tags$li(i18n$t("MAC (mean age of mothers, or fathers, at the birth of their children). If absent, set it in the analysis step.")),
+            shiny::tags$li(i18n$t("MAC (mean age of mothers, or fathers, at the birth of their children): one value, or one per age group. If absent, set it in the analysis step.")),
             shiny::tags$li(i18n$t("HIVPrev (one census or survey only): HIV prevalence at the time of the respondents' birth, by age group, among pregnant women (maternal) or men (paternal). Turns on the HIV/AIDS adjustment."))
           ),
+          shiny::p(i18n$t("For the Masquelier-Timaeus method (two observations with HIV), the HIV prevalence, ART and PMTCT series by calendar year are entered in the analysis step.")),
           shiny::p(shiny::tags$em(i18n$t("Additional grouping columns are supported for batch analysis."))),
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
-          shiny::p(i18n$t("Sample data: Iraq 1997 survey, Panama 1977 and 1980 censuses, and Kenya 1999 census with HIV prevalence (IUSSP Tools for Demographic Estimation)."))
+          shiny::p(i18n$t("Sample data: Iraq 1997 survey, Panama 1977 and 1980 censuses, Kenya 1999 census with HIV prevalence (IUSSP Tools for Demographic Estimation), and South Africa 2007 and 2016 surveys with HIV series (Masquelier and Timaeus)."))
         )
       })
 
@@ -426,7 +457,7 @@ orphanhood_module_server <- function(input, output, session) {
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", i18n$t("Two censuses or surveys")),
-              shiny::div(class = "description", i18n$t("Synthetic-cohort methods that use the change in the proportions not orphaned between the two observations: Timaeus (default) or Preston-Chen. The estimates describe mortality between the two observations."))
+              shiny::div(class = "description", i18n$t("Synthetic-cohort methods that use the change in the proportions not orphaned between the two observations: Timaeus (default), Preston-Chen, or Masquelier-Timaeus for populations affected by HIV/AIDS. The estimates describe mortality between the two observations."))
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", i18n$t("Standard life table")),
@@ -434,7 +465,7 @@ orphanhood_module_server <- function(input, output, session) {
             )),
             shiny::div(class = "item", shiny::div(class = "content",
               shiny::div(class = "header", i18n$t("HIV/AIDS adjustment")),
-              shiny::div(class = "description", i18n$t("Where HIV is common, orphans are more likely to be infected and to die, so surviving respondents overstate parental survival. With an HIVPrev column, the proportions are adjusted following Timaeus and Nunn (1997)."))
+              shiny::div(class = "description", i18n$t("Where HIV is common, orphans are more likely to be infected and to die, so surviving respondents overstate parental survival. With one census or survey and an HIVPrev column, the proportions are adjusted following Timaeus and Nunn (1997). With two, the Masquelier-Timaeus method adjusts them using the HIV prevalence, ART and PMTCT series by calendar year, which also account for prevention of mother-to-child transmission and treatment."))
             ))
           ),
           shiny::h4(i18n$t("Reading the results")),
@@ -452,7 +483,9 @@ orphanhood_module_server <- function(input, output, session) {
             shiny::tags$li("Timaeus, I. M. (1992). Estimation of adult mortality from paternal orphanhood: a reassessment and a new approach. Population Bulletin of the United Nations 33: 47-63."),
             shiny::tags$li("Timaeus, I. M. (1991). Estimation of mortality from orphanhood in adulthood. Demography 28(2): 213-227."),
             shiny::tags$li("Preston, S. H. and Chen, N. (1984). Two-census orphanhood methods for estimating adult mortality, with applications to Latin America. Population Studies 38(1): 1-23."),
-            shiny::tags$li("Timaeus, I. M. and Nunn, A. J. (1997). Measurement of adult mortality in populations affected by AIDS: an assessment of the orphanhood method. Health Transition Review 7(Suppl. 2): 23-43.")
+            shiny::tags$li("Timaeus, I. M. and Nunn, A. J. (1997). Measurement of adult mortality in populations affected by AIDS: an assessment of the orphanhood method. Health Transition Review 7(Suppl. 2): 23-43."),
+            # As cited in MortIndEst::orphanhood_two()
+            shiny::tags$li("Masquelier, B. and Timaeus, I. M. HIV/AIDS correction method for maternal orphanhood in two inquiries.")
           )
         )
       })
@@ -460,11 +493,12 @@ orphanhood_module_server <- function(input, output, session) {
       output$orphanhood_sample_button <- shiny::renderUI({
         language_dep()
         choices <- stats::setNames(
-          c("one", "two", "hiv"),
+          c("one", "two", "hiv", "sa"),
           c(
             i18n$t("One survey: Iraq 1997"),
             i18n$t("Two censuses: Panama 1977-1980"),
-            i18n$t("One census with HIV: Kenya 1999")
+            i18n$t("One census with HIV: Kenya 1999"),
+            i18n$t("Two surveys with HIV: South Africa 2007-2016")
           )
         )
         shiny::div(
@@ -541,7 +575,10 @@ orphanhood_module_server <- function(input, output, session) {
               shiny.semantic::selectInput(
                 ns("method"),
                 NULL,
-                choices = stats::setNames(ORPHANHOOD_METHODS, unname(ORPHANHOOD_METHOD_LABELS[ORPHANHOOD_METHODS])),
+                choices = stats::setNames(
+                  ORPHANHOOD_METHODS,
+                  c("Timaeus", "Preston-Chen", i18n$t("Masquelier-Timaeus (HIV/AIDS)"))
+                ),
                 selected = shiny::isolate(input$method) %||% "timaeus"
               )
             )
@@ -561,7 +598,7 @@ orphanhood_module_server <- function(input, output, session) {
 
       output$method_tooltip <- shiny::renderUI({
         language_dep()
-        shiny::HTML(i18n$t("How the two observations are combined:<br><br>'Timaeus' - converts the change in the proportions not orphaned with Timaeus coefficients; needs respondents aged 15-19 and 20-24<br>'Preston-Chen' - adjusts the average proportions with the growth rates between the observations, then applies the one-census method"))
+        shiny::HTML(i18n$t("How the two observations are combined:<br><br>'Timaeus' - converts the change in the proportions not orphaned with Timaeus coefficients; needs respondents aged 15-19 and 20-24<br>'Preston-Chen' - adjusts the average proportions with the growth rates between the observations, then applies the one-census method<br>'Masquelier-Timaeus' - adjusts both proportions for HIV/AIDS, PMTCT and ART with the HIV series you enter; maternal orphanhood only"))
       })
 
       # Family and level of a model life table standard
@@ -577,11 +614,38 @@ orphanhood_module_server <- function(input, output, session) {
             choices = stats::setNames(ORPHANHOOD_FAMILIES, unname(ORPHANHOOD_FAMILY_LABELS[ORPHANHOOD_FAMILIES])),
             selected = shiny::isolate(input$family) %||% "CD_West"
           ),
-          shiny::numericInput(
-            ns("std_e0"),
-            i18n$t("Life expectancy at birth of the standard"),
-            value = shiny::isolate(input$std_e0) %||% 60,
-            min = 20, max = 100, step = 2.5
+          shiny.semantic::selectInput(
+            ns("std_level"),
+            i18n$t("Level of the standard"),
+            choices = stats::setNames(
+              c("e0", "q5"),
+              c(i18n$t("Life expectancy at birth (e0)"), i18n$t("Child mortality (5q0)"))
+            ),
+            selected = shiny::isolate(input$std_level) %||% "e0"
+          ),
+          shiny::conditionalPanel(
+            condition = "input.std_level != 'q5'",
+            ns = ns,
+            shiny::numericInput(
+              ns("std_e0"),
+              i18n$t("Life expectancy at birth of the standard"),
+              value = shiny::isolate(input$std_e0) %||% 60,
+              min = 20, max = 100, step = 2.5
+            )
+          ),
+          shiny::conditionalPanel(
+            condition = "input.std_level == 'q5'",
+            ns = ns,
+            shiny::numericInput(
+              ns("std_q5"),
+              i18n$t("5q0 of the standard"),
+              value = shiny::isolate(input$std_q5) %||% 0.1,
+              min = 0.001, max = 0.5, step = 0.005
+            ),
+            shiny::p(
+              class = "orphanhood-control-hint",
+              i18n$t("The model life table level with the closest 5q0 is used.")
+            )
           ),
           shiny::p(
             class = "orphanhood-control-hint",
@@ -608,6 +672,67 @@ orphanhood_module_server <- function(input, output, session) {
           rhandsontable::hot_col("lx", type = "numeric", format = "0.0000")
       })
       outputOptions(output, "custom_standard", suspendWhenHidden = FALSE)
+
+      # Masquelier-Timaeus HIV series: filled from the South Africa sample,
+      # emptied when other data are loaded
+      hiv_series_start <- shiny::reactiveVal(orphanhood_blank_hiv_series())
+      read_sa_series <- function() {
+        path <- system.file("extdata", "orphanhood_sample_sa_hiv_series.csv", package = "lifetableprojection")
+        sa <- utils::read.csv(path)
+        rbind(sa, orphanhood_blank_hiv_series(5))
+      }
+      shiny::observeEvent(shared$data(), {
+        sa_sample <- identical(shiny::isolate(shared$data_origin()), "sample") &&
+          identical(shiny::isolate(input$sample_choice), "sa")
+        hiv_series_start(if (sa_sample) read_sa_series() else orphanhood_blank_hiv_series())
+      }, ignoreNULL = TRUE)
+
+      output$two_observations <- shiny::reactive(data_info()$obs == 2)
+      outputOptions(output, "two_observations", suspendWhenHidden = FALSE)
+
+      output$orphanhood_hiv_series_header <- shiny::renderUI({
+        language_dep()
+        shiny::tagList(
+          shiny::h4(i18n$t("HIV series (Masquelier-Timaeus)")),
+          shiny::p(
+            class = "orphanhood-control-hint",
+            i18n$t("By calendar year: HIV prevalence among women aged 15-49, and the ART and PMTCT coverage, as proportions. Leave a cell blank when there is no value; values between years are interpolated. The same series is used for every group.")
+          )
+        )
+      })
+      outputOptions(output, "orphanhood_hiv_series_header", suspendWhenHidden = FALSE)
+
+      output$hiv_series <- rhandsontable::renderRHandsontable({
+        rhandsontable::rhandsontable(hiv_series_start(), rowHeaders = NULL, stretchH = "all") |>
+          rhandsontable::hot_col("Year", type = "numeric", format = "0.000") |>
+          rhandsontable::hot_col(ORPHANHOOD_HIV_SERIES, type = "numeric", format = "0.000")
+      })
+      outputOptions(output, "hiv_series", suspendWhenHidden = FALSE)
+
+      hiv_series_value <- function() {
+        tbl <- tryCatch(rhandsontable::hot_to_r(input$hiv_series), error = function(e) NULL)
+        if (is.null(tbl)) {
+          tbl <- shiny::isolate(hiv_series_start())
+        }
+        tbl <- as.data.frame(tbl)
+        tbl[] <- lapply(tbl, function(x) suppressWarnings(as.numeric(x)))
+        tbl
+      }
+      shared$hiv_series_value <- hiv_series_value
+
+      output$orphanhood_hiv_period_ui <- shiny::renderUI({
+        language_dep()
+        shiny.semantic::selectInput(
+          ns("hiv_period"),
+          i18n$t("Period HIV and ART covariates"),
+          choices = stats::setNames(
+            c("midpoint", "average"),
+            c(i18n$t("Midpoint"), i18n$t("Average of the two dates"))
+          ),
+          selected = shiny::isolate(input$hiv_period) %||% "midpoint"
+        )
+      })
+      outputOptions(output, "orphanhood_hiv_period_ui", suspendWhenHidden = FALSE)
 
       custom_standard_value <- function() {
         tbl <- tryCatch(rhandsontable::hot_to_r(input$custom_standard), error = function(e) NULL)
@@ -727,7 +852,7 @@ orphanhood_module_server <- function(input, output, session) {
         }, character(1))
         changed <- orphanhood_settings_changed(
           latest$params,
-          orphanhood_control_values(input, shared$data())
+          orphanhood_control_values(input, shared$data(), hiv_series_value())
         )
         shiny::tagList(
           shiny::div(
@@ -919,8 +1044,19 @@ orphanhood_module_server <- function(input, output, session) {
         ggplot2::ggsave(plot_file, plot = plot_obj, width = 10, height = 6, dpi = 300)
       }
 
-      write_common_files <- function(latest, temp_dir, estimates, lx, suffix) {
+      write_common_files <- function(latest, temp_dir, estimates, lx, suffix, gid = NULL) {
         files <- c()
+        if (!is.null(latest$hiv_adjustment)) {
+          adj <- latest$hiv_adjustment
+          if (!is.null(gid)) {
+            adj <- adj[adj$.id == gid, , drop = FALSE]
+          }
+          adj_file <- file.path(temp_dir, sprintf("orphanhood_hiv_adjustment%s.csv", suffix))
+          utils::write.csv(add_labels(adj), adj_file, row.names = FALSE)
+          series_file <- file.path(temp_dir, "orphanhood_hiv_series.csv")
+          utils::write.csv(latest$params$hiv_series, series_file, row.names = FALSE, na = "")
+          files <- c(files, adj_file, series_file)
+        }
         csv_file <- file.path(temp_dir, sprintf("orphanhood_results%s.csv", suffix))
         utils::write.csv(add_labels(estimates), csv_file, row.names = FALSE)
         files <- c(files, csv_file)
@@ -945,7 +1081,7 @@ orphanhood_module_server <- function(input, output, session) {
 
         temp_dir <- tempfile()
         dir.create(temp_dir)
-        temp_files <- write_common_files(latest, temp_dir, estimates, lx, "")
+        temp_files <- write_common_files(latest, temp_dir, estimates, lx, "", gid = gid)
 
         plot_file <- file.path(temp_dir, "orphanhood_plot.png")
         save_group_plot(estimates, plot_file, gid, latest$params$observations)
@@ -1072,7 +1208,9 @@ orphanhood_module_server <- function(input, output, session) {
     },
 
     prepare = function(input, shared, i18n) {
-      values <- orphanhood_control_values(input, shiny::isolate(shared$data()))
+      values <- orphanhood_control_values(
+        input, shiny::isolate(shared$data()), shiny::isolate(shared$hiv_series_value())
+      )
       list(
         maternal = !identical(values$parent, "paternal"),
         method = values$method %||% "timaeus",
@@ -1085,7 +1223,10 @@ orphanhood_module_server <- function(input, output, session) {
         date2 = values$date2,
         hiv_vert_transm = values$hiv_vert_transm %||% (1 / 3),
         hiv_fert_ratio = values$hiv_fert_ratio %||% 0.75,
-        hiv_prop_partner = values$hiv_prop_partner %||% 0.5
+        hiv_prop_partner = values$hiv_prop_partner %||% 0.5,
+        std_q5 = values$std_q5,
+        hiv_series = values$hiv_series,
+        hiv_period = values$hiv_period %||% "midpoint"
       )
     },
 
@@ -1094,13 +1235,21 @@ orphanhood_module_server <- function(input, output, session) {
       if (is.null(data_full) || nrow(data_full) == 0) {
         return(list(error = i18n$t("No data available")))
       }
-      # Problems with a custom standard are known messages: show them translated
+      # Problems with a custom standard or the HIV series are known messages:
+      # show them translated
+      problems <- character(0)
       if (!is.null(params$standard)) {
         problems <- check_orphanhood_standard(params$standard)
-        if (length(problems) > 0) {
-          shared$last_result(NULL)
-          return(list(error = paste(vapply(problems, i18n$t, character(1)), collapse = "; ")))
+      }
+      if (!is.null(params$hiv_series)) {
+        if (!isTRUE(params$maternal)) {
+          problems <- c(problems, "The Masquelier-Timaeus method is for maternal orphanhood only")
         }
+        problems <- c(problems, check_orphanhood_hiv_series(params$hiv_series))
+      }
+      if (length(problems) > 0) {
+        shared$last_result(NULL)
+        return(list(error = paste(vapply(problems, i18n$t, character(1)), collapse = "; ")))
       }
       result <- tryCatch(
         run_orphanhood(
@@ -1116,7 +1265,10 @@ orphanhood_module_server <- function(input, output, session) {
           date2 = params$date2,
           hiv_vert_transm = params$hiv_vert_transm,
           hiv_fert_ratio = params$hiv_fert_ratio,
-          hiv_prop_partner = params$hiv_prop_partner
+          hiv_prop_partner = params$hiv_prop_partner,
+          std_q5 = params$std_q5,
+          hiv_series = params$hiv_series,
+          hiv_period = params$hiv_period
         ),
         error = function(e) {
           list(error = paste0(i18n$t("Estimation failed: "), conditionMessage(e)))

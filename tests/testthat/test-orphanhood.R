@@ -229,7 +229,11 @@ test_that("validation flags proportions given as percentages or zero", {
 
 test_that("validation checks optional MAC, Date and HIVPrev columns", {
   expect_equal(failed_checks(check_data_orphanhood(transform(iraq, MAC = 70))), "check MAC")
-  expect_equal(failed_checks(check_data_orphanhood(transform(iraq, MAC = 28 + Age / 100))), "check MAC")
+  # One MAC per age group is allowed (blank cells too); out of range is not
+  expect_true(all(check_data_orphanhood(transform(iraq, MAC = 27 + Age / 100))$pass == "Pass"))
+  expect_equal(failed_checks(check_data_orphanhood(transform(iraq, MAC = c(NA, 27, 27, 28, 28, 28, 29, 29, 60)))),
+               "check MAC")
+  expect_equal(failed_checks(check_data_orphanhood(transform(iraq, MAC = NA))), "check MAC")
   expect_equal(failed_checks(check_data_orphanhood(transform(iraq, Date = 1890))), "check Date")
   expect_equal(failed_checks(check_data_orphanhood(transform(panama, Date1 = 1980, Date2 = 1977))),
                "check date order")
@@ -472,6 +476,24 @@ test_that("every string the module translates has French and Spanish", {
     check_orphanhood_standard(transform(iussp_standard, lx = lx * 10)),
     check_orphanhood_standard(transform(iussp_standard, lx = rev(lx)))
   )
+  # Masquelier-Timaeus settings, notes and HIV series problems
+  sa <- utils::read.csv(system.file("extdata", "orphanhood_sample_sa.csv", package = "lifetableprojection"))
+  series <- utils::read.csv(system.file("extdata", "orphanhood_sample_sa_hiv_series.csv", package = "lifetableprojection"))
+  mt <- run_orphanhood(transform(sa, Date2 = 2008.5), method = "masquelier_timaeus", hiv_series = series)
+  mt_avg <- modifyList(mt$params, list(hiv_period = "average"))
+  items <- rbind(items, orphanhood_settings_items(mt$params), orphanhood_settings_items(mt_avg))
+  notes <- c(notes, orphanhood_diagnostics(mt$estimates, mt$params))
+  bad_series <- series
+  bad_series$HIVPrev[1] <- 5
+  bad_series$Year[2] <- bad_series$Year[1]
+  bad_series$Year[3] <- NA
+  problems <- c(
+    problems,
+    check_orphanhood_hiv_series(NULL),
+    check_orphanhood_hiv_series(orphanhood_blank_hiv_series()),
+    check_orphanhood_hiv_series(bad_series),
+    "The Masquelier-Timaeus method is for maternal orphanhood only"
+  )
   wanted <- unique(c(literals, items$label, items$value[items$translate_value], notes, problems))
   missing <- setdiff(wanted, tr$en)
   expect_equal(missing, character(0))
@@ -507,6 +529,18 @@ test_that("controls overridden by the data or not applying are not used", {
   expect_null(hiv$family)
   expect_null(hiv$std_e0)
   expect_equal(orphanhood_control_values(input, NULL)$date_obs, 2020)
+
+  # Standard level from 5q0, and the HIV series only for Masquelier-Timaeus
+  q5 <- orphanhood_control_values(modifyList(input, list(std_level = "q5", std_q5 = 0.07)), iraq)
+  expect_equal(q5$std_q5, 0.07)
+  expect_null(q5$std_e0)
+  series <- orphanhood_blank_hiv_series(2)
+  mt_input <- modifyList(input, list(method = "masquelier_timaeus", hiv_period = "average"))
+  mt <- orphanhood_control_values(mt_input, panama, series)
+  expect_equal(mt$hiv_series, series)
+  expect_equal(mt$hiv_period, "average")
+  expect_null(orphanhood_control_values(mt_input, iraq, series)$hiv_series)
+  expect_null(orphanhood_control_values(input, panama, series)$hiv_series)
 })
 
 test_that("analysis info text documents the run parameters", {
@@ -525,4 +559,167 @@ test_that("analysis info text documents the run parameters", {
   expect_match(txt, "Dates of observation: 1977.5 / 1980.36")
   expect_match(txt, "Number of Groups: 2")
   expect_false(grepl("years_before", txt))
+})
+
+# South Africa 2007 and 2016, maternal orphanhood with HIV series
+# (MortIndEst example replicating the Masquelier-Timaeus workbook)
+read_extdata <- function(file) {
+  utils::read.csv(system.file("extdata", file, package = "lifetableprojection"))
+}
+sa_p25_paper <- c(0.927425, 0.884010, 0.843594, 0.814588, 0.773862, 0.735641, 0.711444, 0.687329)
+
+test_that("Masquelier-Timaeus reproduces the workbook p25 for South Africa", {
+  sa <- read_extdata("orphanhood_sample_sa.csv")
+  series <- read_extdata("orphanhood_sample_sa_hiv_series.csv")
+  expect_true(all(check_data_orphanhood(sa)$pass == "Pass"))
+  expect_length(check_orphanhood_hiv_series(series), 0)
+  res <- run_orphanhood(sa, method = "masquelier_timaeus", hiv_series = series)
+  expect_equal(nrow(res$group_errors), 0)
+  expect_true(res$params$masquelier)
+  expect_close(res$hiv_adjustment$p25_n, sa_p25_paper, tol = 0.001)
+  expect_equal(res$estimates$Age, seq(5, 40, 5))
+  expect_true(all(res$estimates$plausible))
+  expect_equal(unique(res$estimates$years_between), 2016.2732 - 2007.1205)
+  # The adjustment lowers the youngest proportions, where HIV exposure at birth
+  # was highest, and leaves the oldest unchanged
+  adj <- res$hiv_adjustment
+  expect_lt(adj$NotOrphaned2_adjusted[1], adj$NotOrphaned2[1])
+  expect_equal(adj$NotOrphaned1_adjusted[8], adj$NotOrphaned1[8])
+  # Mortality is far higher than without the HIV adjustment? Compare with Timaeus
+  plain <- run_orphanhood(sa[sa$Age >= 0, ], method = "timaeus")
+  expect_equal(nrow(plain$group_errors), 0)
+  expect_false(isTRUE(plain$params$masquelier))
+  expect_null(plain$hiv_adjustment)
+})
+
+test_that("Masquelier-Timaeus checks the parent and the HIV series", {
+  sa <- read_extdata("orphanhood_sample_sa.csv")
+  series <- read_extdata("orphanhood_sample_sa_hiv_series.csv")
+  expect_error(run_orphanhood(sa, maternal = FALSE, method = "masquelier_timaeus", hiv_series = series),
+               "maternal orphanhood only")
+  expect_error(run_orphanhood(sa, method = "masquelier_timaeus", hiv_series = orphanhood_blank_hiv_series()),
+               "Enter at least one year with a value for HIVPrev")
+  expect_length(check_orphanhood_hiv_series(orphanhood_blank_hiv_series()), 3)
+  expect_match(check_orphanhood_hiv_series(NULL), "need the columns")
+  pct <- transform(series, HIVPrev = HIVPrev * 100)
+  expect_match(check_orphanhood_hiv_series(pct), "not 23")
+  no_year <- series
+  no_year$Year[3] <- NA
+  expect_match(check_orphanhood_hiv_series(no_year), "needs a year")
+  dup <- series
+  dup$Year[2] <- dup$Year[1]
+  expect_match(check_orphanhood_hiv_series(dup), "only once")
+  # The series are ignored for one census, Timaeus and Preston-Chen
+  res <- run_orphanhood(sa, method = "preston_chen", hiv_series = orphanhood_blank_hiv_series())
+  expect_equal(nrow(res$group_errors), 0)
+  expect_false(res$params$masquelier)
+})
+
+test_that("an HIV series with one value is passed as a constant", {
+  series <- read_extdata("orphanhood_sample_sa_hiv_series.csv")
+  expect_s3_class(orphanhood_hiv_series_input(series, "HIVPrev"), "data.frame")
+  expect_equal(nrow(orphanhood_hiv_series_input(series, "ART")), 3)
+  one_art <- series
+  one_art$ART <- NA
+  one_art$ART[19] <- 0.45
+  expect_equal(orphanhood_hiv_series_input(one_art, "ART"), 0.45)
+  sa <- read_extdata("orphanhood_sample_sa.csv")
+  res <- run_orphanhood(sa, method = "masquelier_timaeus", hiv_series = one_art)
+  expect_equal(nrow(res$group_errors), 0)
+  # Blank rows and unsorted years are cleaned up in the stored series
+  messy <- rbind(orphanhood_blank_hiv_series(2), series[nrow(series):1, ])
+  res2 <- run_orphanhood(sa, method = "masquelier_timaeus", hiv_series = messy)
+  expect_equal(res2$params$hiv_series$Year, sort(series$Year))
+  expect_equal(res2$estimates$q15_45,
+               run_orphanhood(sa, method = "masquelier_timaeus", hiv_series = series)$estimates$q15_45)
+})
+
+test_that("Masquelier-Timaeus runs per group and keeps the HIV adjustment by group", {
+  sa <- read_extdata("orphanhood_sample_sa.csv")
+  series <- read_extdata("orphanhood_sample_sa_hiv_series.csv")
+  two <- rbind(transform(sa, .id = 1L, .id_label = "A"),
+               transform(sa, NotOrphaned2 = NotOrphaned2 - 0.01, .id = 2L, .id_label = "B"))
+  res <- run_orphanhood(two, method = "masquelier_timaeus", hiv_series = series, hiv_period = "average")
+  expect_equal(nrow(res$group_errors), 0)
+  expect_equal(sort(unique(res$hiv_adjustment$.id)), c(1L, 2L))
+  expect_equal(res$params$hiv_period, "average")
+  expect_false(isTRUE(all.equal(res$estimates$q15_45[res$estimates$.id == 1],
+                                res$estimates$q15_45[res$estimates$.id == 2])))
+  expect_error(run_orphanhood(two, method = "masquelier_timaeus", hiv_series = series, hiv_period = "x"))
+})
+
+test_that("Masquelier-Timaeus settings, diagnostics and info text", {
+  sa <- read_extdata("orphanhood_sample_sa.csv")
+  series <- read_extdata("orphanhood_sample_sa_hiv_series.csv")
+  params <- run_orphanhood(sa, method = "masquelier_timaeus", hiv_series = series)$params
+  items <- orphanhood_settings_items(params)
+  expect_equal(items$value[items$label == "Method"], "Masquelier-Timaeus (HIV/AIDS)")
+  expect_true(items$translate_value[items$label == "Method"])
+  expect_equal(items$value[items$label == "Period HIV and ART covariates"], "Midpoint")
+  expect_equal(items$value[items$label == "Mean age at childbearing"], "MAC column of your data")
+
+  now <- list(parent = "maternal", method = "masquelier_timaeus", standard_type = "model",
+              family = "CD_West", std_level = "e0", std_e0 = 60, hiv_series = series,
+              hiv_period = "midpoint")
+  expect_false(orphanhood_settings_changed(params, now))
+  # Empty rows added to the table do not count as a change
+  padded <- now
+  padded$hiv_series <- rbind(series, orphanhood_blank_hiv_series(3))
+  expect_false(orphanhood_settings_changed(params, padded))
+  edited <- now
+  edited$hiv_series$ART[19] <- 0.5
+  expect_true(orphanhood_settings_changed(params, edited))
+  expect_true(orphanhood_settings_changed(params, modifyList(now, list(hiv_period = "average"))))
+
+  res <- run_orphanhood(sa, method = "masquelier_timaeus", hiv_series = series)
+  notes <- orphanhood_diagnostics(res$estimates, res$params, sa$Age)
+  expect_true(any(grepl("Masquelier-Timaeus method; the same HIV series", notes)))
+  expect_false(any(grepl("3 to 10 years apart", notes)))
+  close_dates <- transform(sa, Date2 = 2008.5)
+  res_close <- run_orphanhood(close_dates, method = "masquelier_timaeus", hiv_series = series)
+  expect_true(any(grepl("3 to 10 years apart",
+                        orphanhood_diagnostics(res_close$estimates, res_close$params))))
+
+  txt <- orphanhood_info_text(params)
+  expect_match(txt, "orphanhood_hiv_series.csv", fixed = TRUE)
+  expect_match(txt, "Method: Masquelier-Timaeus (HIV/AIDS)", fixed = TRUE)
+  expect_match(txt, "years_between", fixed = TRUE)
+})
+
+test_that("the level of the standard can come from 5q0", {
+  e0 <- orphanhood_e0_from_q5("CD_West", maternal = TRUE, q5 = 0.08)
+  std <- orphanhood_model_standard("CD_West", TRUE, e0)
+  q5 <- 1 - std$lx[std$age == 5]
+  # No other level is closer
+  others <- vapply(seq(20, 100, 2.5), function(level) {
+    s <- orphanhood_model_standard("CD_West", TRUE, level)
+    abs(1 - s$lx[s$age == 5] - 0.08)
+  }, numeric(1))
+  expect_equal(abs(q5 - 0.08), min(others))
+  # Male tables give a different level for the same 5q0
+  expect_true(orphanhood_e0_from_q5("CD_West", maternal = FALSE, q5 = 0.08) <= e0)
+  expect_error(orphanhood_e0_from_q5("CD_West", TRUE, 8), "between 0 and 1")
+
+  res <- run_orphanhood(iraq, std_q5 = 0.08, std_e0 = 30, mac = 28.28, date_obs = 1997.79)
+  expect_equal(res$params$std_e0, e0)
+  expect_equal(res$params$std_q5, 0.08)
+  expect_match(orphanhood_settings_items(res$params)$value[2], "(5q0 = 0.08)", fixed = TRUE)
+  now <- list(parent = "maternal", standard_type = "model", family = "CD_West",
+              std_level = "q5", std_q5 = 0.08, mac = 28.28, date_obs = 1997.79)
+  expect_false(orphanhood_settings_changed(res$params, now))
+  expect_true(orphanhood_settings_changed(res$params, modifyList(now, list(std_q5 = 0.1))))
+  expect_true(orphanhood_settings_changed(res$params, modifyList(now, list(std_level = "e0", std_e0 = e0))))
+})
+
+test_that("a MAC per age group is used for every method", {
+  per_age <- transform(iraq, MAC = 27 + Age / 50)
+  res <- run_orphanhood(per_age, standard = iussp_standard, date_obs = 1997.79)
+  expect_equal(nrow(res$group_errors), 0)
+  same <- run_orphanhood(transform(iraq, MAC = 28), standard = iussp_standard, date_obs = 1997.79)
+  expect_false(isTRUE(all.equal(res$estimates$q15_45, same$estimates$q15_45)))
+  two <- transform(panama, MAC = c(NA, 26:33))
+  for (method in c("timaeus", "preston_chen")) {
+    out <- run_orphanhood(two, method = method, date1 = 1977.5, date2 = 1980.36)
+    expect_equal(nrow(out$group_errors), 0)
+  }
 })
