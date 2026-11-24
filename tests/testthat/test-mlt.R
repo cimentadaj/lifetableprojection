@@ -244,3 +244,39 @@ test_that("the info tab labels follow the language", {
   expect_match(code, "output$info_tab_upload_label <- shiny::renderUI", fixed = TRUE)
   expect_match(code, "output$info_tab_docs_label <- shiny::renderUI", fixed = TRUE)
 })
+
+test_that("low mortality is reached too, for MATCH and COMBIN", {
+  cases <- list(c("e0", 80), c("e0", 85), c("5q0", 0.004), c("1q0", 0.003), c("45q15", 0.05), c("35q15", 0.02))
+  for (family in c("CD_West", "UN_Far_Eastern")) {
+    for (sex in c("female", "male")) {
+      for (case in cases) {
+        value <- as.numeric(case[2])
+        res <- expect_silent(mlt_table(family, sex, "match", case[1], value))
+        tol <- if (identical(case[1], "e0")) 0.1 else max(0.0005, 0.05 * value)
+        expect_lt(abs(res$achieved[[case[1]]] - value), tol, label = paste(family, sex, case[1]))
+      }
+      cb <- mlt_table(family, sex, "combin", q1 = 0.003, q5 = 0.004, adult_indicator = "45q15", adult_value = 0.05)
+      expect_lt(abs(cb$achieved[["45q15"]] - 0.05), 0.001, label = paste(family, sex, "COMBIN"))
+      expect_gt(cb$achieved[["e0"]], 78)
+    }
+  }
+})
+
+test_that("the open age group does not change the indicators", {
+  base <- mlt_table("CD_West", "female", "match", "e0", 70)
+  for (open_age in c(85, 100, 130)) {
+    res <- mlt_table("CD_West", "female", "match", "e0", 70, open_age = open_age)
+    expect_equal(max(res$single$Age), open_age)
+    expect_equal(max(res$abridged$Age), open_age)
+    expect_equal(res$achieved, base$achieved, tolerance = 1e-6)
+    cb <- mlt_table("CD_West", "female", "combin", q1 = 0.03, q5 = 0.04, adult_value = 0.15, open_age = open_age)
+    expect_equal(max(cb$abridged$Age), open_age)
+  }
+})
+
+test_that("pasted numbers with a decimal comma are read", {
+  expect_equal(mlt_parse_number(c("0,05", "0.05", " 63,4 ", "1,234,5", "x", NA, 60)),
+               c(0.05, 0.05, 63.4, NA, NA, NA, 60))
+  req <- mlt_requests_from_table(data.frame(n = "a", s = "Female", v = "0,08"), "match")
+  expect_equal(req$value, 0.08)
+})

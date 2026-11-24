@@ -470,7 +470,8 @@ T2–T4, run it in the deployed app, and record a GIF and a short write-up. This
 - About 50 EN/FR/ES strings.
 
 **Tests**
-- `tests/testthat/test-mlt.R` (16 tests). Full suite: 146 tests, 917 expectations, 0 failures.
+- `tests/testthat/test-mlt.R` (19 tests), including low mortality (e0 80-85, 5q0 0.004, 1q0 0.003, 45q15 0.05),
+  open ages 85, 100 and 130, and decimal commas.
 - Self-consistency checks:
   - MATCH on a level's own 5q0 returns that level's m(x) exactly;
   - MATCH via e0, 5q0 and 45q15 agree within 0.15 of e0;
@@ -483,8 +484,17 @@ T2–T4, run it in the deployed app, and record a GIF and a short write-up. This
   - row added with the right-click menu; an out-of-range row is reported;
   - table and age selectors; chart measures; open age 100; ZIP contents;
   - FR and ES, including the sex dropdown read back in Spanish;
+  - typing across a row with Tab;
+  - pasting more rows than the table has, with a decimal comma;
+  - removing a row; COMBIN with 5q0 blank; every row invalid;
   - every UI table checked against the backend;
-  - no new console errors.
+  - no new console errors;
+  - installed package in a clean session.
+- Fixed during the checks:
+  - the table jumped in width on the first click, so cells moved under the pointer (fixed column widths now);
+  - a stray `errors` element made every run look failed (`result$error` partial match);
+  - open ages that are not a multiple of 5 gave a single-age table longer than the abridged one (now refused);
+  - decimal commas (0,05) from French or Spanish spreadsheets are now read.
 
 **Not in this version**
 - BESTFT as its own method (needs observed qx by age).

@@ -4231,9 +4231,9 @@
             "es": "La configuración o la tabla han cambiado. Haga clic en 'Construir las tablas' para actualizar los resultados."
         },
         {
-            "en": "The open age group must be between 85 and 130",
-            "fr": "Le groupe d'âges ouvert doit être compris entre 85 et 130",
-            "es": "El grupo de edad abierto debe estar entre 85 y 130"
+            "en": "The open age group must be a multiple of 5 between 85 and 130",
+            "fr": "Le groupe d'âges ouvert doit être un multiple de 5 compris entre 85 et 130",
+            "es": "El grupo de edad abierto debe ser un múltiplo de 5 entre 85 y 130"
         },
         {
             "en": "None of the life tables could be built; see the messages below.",

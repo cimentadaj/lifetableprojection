@@ -194,6 +194,22 @@ mlt_default_requests <- function(method, indicator = "e0", adult_indicator = "45
 }
 
 
+#' Numbers typed or pasted into the input table
+#'
+#' Accepts a decimal comma (0,05), as pasted from spreadsheets in French or
+#' Spanish, as well as a decimal point.
+#'
+#' @param x Values from the table.
+#' @return Numeric vector (`NA` where a value is not a number).
+#' @noRd
+mlt_parse_number <- function(x) {
+  v <- trimws(as.character(x))
+  comma <- !is.na(v) & grepl("^[-+]?[0-9]*,[0-9]+$", v)
+  v[comma] <- sub(",", ".", v[comma], fixed = TRUE)
+  suppressWarnings(as.numeric(v))
+}
+
+
 #' Read the input table back from the browser
 #'
 #' @param df Data frame from `rhandsontable::hot_to_r()` (translated headers;
@@ -214,7 +230,7 @@ mlt_requests_from_table <- function(df, method, sex_labels = MLT_SEX_LABELS) {
   df$Name <- as.character(df$Name)
   df$Sex <- mlt_sex_from_input(df$Sex, sex_labels)
   for (col in mlt_value_columns(method)) {
-    df[[col]] <- suppressWarnings(as.numeric(as.character(df[[col]])))
+    df[[col]] <- mlt_parse_number(df[[col]])
   }
   rownames(df) <- NULL
   df
@@ -555,8 +571,9 @@ mlt_module_server <- function(input, output, session) {
     },
 
     run = function(shared, params, input, i18n) {
-      if (params$open_age < 85 || params$open_age > 130) {
-        result <- list(error = i18n$t("The open age group must be between 85 and 130"))
+      # A multiple of 5, so the abridged table ends at the same open age
+      if (params$open_age < 85 || params$open_age > 130 || params$open_age %% 5 != 0) {
+        result <- list(error = i18n$t("The open age group must be a multiple of 5 between 85 and 130"))
         shared$last_result(NULL)
         return(result)
       }
