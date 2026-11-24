@@ -16,7 +16,7 @@ Imports:
     golem,
     magrittr,
     MortIndEst,
-    MortCast,
+    MortCast (>= 2.8.0),
     purrr,
     tidyr,
     rms,
