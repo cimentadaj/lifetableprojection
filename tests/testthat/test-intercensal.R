@@ -34,11 +34,12 @@ stable_censuses <- function(Lx5, r = 0.02, years = 10) {
   c1 <- 1e6 * Lx5 * exp(-r * (ages + 2.5))
   data.frame(Age = ages, Pop1 = c1, Pop2 = c1 * exp(r * years))
 }
-cd_west_60 <- local({
+cd_west_lx5 <- local({
   tab <- MortCast::MLTlookup
   tab <- tab[tab$type == "CD_West" & tab$sex == 2 & tab$e0 == 60, ]
-  stable_censuses(as.numeric(tapply(tab$Lx, pmin(trunc(tab$age / 5) * 5, 75), sum)))
+  as.numeric(tapply(tab$Lx, pmin(trunc(tab$age / 5) * 5, 75), sum))
 })
+cd_west_60 <- stable_censuses(cd_west_lx5)
 
 ic_failed <- function(res) res$check[res$pass == "Fail"]
 
@@ -85,11 +86,15 @@ test_that("stable populations give back the level of their life table", {
     res <- do.call(run_intercensal, c(list(cd_west_60, method = m), dates))
     expect_lt(abs(res$summary$median_e0 - 60), 0.5, label = m)
   }
-  # The projection methods are biased upwards on these data (reported to Ivan)
+  # The projection methods recover the level of a stationary population
+  # exactly; with growth (r = 0.02 here) they come out higher (asked Ivan)
+  stationary <- stable_censuses(cd_west_lx5, r = 0)
   for (m in c("bproj", "fproj")) {
-    res <- do.call(run_intercensal, c(list(cd_west_60, method = m), dates))
-    expect_gt(res$summary$median_e0, 60, label = m)
-    expect_lt(res$summary$median_e0, 64, label = m)
+    res <- do.call(run_intercensal, c(list(stationary, method = m), dates))
+    expect_lt(abs(res$summary$median_e0 - 60), 0.05, label = m)
+    growing <- do.call(run_intercensal, c(list(cd_west_60, method = m), dates))
+    expect_gt(growing$summary$median_e0, 60, label = m)
+    expect_lt(growing$summary$median_e0, 64, label = m)
   }
 })
 
@@ -114,9 +119,18 @@ test_that("the Spectrum HIV life tables recover a known HIV level (inputs as pro
   # Without HIV the same populations give a different (wrong) pattern
   plain <- run_intercensal(pops, date1 = 2000, date2 = 2010)
   expect_gt(abs(plain$summary$q15_45 - true_q45), 0.02)
-  # The family is ignored with HIV, and HIV needs 1q0 and 5q0
+  # Feeney and male populations work with HIV too
+  feeney <- run_intercensal(pops, date1 = 2000, date2 = 2010, method = "feeney", q0 = 0.05, q5 = 0.08,
+                            hiv = list(prev = 0.15, art = 0.30))
+  expect_lt(abs(feeney$summary$q15_45 - true_q45), 0.005)
+  male <- run_intercensal(transform(pops, Sex = "m"), date1 = 2000, date2 = 2010, q0 = 0.05, q5 = 0.08,
+                          hiv = list(prev = 0.15, art = 0.30))
+  expect_equal(nrow(male$group_errors), 0)
+  # HIV needs 1q0 and 5q0, and MortIndEst's logit method cannot use the HIV tables
   expect_error(run_intercensal(pops, date1 = 2000, date2 = 2010, hiv = list(prev = 0.15, art = 0.3)),
                "need 1q0 and 5q0")
+  expect_error(run_intercensal(pops, date1 = 2000, date2 = 2010, method = "logit", q0 = 0.05, q5 = 0.08,
+                               hiv = list(prev = 0.15, art = 0.3)), "cannot be used with the Spectrum")
 })
 
 test_that("every method runs and the outputs have the expected shape", {
@@ -155,6 +169,11 @@ test_that("Feeney and Preston logit start from the survival-ratio level unless g
   }
   feeney <- ic_run(method = "feeney", ref_e0 = 57.5)
   expect_equal(feeney$summary$reference_e0, 57.5)
+  # A typed level is rounded to the 2.5-year grid MortIndEst uses, and shown so
+  expect_equal(ic_run(method = "feeney", ref_e0 = 57)$summary$reference_e0, 57.5)
+  expect_equal(ic_run(method = "feeney", ref_e0 = 57)$summary$median_e0, feeney$summary$median_e0)
+  expect_error(ic_run(method = "feeney", ref_e0 = 150), "between 20 and 100")
+  expect_error(ic_run(method = "logit", ref_e0 = 10), "between 20 and 100")
   direct <- direct_ic(
     panama_ic$Pop1, panama_ic$Pop2, panama_d1, panama_d2, panama_ic$Age, panama_ic$Age,
     sex = "f", mlt_family = "CD_West", method = "feeney", mlt_e0_logit_feeney = 57.5
@@ -368,6 +387,8 @@ test_that("validation messages, errors and notes are translated in French and Sp
     "Choose at least one age group for the fit", "The census dates are not valid dates",
     "Give both 1q0 and 5q0, or neither", "1q0 and 5q0 must be probabilities with 0 < 1q0 < 5q0 < 1",
     "The Spectrum HIV life tables need 1q0 and 5q0",
+    "The Preston logit method cannot be used with the Spectrum HIV life tables. Choose another method.",
+    "The reference e0 must be between 20 and 100",
     "The accepted range of life expectancy must have a lower limit below the upper limit"
   )
   notes <- unique(c(ic_run()$notes$note, ic_run(e0_accept = c(50, 60))$notes$note,
@@ -469,8 +490,8 @@ test_that("controls overridden by the data are not used", {
   expect_true(intercensal_settings_changed(with_q, modifyList(cleared, list(method = "match", sex = "female",
     date1 = panama_exact1, date2 = panama_exact2, ages_fit = seq(10, 70, 5), family = "CD_West"))))
   expect_null(intercensal_control_values(list(), panama_ic)$q_given)
-  # An impossible date gives no date (the run then asks for one)
-  expect_null(intercensal_control_values(modifyList(input, list(date1_month = "2", date1_day = 30)), panama_ic)$date1)
+  # An impossible date is NA, so the run can say it is not valid
+  expect_true(is.na(intercensal_control_values(modifyList(input, list(date1_month = "2", date1_day = 30)), panama_ic)$date1))
 })
 
 test_that("bundled samples pass validation and run", {

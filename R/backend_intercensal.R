@@ -508,8 +508,12 @@ intercensal_estimate_group <- function(df, method, family, sex, date1, date2,
     if (method %in% INTERCENSAL_REFERENCE_METHODS) {
       reference <- ref_e0 %||% {
         m <- intercensal_call(modifyList(args, list(method = "match")), use_hiv)$res
-        round(m$selected_level$median_e0[1] / 2.5) * 2.5
+        m$selected_level$median_e0[1]
       }
+      # MortIndEst rounds the model life tables' level to 2.5 years; rounding
+      # here shows the level that was actually used (the Spectrum tables use
+      # the nearest of their own levels instead)
+      if (!use_hiv) reference <- round(reference / 2.5) * 2.5
       args$mlt_e0_logit_feeney <- reference
     }
     args$method <- method
@@ -676,6 +680,13 @@ run_intercensal <- function(data,
   }
   if (!is.null(hiv) && is.null(q5)) {
     stop("The Spectrum HIV life tables need 1q0 and 5q0")
+  }
+  # MortIndEst's logit method only knows the model life table families
+  if (!is.null(hiv) && identical(method, "logit")) {
+    stop("The Preston logit method cannot be used with the Spectrum HIV life tables. Choose another method.")
+  }
+  if (!is.null(ref_e0) && (!is.finite(ref_e0) || ref_e0 < 20 || ref_e0 > 100)) {
+    stop("The reference e0 must be between 20 and 100")
   }
 
   data <- prepare_intercensal_input(data)

@@ -359,17 +359,23 @@ needs the T1 layer. Commits: `d95005c` (backend), `806214c` (module), `4a9f7fb` 
   - survival ratios without ages 10, 20, 35, 55 and 65: mean 58.2 (Manual level 16.1, e0 57.75).
 - Synthetic stable populations from CD West female e0 = 60:
   - survival ratios recover 60.0; variable-r and Feeney within 0.5;
-  - forward and back projection come out about 1.9 and 3.5 higher (see the issues below).
+  - with no growth, forward and back projection also give 60.0;
+  - with 2% growth they come out about 1.9 and 3.5 higher (see the issues below).
 - Synthetic Spectrum HIV population: the HIV option recovers e0 and 45q15 exactly.
+  - This test checks the wiring; the evidence on units is in the HIV issue below.
+  - HIV works with survival ratios, the projections, variable-r and Feeney, and with males.
+  - The app refuses Preston logit with HIV (see the issues below).
 - Japan Feeney example (snapshot): 72.7.
 
 **Tests**
-- Unit tests: `tests/testthat/test-intercensal.R` (23 tests; full suite 130 tests, 807 expectations, 0 failures, plus the 1 golem test that was already skipped).
+- Unit tests: `tests/testthat/test-intercensal.R` (23 tests; full suite 130 tests, 816 expectations, 0 failures, plus the 1 golem test that was already skipped).
 - Chrome e2e, with every UI table compared to the backend:
   - both samples and all six methods;
   - reference e0 (default and typed); All families (9 rows); the Manual X age selection; dates typed in the
     controls;
-  - synthetic HIV upload; HIV without 1q0/5q0 (error shown);
+  - synthetic HIV upload; HIV without 1q0/5q0 and HIV with logit (errors shown);
+  - male via the Sex control; e0 range 50-60 (clamped note; out-of-range error); 30 February (invalid date);
+  - installed package in a clean R session; browser console (only the known language-switch error);
   - two sexes grouped by Sex, with single and all-groups ZIPs;
   - invalid files (two sexes not grouped, Date1 only);
   - FR and ES (switched live on results); navigation between modules.
@@ -381,13 +387,21 @@ needs the T1 layer. Commits: `d95005c` (backend), `806214c` (module), `4a9f7fb` 
 - Feeney and logit crash when `mlt_e0_logit_feeney` is `NULL` (`round(NULL / 2.5) * 2.5` is `numeric(0)`, not
   `NULL`). The app passes the survival-ratio level.
 - In the logit method, the e5 limit `min(max(e5_hat, range[2]), range[2])` always returns the upper limit.
-- On exact stable populations, forward and back projection are biased upwards (1.9 and 3.5 years of e0) while the
-  survival ratios are exact. Possibly the open age group.
+- Question for Ivan: on stable populations growing at 2%, forward and back projection give e0 1.9 and 3.5 years
+  above the true 60. Survival ratios are exact, and so are both projections with no growth.
+  - The projections compare populations cumulated from the open group with stationary survival ratios, so this
+    may be expected under growth, or an artefact of how the test populations were built.
+- Preston logit with the Spectrum HIV tables always fails: the logit branch passes "HIVSpectrum" to
+  `intercensal_surv_Preston_logit_var_r()`, whose `match.arg` only accepts the nine families. The app refuses this
+  combination with a message.
+- A reference level outside the tables (e.g. 150 or 10) fails inside `purrr::accumulate`. The app accepts 20-100
+  and rounds to 2.5 years, the grid MortIndEst uses, so the summary shows the level actually used.
 - **HIV units:** `predictNQX()` (the Spectrum SVD-comp models) was fitted on percentages.
   - Its prevalence knots go up to 12.8 and its ART knots up to 90.5.
   - But `intercensal_survival()`, `orphanhood_one()` and the Masquelier-Timaeus code pass prevalence and ART as
     proportions; the orphanhood docs even say "must be proportions".
-  - With 0.05 for 5%, the life tables barely change (e0 51.62 against 51.64 with no HIV; with 5: 49.57).
+  - With 0.05 for 5%, the life tables barely change: e0 51.62 against 51.64 with no HIV, and 49.57 with 5 (for
+    5q0 0.08, ART 0.1 or 10).
   - The intercensal wrapper multiplies by 100. **The deployed orphanhood "Spectrum life tables" option passes
     proportions, so it shows almost no HIV effect.** Not changed yet: to fix in MortIndEst or in both wrappers
     once Ivan confirms.

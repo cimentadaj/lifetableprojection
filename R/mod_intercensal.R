@@ -278,7 +278,10 @@ intercensal_optional <- function(x) {
 }
 
 
-#' Census date set in the controls, as a decimal year (`NULL` if invalid)
+#' Census date set in the controls, as a decimal year
+#'
+#' `NULL` while the controls are not rendered, `NA` for an impossible date
+#' (e.g. 30 February), so the run can say the date is not valid.
 #' @noRd
 intercensal_control_date <- function(year, month, day) {
   if (is.null(year) || is.null(month) || is.null(day)) {
@@ -286,7 +289,7 @@ intercensal_control_date <- function(year, month, day) {
   }
   # Not rounded here, so the settings show the date entered; the estimation
   # rounds it to two decimals, as intercensal_survival() does with text dates
-  tryCatch(intercensal_decimal_date(year, month, day), error = function(e) NULL)
+  tryCatch(intercensal_decimal_date(year, month, day), error = function(e) NA_real_)
 }
 
 
@@ -1030,6 +1033,9 @@ intercensal_module_server <- function(input, output, session) {
       data_full <- shiny::isolate(shared$data())
       if (is.null(data_full) || nrow(data_full) == 0) {
         return(list(error = i18n$t("No data available")))
+      }
+      if (any(is.na(c(params$date1, params$date2)))) {
+        return(list(error = i18n$t("The census dates are not valid dates")))
       }
       if (!is.null(params$hiv) && (is.null(params$hiv$prev) || is.null(params$hiv$art) ||
                                      params$hiv$prev < 0 || params$hiv$prev > 1 ||

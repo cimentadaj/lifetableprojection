@@ -4109,6 +4109,16 @@
             "en": "Sex column of your data",
             "fr": "Colonne Sex de vos données",
             "es": "Columna Sex de sus datos"
+        },
+        {
+            "en": "The Preston logit method cannot be used with the Spectrum HIV life tables. Choose another method.",
+            "fr": "La méthode logit de Preston ne peut pas être utilisée avec les tables VIH de Spectrum. Choisissez une autre méthode.",
+            "es": "El método logit de Preston no puede usarse con las tablas de VIH de Spectrum. Elija otro método."
+        },
+        {
+            "en": "The reference e0 must be between 20 and 100",
+            "fr": "L'e0 de référence doit être compris entre 20 et 100",
+            "es": "El e0 de referencia debe estar entre 20 y 100"
         }
     ]
 }
