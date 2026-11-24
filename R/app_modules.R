@@ -92,6 +92,17 @@ get_app_modules <- function(i18n) {
       status_label = i18n$t("Active"),
       ui = intercensal_module_ui(i18n),
       server_fun = intercensal_module_server
+    ),
+    mlt = list(
+      id = "mlt",
+      name = i18n$t("Model Life Tables"),
+      description = i18n$t("Build Coale-Demeny and UN model life tables from e0, child or adult mortality."),
+      icon = "table",
+      status = "active",
+      button_label = i18n$t("Go to module"),
+      status_label = i18n$t("Active"),
+      ui = mlt_module_ui(i18n),
+      server_fun = mlt_module_server
     )
   )
 }

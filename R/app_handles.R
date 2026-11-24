@@ -189,6 +189,29 @@ handle_transitions <- function(input, current_tab) {
     current_tab("module_landing")
   })
 
+  observeEvent(input$goto_mlt, {
+    hide("module_landing_page")
+    hide("lifetable_landing_page")
+    hide("landing_page")
+    hide("step_adjustment")
+    hide("step_input")
+    hide("heaping_module_page")
+    hide("smoothing_module_page")
+    hide("graduation_module_page")
+    hide("odap_module_page")
+    hide("childmort_module_page")
+    hide("orphanhood_module_page")
+    hide("intercensal_module_page")
+    show("mlt_module_page")
+    current_tab("mlt")
+  })
+
+  observeEvent(input$mlt_back_to_modules, {
+    hide("mlt_module_page")
+    show("module_landing_page")
+    current_tab("module_landing")
+  })
+
   # Documentation navigation
   observeEvent(input$show_documentation, {
     hide("module_landing_page")

@@ -92,6 +92,9 @@ app_ui <- function(request) {
     if (mod_id == "intercensal") {
       return(uiOutput("intercensal_module_card"))
     }
+    if (mod_id == "mlt") {
+      return(uiOutput("mlt_module_card"))
+    }
 
     # Keep other cards static
     if (identical(mod$status, "active")) {

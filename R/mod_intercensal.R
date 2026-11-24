@@ -523,6 +523,11 @@ intercensal_module_server <- function(input, output, session) {
         has_dates <- all(c("Date1", "Date2") %in% names(prepared))
         has_sex <- "Sex" %in% names(prepared)
         ages <- sort(unique(intercensal_num(prepared$Age)))
+        # Before any data is loaded there is nothing to choose from (and
+        # paste0() on no ages would give one label for zero choices)
+        if (length(ages) == 0) {
+          return(NULL)
+        }
         fit_choices <- if (length(ages) > 1) ages[-length(ages)] else ages
         fit_selected <- shiny::isolate(input$ages_fit)
         if (is.null(fit_selected) || !all(as.numeric(fit_selected) %in% fit_choices)) {

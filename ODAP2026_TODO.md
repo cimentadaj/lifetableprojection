@@ -438,8 +438,69 @@ T2–T4, run it in the deployed app, and record a GIF and a short write-up. This
 ## T7–T9: Model life tables (Task 2)
 - T7: empirical relational (Brass logit with a user-supplied standard), fitted to user data. Outputs a full life table.
 - T8: classic systems: Coale-Demeny (N/S/E/W) and UN (Latin, Chilean, South Asian, Far East Asian, General)
-  by e0 or a child/adult mortality index. **Blocked on Patrick** getting Sarah's model life table code released
-  (Oct 5 action item). Fallback: `IvanWilli/MortpakAbacusLegacyMLT`.
+  by e0 or a child/adult mortality index. Sara's code is `sarahertog/MortpakAbacusLegacyMLT` (Patrick sent the link
+  on 9 Nov 2026).
+
+**T8 status (24 Nov 2026): MATCH and COMBIN built and tested on branch `dev/mlt-module`. Not pushed or deployed.**
+
+**Code**
+- Sara's repo is not an R package and has no licence file. With Jorge's OK, the three functions used are copied into
+  `R/vendor_mortpak_mlt.R`, with attribution and commit `7f23b71`: MATCH, COMBIN and BESTFT, single-age versions.
+  Only their roxygen headers are changed, into plain comments. Tell Sara and Patrick in the next email.
+- Wrapper: `R/backend_mlt.R`. `mlt_table()` builds one table; `run_mlt()` builds one table per input row.
+- Inputs:
+  - MATCH: e0, 1q0, 5q0, 45q15 or 35q15;
+  - COMBIN: 1q0 and/or 5q0 with 45q15 or 35q15;
+  - the 9 MortCast families, female or male, open age 85–130.
+- Outputs: the single-age table (MortCast `MLT1Ylookup`), the abridged one derived with
+  `DemoTools::lt_single2abridged()`, and the indicators achieved.
+- Checks: values outside a family's range are refused with the range; so are both sexes and inconsistent COMBIN
+  inputs.
+- `MortCast (>= 2.8.0)` in DESCRIPTION.
+
+**Module**
+- `R/mod_mlt.R`. No file upload (Jorge's call): the tables to build are typed or pasted into an editable table, as in
+  demographydash. One row per table (Name, Sex dropdown, values); right-click to add or remove rows.
+- Results:
+  - summary of the values asked for and those achieved;
+  - chart of m(x) or q(x) on a log scale, or l(x);
+  - single-age or abridged table per row;
+  - a message listing rows that could not be built;
+  - ZIP download.
+- About 50 EN/FR/ES strings.
+
+**Tests**
+- `tests/testthat/test-mlt.R` (16 tests). Full suite: 146 tests, 917 expectations, 0 failures.
+- Self-consistency checks:
+  - MATCH on a level's own 5q0 returns that level's m(x) exactly;
+  - MATCH via e0, 5q0 and 45q15 agree within 0.15 of e0;
+  - COMBIN fed a MATCH table's values rebuilds it within 0.05 of e0;
+  - every indicator is reached within 0.001 (0.1 for e0);
+  - COMBIN 5q0 is within 0.0005.
+- **These are not a Mortpak validation:** MATCH and COMBIN outputs from Mortpak are still needed (T10).
+- Chrome e2e:
+  - MATCH, COMBIN, indicator change (names and sexes kept, values reset);
+  - row added with the right-click menu; an out-of-range row is reported;
+  - table and age selectors; chart measures; open age 100; ZIP contents;
+  - FR and ES, including the sex dropdown read back in Spanish;
+  - every UI table checked against the backend;
+  - no new console errors.
+
+**Not in this version**
+- BESTFT as its own method (needs observed qx by age).
+- HIV tables (T9).
+- Log-quad and MortCast e0 projections.
+- Brass relational (T7).
+
+**Issues in Sara's code, worked around here**
+- `lt_model_cdun_combin()` (abridged) calls `lt_model_un_bestft(sex = ...)`, but the argument is `Sex`, so it always
+  fails.
+- `lt_model_un_bestft(lt_compute = TRUE)` fails with the current DemoTools (`all(extrapFit %in% Age)`). COMBIN only
+  uses `lt_compute = FALSE`.
+- MATCH extrapolates without warning above the highest level and fails below the lowest. The wrapper checks the
+  range first.
+- The single-age functions take `Sex` "m" or "f" only. The documented "b" gives an empty lookup.
+- The abridged MATCH calls `require(MortCast)`, which changes the search path. The app does not use it.
 - T9: HIV- and treatment-adjusted variants (inputs: prevalence, ART coverage). Depends on T8.
 
 ## T10: Checks against reference implementations

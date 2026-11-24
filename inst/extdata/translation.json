@@ -4119,6 +4119,236 @@
             "en": "The reference e0 must be between 20 and 100",
             "fr": "L'e0 de référence doit être compris entre 20 et 100",
             "es": "El e0 de referencia debe estar entre 20 y 100"
+        },
+        {
+            "en": "Model Life Tables",
+            "fr": "Tables types de mortalité",
+            "es": "Tablas modelo de mortalidad"
+        },
+        {
+            "en": "Build Coale-Demeny and UN model life tables from e0, child or adult mortality.",
+            "fr": "Construire des tables types de mortalité de Coale-Demeny et des Nations Unies à partir de e0 ou de la mortalité des enfants ou des adultes.",
+            "es": "Construir tablas modelo de mortalidad de Coale-Demeny y de las Naciones Unidas a partir de e0 o de la mortalidad en la niñez o adulta."
+        },
+        {
+            "en": "Build Coale-Demeny and United Nations model life tables from one mortality indicator, or from child and adult mortality, as MortPak's MATCH and COMBIN do.",
+            "fr": "Construire des tables types de mortalité de Coale-Demeny et des Nations Unies à partir d'un indicateur de mortalité, ou de la mortalité des enfants et des adultes, comme le font MATCH et COMBIN dans MortPak.",
+            "es": "Construir tablas modelo de mortalidad de Coale-Demeny y de las Naciones Unidas a partir de un indicador de mortalidad, o de la mortalidad en la niñez y adulta, como hacen MATCH y COMBIN en MortPak."
+        },
+        {
+            "en": "How it works",
+            "fr": "Fonctionnement",
+            "es": "Cómo funciona"
+        },
+        {
+            "en": "Choose the method, the model life table family and the indicator on the left.",
+            "fr": "Choisissez à gauche la méthode, la famille de tables types et l'indicateur.",
+            "es": "Elija a la izquierda el método, la familia de tablas modelo y el indicador."
+        },
+        {
+            "en": "Type the life tables to build in the table: one row per life table, with a name, the sex and the value(s). You can paste rows from a spreadsheet, and right-click the table to add or remove rows.",
+            "fr": "Saisissez les tables à construire dans le tableau : une ligne par table, avec un nom, le sexe et la ou les valeurs. Vous pouvez coller des lignes depuis un tableur, et faire un clic droit sur le tableau pour ajouter ou supprimer des lignes.",
+            "es": "Escriba en la tabla las tablas de vida que quiere construir: una fila por tabla, con un nombre, el sexo y el valor o los valores. Puede pegar filas desde una hoja de cálculo y hacer clic derecho en la tabla para añadir o eliminar filas."
+        },
+        {
+            "en": "Click 'Build life tables'. Each table is built by single year of age, with its abridged version, and can be downloaded.",
+            "fr": "Cliquez sur 'Construire les tables'. Chaque table est construite par année d'âge, avec sa version abrégée, et peut être téléchargée.",
+            "es": "Haga clic en 'Construir las tablas'. Cada tabla se construye por edad simple, con su versión abreviada, y puede descargarse."
+        },
+        {
+            "en": "Probabilities of dying (1q0, 5q0, 45q15, 35q15) are proportions, e.g. 0.05. The tables are by sex: there is no both-sexes table.",
+            "fr": "Les probabilités de décéder (1q0, 5q0, 45q15, 35q15) sont des proportions, p. ex. 0.05. Les tables sont par sexe : il n'y a pas de table pour les deux sexes.",
+            "es": "Las probabilidades de morir (1q0, 5q0, 45q15, 35q15) son proporciones, p. ej. 0.05. Las tablas son por sexo: no hay tabla de ambos sexos."
+        },
+        {
+            "en": "Model life tables",
+            "fr": "Tables types de mortalité",
+            "es": "Tablas modelo de mortalidad"
+        },
+        {
+            "en": "Model life tables describe typical age patterns of mortality at each level of mortality. The Coale-Demeny families (West, North, South, East) and the United Nations families for developing countries (General, Latin American, Chilean, South Asian, Far East Asian) are those of MortPak, extended to high life expectancies and graduated to single years of age (MortCast).",
+            "fr": "Les tables types décrivent des profils de mortalité par âge typiques pour chaque niveau de mortalité. Les familles de Coale-Demeny (Ouest, Nord, Sud, Est) et les familles des Nations Unies pour les pays en développement (Générale, Latino-américaine, Chilienne, Asie du Sud, Extrême-Orient) sont celles de MortPak, étendues aux espérances de vie élevées et graduées par année d'âge (MortCast).",
+            "es": "Las tablas modelo describen patrones típicos de mortalidad por edad para cada nivel de mortalidad. Las familias de Coale-Demeny (Oeste, Norte, Sur, Este) y las familias de las Naciones Unidas para países en desarrollo (General, Latinoamericana, Chilena, Asia del Sur, Lejano Oriente) son las de MortPak, extendidas a esperanzas de vida altas y graduadas por edad simple (MortCast)."
+        },
+        {
+            "en": "Finds the two levels of the family whose indicator (e0, 1q0, 5q0, 45q15 or 35q15) brackets the value given and interpolates their death rates on a log scale.",
+            "fr": "Trouve les deux niveaux de la famille dont l'indicateur (e0, 1q0, 5q0, 45q15 ou 35q15) encadre la valeur donnée et interpole leurs taux de mortalité sur une échelle logarithmique.",
+            "es": "Busca los dos niveles de la familia cuyo indicador (e0, 1q0, 5q0, 45q15 o 35q15) rodea el valor dado e interpola sus tasas de mortalidad en escala logarítmica."
+        },
+        {
+            "en": "Combines child mortality (1q0, 5q0 or both) with adult mortality (45q15 or 35q15): the adult ages come from the table matching the adult value, and ages 0-14 are fitted to the child values with MortPak's BESTFT procedure.",
+            "fr": "Combine la mortalité des enfants (1q0, 5q0 ou les deux) avec la mortalité adulte (45q15 ou 35q15) : les âges adultes proviennent de la table correspondant à la valeur adulte, et les âges 0-14 sont ajustés aux valeurs des enfants avec la procédure BESTFT de MortPak.",
+            "es": "Combina la mortalidad en la niñez (1q0, 5q0 o ambos) con la mortalidad adulta (45q15 o 35q15): las edades adultas provienen de la tabla que corresponde al valor adulto, y las edades 0-14 se ajustan a los valores de la niñez con el procedimiento BESTFT de MortPak."
+        },
+        {
+            "en": "The summary shows each table's e0, 1q0, 5q0, 45q15 and 35q15. They can differ slightly from the values given, because levels are interpolated and the tables are graduated to single years of age.",
+            "fr": "Le résumé montre les e0, 1q0, 5q0, 45q15 et 35q15 de chaque table. Ils peuvent différer légèrement des valeurs données, car les niveaux sont interpolés et les tables graduées par année d'âge.",
+            "es": "El resumen muestra e0, 1q0, 5q0, 45q15 y 35q15 de cada tabla. Pueden diferir ligeramente de los valores dados, porque los niveles se interpolan y las tablas se gradúan por edad simple."
+        },
+        {
+            "en": "The abridged table (0, 1-4, 5-9, ...) is computed from the single-age table, so both describe the same mortality.",
+            "fr": "La table abrégée (0, 1-4, 5-9, ...) est calculée à partir de la table par année d'âge : les deux décrivent donc la même mortalité.",
+            "es": "La tabla abreviada (0, 1-4, 5-9, ...) se calcula a partir de la tabla por edad simple, por lo que ambas describen la misma mortalidad."
+        },
+        {
+            "en": "Open age group",
+            "fr": "Groupe d'âges ouvert",
+            "es": "Grupo de edad abierto"
+        },
+        {
+            "en": "Adult mortality indicator",
+            "fr": "Indicateur de mortalité adulte",
+            "es": "Indicador de mortalidad adulta"
+        },
+        {
+            "en": "Indicator",
+            "fr": "Indicateur",
+            "es": "Indicador"
+        },
+        {
+            "en": "Build life tables",
+            "fr": "Construire les tables",
+            "es": "Construir las tablas"
+        },
+        {
+            "en": "Life tables to build",
+            "fr": "Tables à construire",
+            "es": "Tablas que construir"
+        },
+        {
+            "en": "Name",
+            "fr": "Nom",
+            "es": "Nombre"
+        },
+        {
+            "en": "One row per life table. Paste from a spreadsheet or right-click to add and remove rows. Probabilities are proportions (e.g. 0.05).",
+            "fr": "Une ligne par table. Collez depuis un tableur ou faites un clic droit pour ajouter et supprimer des lignes. Les probabilités sont des proportions (p. ex. 0.05).",
+            "es": "Una fila por tabla. Pegue desde una hoja de cálculo o haga clic derecho para añadir y eliminar filas. Las probabilidades son proporciones (p. ej. 0.05)."
+        },
+        {
+            "en": "The settings or the table have changed. Click 'Build life tables' to update the results.",
+            "fr": "Les paramètres ou le tableau ont changé. Cliquez sur 'Construire les tables' pour mettre à jour les résultats.",
+            "es": "La configuración o la tabla han cambiado. Haga clic en 'Construir las tablas' para actualizar los resultados."
+        },
+        {
+            "en": "The open age group must be between 85 and 130",
+            "fr": "Le groupe d'âges ouvert doit être compris entre 85 et 130",
+            "es": "El grupo de edad abierto debe estar entre 85 y 130"
+        },
+        {
+            "en": "None of the life tables could be built; see the messages below.",
+            "fr": "Aucune table n'a pu être construite ; voir les messages ci-dessous.",
+            "es": "No se pudo construir ninguna tabla; vea los mensajes más abajo."
+        },
+        {
+            "en": "Values given",
+            "fr": "Valeurs données",
+            "es": "Valores dados"
+        },
+        {
+            "en": "Life table",
+            "fr": "Table de mortalité",
+            "es": "Tabla de vida"
+        },
+        {
+            "en": "Ages",
+            "fr": "Âges",
+            "es": "Edades"
+        },
+        {
+            "en": "Single years",
+            "fr": "Années d'âge",
+            "es": "Edades simples"
+        },
+        {
+            "en": "Abridged (0, 1-4, 5-9, ...)",
+            "fr": "Abrégée (0, 1-4, 5-9, ...)",
+            "es": "Abreviada (0, 1-4, 5-9, ...)"
+        },
+        {
+            "en": "Some life tables could not be built",
+            "fr": "Certaines tables n'ont pas pu être construites",
+            "es": "Algunas tablas no pudieron construirse"
+        },
+        {
+            "en": "One indicator (MATCH)",
+            "fr": "Un indicateur (MATCH)",
+            "es": "Un indicador (MATCH)"
+        },
+        {
+            "en": "Child and adult mortality (COMBIN)",
+            "fr": "Mortalité des enfants et des adultes (COMBIN)",
+            "es": "Mortalidad en la niñez y adulta (COMBIN)"
+        },
+        {
+            "en": "Life expectancy at birth, e0",
+            "fr": "Espérance de vie à la naissance, e0",
+            "es": "Esperanza de vida al nacer, e0"
+        },
+        {
+            "en": "Adult mortality, 45q15",
+            "fr": "Mortalité adulte, 45q15",
+            "es": "Mortalidad adulta, 45q15"
+        },
+        {
+            "en": "Adult mortality, 35q15",
+            "fr": "Mortalité adulte, 35q15",
+            "es": "Mortalidad adulta, 35q15"
+        },
+        {
+            "en": "Death rate, m(x) (log scale)",
+            "fr": "Taux de mortalité, m(x) (échelle logarithmique)",
+            "es": "Tasa de mortalidad, m(x) (escala logarítmica)"
+        },
+        {
+            "en": "Probability of dying, q(x) (log scale)",
+            "fr": "Probabilité de décéder, q(x) (échelle logarithmique)",
+            "es": "Probabilidad de morir, q(x) (escala logarítmica)"
+        },
+        {
+            "en": "Survivors, l(x)",
+            "fr": "Survivants, l(x)",
+            "es": "Sobrevivientes, l(x)"
+        },
+        {
+            "en": "Sex must be Female or Male",
+            "fr": "Le sexe doit être Femme ou Homme",
+            "es": "El sexo debe ser Mujer u Hombre"
+        },
+        {
+            "en": "Add at least one life table to the table",
+            "fr": "Ajoutez au moins une table au tableau",
+            "es": "Añada al menos una tabla a la tabla"
+        },
+        {
+            "en": "Give 1q0, 5q0 or both",
+            "fr": "Indiquez 1q0, 5q0 ou les deux",
+            "es": "Indique 1q0, 5q0 o ambos"
+        },
+        {
+            "en": "1q0 must be lower than 5q0",
+            "fr": "1q0 doit être inférieur à 5q0",
+            "es": "1q0 debe ser menor que 5q0"
+        },
+        {
+            "en": "The adult mortality indicator should be 45q15 or 35q15",
+            "fr": "L'indicateur de mortalité adulte doit être 45q15 ou 35q15",
+            "es": "El indicador de mortalidad adulta debe ser 45q15 o 35q15"
+        },
+        {
+            "en": "The values given do not fit together: they give a life table with probabilities of dying outside 0-1. Check that the child and adult mortality values are consistent",
+            "fr": "Les valeurs données ne sont pas cohérentes : elles donnent une table avec des probabilités de décéder hors de 0-1. Vérifiez que les valeurs de mortalité des enfants et des adultes sont cohérentes",
+            "es": "Los valores dados no encajan: dan una tabla con probabilidades de morir fuera de 0-1. Compruebe que los valores de mortalidad en la niñez y adulta son coherentes"
+        },
+        {
+            "en": "%s = %s is outside the range of this model life table family for this sex (%s to %s)",
+            "fr": "%s = %s sort de la plage de cette famille de tables types pour ce sexe (%s à %s)",
+            "es": "%s = %s queda fuera del rango de esta familia de tablas modelo para este sexo (%s a %s)"
+        },
+        {
+            "en": "A value of %s is required",
+            "fr": "Une valeur de %s est obligatoire",
+            "es": "Se necesita un valor de %s"
         }
     ]
 }
