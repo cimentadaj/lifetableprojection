@@ -3589,6 +3589,11 @@
             "en": "Date must be a single decimal year (for example 1976.5) in each group",
             "fr": "Date doit être une seule année décimale (par exemple 1976.5) dans chaque groupe",
             "es": "Date debe ser un único año decimal (por ejemplo 1976.5) en cada grupo"
+        },
+        {
+            "en": "Taken from your data",
+            "fr": "Tirée de vos données",
+            "es": "Tomada de sus datos"
         }
     ]
 }

@@ -157,6 +157,11 @@ test_that("validation flags children dead above children ever born", {
   bad$CD[4] <- bad$CEB[4] + 1
   expect_true("check children dead within children ever born" %in%
                 failed_checks(check_data_childmort(bad)))
+  # PropDead above 1 gets only its own message, not a second one about CD
+  pd <- data.frame(Age = panama$Age, CEB = 1:7 / 2, PropDead = c(0.1, 5, rep(0.1, 5)))
+  failed <- failed_checks(check_data_childmort(pd))
+  expect_true("check PropDead" %in% failed)
+  expect_false("check children dead within children ever born" %in% failed)
 })
 
 test_that("validation flags non-positive women and negative children", {
@@ -414,7 +419,7 @@ test_that("settings summary lists what the run used", {
                       mlt_model = "all", mam = 28.5)$params
   ph_items <- childmort_settings_items(ph)
   expect_equal(ph_items$value, c("Palloni-Heligman", "All families", "Both sexes",
-                                 "Date column of your data", "28.5"))
+                                 "Taken from your data", "28.5"))
   expect_equal(ph_items$translate_value, c(FALSE, TRUE, TRUE, TRUE, FALSE))
   expect_equal(childmort_settings_items(run_childmort(panama, date_obs = 1976.5)$params)$value[4], "1976.5")
 })

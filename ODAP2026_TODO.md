@@ -117,6 +117,37 @@ The error contract is unchanged until Ivan and Roy decide.
 - Follow-ups (4 Nov 2026): a "Results for: …" line above the chart, a warning when the controls no longer match the
   shown results, and a hint that the model life table sex only changes the implied e0 (`73be953`).
 
+**v2 (24 Nov 2026), on branch `dev/childmort-v2`:** rebuilt on Ivan's updated `childmort_brass()` (MortIndEst `be1d88b`,
+pinned in `DESCRIPTION` so later MortIndEst changes can't break the deployed app). Covers Patrick's 23 Nov requests:
+- The five Mortpak QFIVE input types: counts with a `Women` column (two of CEB, CD, CS), or averages per woman
+  (CEB with CS or CD, or CEB with `PropDead`).
+- Date of observation as Year + Month (day 1, via `DemoTools::dec.date`), from the controls or from `Date` /
+  `Year` + `Month` columns.
+- Sex: both sexes (default), female or male.
+- Mortpak-style results: 1q0, 4q1, 5q0 and e0 of the matching model life table for each estimate, with a chart
+  selector for the indicator. An "All families" option shows every family of the multiplier variant.
+- MAC is asked for with Palloni-Heligman only, the one variant whose `childmort_brass()` code uses `mam`.
+- Three samples: Panama (Manual X), the Mortpak QFIVE template and Malawi 2008 (IUSSP).
+- Unit tests: 36 child mortality tests, covering the three references, the five input types, the new validation
+  checks, sex, dates and All families. Full suite: 107 tests, 581 expectations, 0 failures, plus the 1 golem test
+  that was already skipped.
+- Chrome e2e (24 Nov 2026), with every UI table compared to the backend to 4 decimals:
+  - the three samples;
+  - sex, Palloni-Heligman (Latin, MAC 30) and All families (28 rows);
+  - uploads with PropDead, CEB+CD averages and CS+CD counts, plus Year/Month controls (a month change shifts dates by 0.5);
+  - a two-country grouped upload with single and all-groups ZIPs;
+  - validation messages (counts without Women, CEB ≠ CD+CS, PropDead as a percentage);
+  - FR and ES.
+
+  Fixed during that pass:
+  - PropDead above 1 also raised "Children dead cannot exceed children ever born";
+  - "Results for" said "Date column of your data" when the data had Year and Month columns.
+- Still blocked on Ivan: a sex ratio at birth argument. MortIndEst's both-sex tables use 1.04; Patrick asks for a
+  user value that defaults to 1.05.
+- To report to Ivan: `childmort_brass()` calls ggplot2 and dplyr functions unqualified and reads the `modelLTx1_both`
+  and `mods.r` data without importing them. It only runs with MortIndEst and ggplot2 attached, which the app does
+  around each call with `with_mortindest_deps()`.
+
 **Why first:** smallest backend (148 lines, one census, no HIV or two-census logic), and it has a
 built-in check: the roxygen example must reproduce **UN Manual X Table 53 (Panama 1976)** to 4 decimal places.
 The Oct 5 action items also assigned it to Jorge (child mortality module architecture, then an early result to Yvonne).
@@ -330,6 +361,14 @@ for stress tests (Oct 5 action item).
 Trussell / West), reproduced to 4 decimals in `test-childmort.R`. That is not a Mortpak comparison:
 we have no Mortpak (CEBCD) or Division R outputs yet, and no Palloni-Heligman reference values.
 Needed from Ivan / Patrick: Mortpak outputs for a few CEB/CD datasets, including at least one Palloni-Heligman case.
+
+**Child mortality update (24 Nov 2026):** two more references come from Ivan's `childmort_brass()` examples, both in `test-childmort.R`:
+- Mortpak QFIVE template (Palloni-Heligman, Latin, MAC 26, averages per woman, both sexes): 1q0 within 0.0005 and
+  reference dates within 0.1 of the Mortpak output.
+- IUSSP Malawi 2008 (Trussell, North): reference dates within 0.02. 1q0 is within 0.015, because IUSSP adjusts the
+  logit intercept instead of interpolating between model life table levels (documented in MortIndEst).
+
+Manual X Table 53 is still reproduced exactly.
 
 **Orphanhood status (9 Nov 2026):** the references so far are the IUSSP spreadsheet values for Iraq 1997 (one census)
 and Kenya 1999 (HIV), both reproduced in `test-orphanhood.R`.

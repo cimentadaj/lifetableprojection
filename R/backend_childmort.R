@@ -269,11 +269,15 @@ check_childmort_group <- function(df) {
     "Children ever born and children dead cannot be negative"
   )
 
-  rows[[length(rows) + 1]] <- childmort_check_row(
-    "check children dead within children ever born",
-    any(!is.na(ceb) & !is.na(cd) & cd > ceb),
-    "Children dead cannot exceed children ever born"
-  )
+  # With PropDead, children dead are derived from it: the PropDead check below
+  # already covers values above 1, so this one would only repeat it
+  if (!"PropDead" %in% type$columns) {
+    rows[[length(rows) + 1]] <- childmort_check_row(
+      "check children dead within children ever born",
+      any(!is.na(ceb) & !is.na(cd) & cd > ceb),
+      "Children dead cannot exceed children ever born"
+    )
+  }
 
   if ("PropDead" %in% type$columns) {
     pd <- childmort_num(df$PropDead)
@@ -553,7 +557,8 @@ childmort_settings_items <- function(params) {
   date_value <- if (!is.null(params$year)) {
     sprintf("%04d-%02d", as.integer(params$year), as.integer(params$month %||% 1))
   } else if (is.null(params$date_obs) || length(params$date_obs) == 0) {
-    "Date column of your data"
+    # Date column, or Year and Month columns
+    "Taken from your data"
   } else {
     format(params$date_obs)
   }
