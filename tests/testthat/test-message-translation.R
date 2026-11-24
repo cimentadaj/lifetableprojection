@@ -204,5 +204,5 @@ test_that("validation table rows are translated", {
   expect_equal(unique(fr[[3]]), c("Réussi", "Échec"))
   expect_equal(fr[[2]][1], "")
   es <- quietly(translated_validation_table(check_data_childmort(cm_panama[, 1:3]), translator("es"), CHILDMORT_MESSAGE_TEMPLATES))
-  expect_equal(es[[2]], "Faltan columnas obligatorias: CD. Incluya Age, Women, CEB y CD o CS")
+  expect_equal(es[[2]], "Faltan columnas obligatorias: CD, CS, PropDead. Incluya Age y dos de CEB, CD y CS (números absolutos con una columna Women, o promedios por mujer sin ella), o CEB y PropDead")
 })

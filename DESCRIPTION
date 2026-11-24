@@ -11,7 +11,7 @@ License: MIT + file LICENSE
 Imports:
     config,
     DT,
-    dplyr,
+    dplyr (>= 1.1.0),
     ggplot2,
     golem,
     magrittr,
@@ -49,7 +49,7 @@ Config/testthat/edition: 3
 Language: en-US
 Remotes:
     github::timriffe/ODAPbackend,
-    github::IvanWilli/MortIndEst,
+    github::IvanWilli/MortIndEst@be1d88b,
     github::timriffe/DemoToolsData,
     github::timriffe/DemoTools,
     github::cimentadaj/untheme,

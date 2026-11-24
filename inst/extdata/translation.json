@@ -2241,44 +2241,14 @@
             "es": "Age (límite inferior de los grupos quinquenales de edad de las mujeres: 15, 20, 25, 30, 35, 40, 45)"
         },
         {
-            "en": "Women (number of women in each age group)",
-            "fr": "Women (nombre de femmes dans chaque groupe d'âges)",
-            "es": "Women (número de mujeres en cada grupo de edad)"
-        },
-        {
-            "en": "CEB (children ever born to those women)",
-            "fr": "CEB (enfants nés vivants de ces femmes)",
-            "es": "CEB (hijos nacidos vivos de esas mujeres)"
-        },
-        {
-            "en": "CD (children dead) or CS (children surviving)",
-            "fr": "CD (enfants décédés) ou CS (enfants survivants)",
-            "es": "CD (hijos fallecidos) o CS (hijos sobrevivientes)"
-        },
-        {
             "en": "Optional columns:",
             "fr": "Colonnes facultatives :",
             "es": "Columnas opcionales:"
         },
         {
-            "en": "Date (date of the census or survey as a decimal year, e.g. 1976.5). If absent, set it in the analysis step.",
-            "fr": "Date (date du recensement ou de l'enquête en année décimale, par ex. 1976.5). Si elle est absente, indiquez-la à l'étape d'analyse.",
-            "es": "Date (fecha del censo o la encuesta como año decimal, p. ej. 1976.5). Si falta, indíquela en el paso de análisis."
-        },
-        {
-            "en": "Sample data: Panama 1976 survey (UN Manual X, Table 49).",
-            "fr": "Données d'exemple : enquête du Panama de 1976 (Manuel X des Nations Unies, tableau 49).",
-            "es": "Datos de ejemplo: encuesta de Panamá de 1976 (Manual X de las Naciones Unidas, cuadro 49)."
-        },
-        {
             "en": "Brass Child Mortality Method",
             "fr": "Méthode de Brass pour la mortalité des enfants",
             "es": "Método de Brass para la mortalidad en la niñez"
-        },
-        {
-            "en": "The Brass method converts the proportion of children dead among children ever born, reported by women in each five-year age group, into probabilities of dying in childhood. Women aged 15-19 give q(1), 20-24 give q(2), 25-29 give q(3), 30-34 give q(5), 35-39 give q(10), 40-44 give q(15) and 45-49 give q(20). Each estimate is located in time a number of years before the census or survey, and matched to a model life table to obtain an implied life expectancy at birth.",
-            "fr": "La méthode de Brass convertit la proportion d'enfants décédés parmi les enfants nés vivants, déclarée par les femmes de chaque groupe d'âges quinquennal, en probabilités de décéder pendant l'enfance. Les femmes de 15-19 ans donnent q(1), 20-24 ans q(2), 25-29 ans q(3), 30-34 ans q(5), 35-39 ans q(10), 40-44 ans q(15) et 45-49 ans q(20). Chaque estimation est située dans le temps un certain nombre d'années avant le recensement ou l'enquête, et associée à une table type de mortalité pour obtenir une espérance de vie à la naissance implicite.",
-            "es": "El método de Brass convierte la proporción de hijos fallecidos entre los hijos nacidos vivos, declarada por las mujeres de cada grupo quinquenal de edad, en probabilidades de morir en la niñez. Las mujeres de 15-19 años dan q(1), 20-24 años q(2), 25-29 años q(3), 30-34 años q(5), 35-39 años q(10), 40-44 años q(15) y 45-49 años q(20). Cada estimación se ubica en el tiempo un número de años antes del censo o la encuesta, y se asocia a una tabla modelo de vida para obtener una esperanza de vida al nacer implícita."
         },
         {
             "en": "Trussell multipliers use the Coale-Demeny model life table families (North, South, East, West). This is the variant recommended in UN Manual X.",
@@ -2406,11 +2376,6 @@
             "es": "Las estimaciones de las mujeres de 45-49 años (q(20)) se refieren a un período muy anterior a la encuesta y suelen estar afectadas por errores de memoria."
         },
         {
-            "en": "Some estimates fall outside the range of the model life tables; their implied life expectancy could not be computed.",
-            "fr": "Certaines estimations sortent de l'intervalle des tables types de mortalité ; leur espérance de vie implicite n'a pas pu être calculée.",
-            "es": "Algunas estimaciones quedan fuera del rango de las tablas modelo de vida; no se pudo calcular su esperanza de vida implícita."
-        },
-        {
             "en": "Age Must Contain Exactly the Seven Five-Year Groups of Women 15, 20, 25, 30, 35, 40 and 45",
             "fr": "L'âge doit contenir exactement les sept groupes quinquennaux des femmes 15, 20, 25, 30, 35, 40 et 45",
             "es": "La edad debe contener exactamente los siete grupos quinquenales de las mujeres 15, 20, 25, 30, 35, 40 y 45"
@@ -2461,11 +2426,6 @@
             "es": "Los parámetros han cambiado. Haga clic en «Estimar la mortalidad en la niñez» para actualizar los resultados."
         },
         {
-            "en": "Only changes the implied life expectancy at birth; the q(x) estimates stay the same.",
-            "fr": "Ne modifie que l'espérance de vie à la naissance implicite ; les estimations de q(x) restent les mêmes.",
-            "es": "Solo cambia la esperanza de vida al nacer implícita; las estimaciones de q(x) no cambian."
-        },
-        {
             "en": "Reading the results",
             "fr": "Lire les résultats",
             "es": "Cómo leer los resultados"
@@ -2479,16 +2439,6 @@
             "en": "Each point on the chart is an estimate of q(x), the probability of dying before age x, placed at the date it refers to. Estimates from younger women refer to more recent dates.",
             "fr": "Chaque point du graphique est une estimation de q(x), la probabilité de décéder avant l'âge x, placée à la date à laquelle elle se rapporte. Les estimations issues des femmes les plus jeunes se rapportent aux dates les plus récentes.",
             "es": "Cada punto del gráfico es una estimación de q(x), la probabilidad de morir antes de la edad x, situada en la fecha a la que se refiere. Las estimaciones de las mujeres más jóvenes se refieren a fechas más recientes."
-        },
-        {
-            "en": "The proportion of children dead drives the estimates; the multiplier variant and model life table family only adjust them slightly. The model life table sex changes only the implied life expectancy at birth.",
-            "fr": "La proportion d'enfants décédés détermine les estimations ; la variante des multiplicateurs et la famille de tables types ne les ajustent que légèrement. Le sexe de la table type ne modifie que l'espérance de vie à la naissance implicite.",
-            "es": "La proporción de hijos fallecidos determina las estimaciones; la variante de multiplicadores y la familia de tablas modelo solo las ajustan ligeramente. El sexo de la tabla modelo solo cambia la esperanza de vida al nacer implícita."
-        },
-        {
-            "en": "Implied life expectancy at birth is that of the model life table with the same q(x). It puts the estimates for different ages x on one scale, so you can read the trend over time.",
-            "fr": "L'espérance de vie à la naissance implicite est celle de la table type ayant le même q(x). Elle place les estimations des différents âges x sur une même échelle, ce qui permet de lire la tendance dans le temps.",
-            "es": "La esperanza de vida al nacer implícita es la de la tabla modelo con el mismo q(x). Pone las estimaciones de las distintas edades x en una misma escala, para poder leer la tendencia en el tiempo."
         },
         {
             "en": "Give less weight to estimates from women aged 15-19 and 20-24, which are often too high, and to those from women aged 45-49, which refer to distant dates and suffer from recall errors.",
@@ -3076,11 +3026,6 @@
             "es": "Las tablas de VIH Spectrum necesitan una columna HIVPrev (prevalencia del VIH por grupo de edad)"
         },
         {
-            "en": "Missing required columns: %s. Provide Age, Women, CEB and either CD or CS",
-            "fr": "Colonnes requises manquantes : %s. Fournissez Age, Women, CEB et soit CD, soit CS",
-            "es": "Faltan columnas obligatorias: %s. Incluya Age, Women, CEB y CD o CS"
-        },
-        {
             "en": "Columns must be numeric: %s",
             "fr": "Ces colonnes doivent être numériques : %s",
             "es": "Estas columnas deben ser numéricas: %s"
@@ -3429,6 +3374,221 @@
             "en": "Date",
             "fr": "Date",
             "es": "Fecha"
+        },
+        {
+            "en": "Counts, with a Women column (number of women): two of CEB (children ever born), CD (children dead) and CS (children surviving)",
+            "fr": "Effectifs, avec une colonne Women (nombre de femmes) : deux colonnes parmi CEB (enfants nés vivants), CD (enfants décédés) et CS (enfants survivants)",
+            "es": "Números absolutos, con una columna Women (número de mujeres): dos de CEB (hijos nacidos vivos), CD (hijos fallecidos) y CS (hijos sobrevivientes)"
+        },
+        {
+            "en": "Or averages per woman, without a Women column: CEB and CS, or CEB and PropDead (proportion of children dead)",
+            "fr": "Ou moyennes par femme, sans colonne Women : CEB et CS, ou CEB et PropDead (proportion d'enfants décédés)",
+            "es": "O promedios por mujer, sin columna Women: CEB y CS, o CEB y PropDead (proporción de hijos fallecidos)"
+        },
+        {
+            "en": "Date (decimal year, e.g. 1976.5), or Year and Month of the census or survey. If absent, set them in the analysis step.",
+            "fr": "Date (année décimale, p. ex. 1976.5), ou Year et Month du recensement ou de l'enquête. Si elles sont absentes, indiquez-les à l'étape d'analyse.",
+            "es": "Date (año decimal, p. ej. 1976.5), o Year y Month del censo o encuesta. Si no están, indíquelos en el paso de análisis."
+        },
+        {
+            "en": "Sample data: Panama 1976 survey (UN Manual X, Table 49), the Mortpak QFIVE template (averages per woman) and Malawi 2008 census (IUSSP Tools for Demographic Estimation).",
+            "fr": "Données d'exemple : enquête Panama 1976 (Manuel X des Nations Unies, tableau 49), modèle Mortpak QFIVE (moyennes par femme) et recensement Malawi 2008 (IUSSP Tools for Demographic Estimation).",
+            "es": "Datos de ejemplo: encuesta de Panamá 1976 (Manual X de las Naciones Unidas, cuadro 49), plantilla de Mortpak QFIVE (promedios por mujer) y censo de Malawi 2008 (IUSSP Tools for Demographic Estimation)."
+        },
+        {
+            "en": "The Brass method converts the proportion of children dead among children ever born, reported by women in each five-year age group, into probabilities of dying in childhood. Women aged 15-19 give q(1), 20-24 give q(2), 25-29 give q(3), 30-34 give q(5), 35-39 give q(10), 40-44 give q(15) and 45-49 give q(20). Each estimate is located in time a number of years before the census or survey, and matched to a model life table, which translates it into infant mortality (1q0), child mortality (4q1), under-five mortality (5q0) and life expectancy at birth, as in Mortpak QFIVE.",
+            "fr": "La méthode de Brass convertit la proportion d'enfants décédés parmi les enfants nés vivants, déclarée par les femmes de chaque groupe d'âges quinquennal, en probabilités de décéder dans l'enfance. Les femmes de 15-19 ans donnent q(1), 20-24 ans q(2), 25-29 ans q(3), 30-34 ans q(5), 35-39 ans q(10), 40-44 ans q(15) et 45-49 ans q(20). Chaque estimation est située dans le temps un certain nombre d'années avant le recensement ou l'enquête, et rapprochée d'une table type de mortalité qui la traduit en mortalité infantile (1q0), mortalité juvénile (4q1), mortalité des moins de cinq ans (5q0) et espérance de vie à la naissance, comme dans Mortpak QFIVE.",
+            "es": "El método de Brass convierte la proporción de hijos fallecidos entre los nacidos vivos, declarada por las mujeres de cada grupo quinquenal de edad, en probabilidades de morir en la niñez. Las mujeres de 15-19 años dan q(1), 20-24 q(2), 25-29 q(3), 30-34 q(5), 35-39 q(10), 40-44 q(15) y 45-49 q(20). Cada estimación se sitúa en el tiempo cierto número de años antes del censo o encuesta y se empareja con una tabla modelo de mortalidad, que la traduce en mortalidad infantil (1q0), mortalidad de 1 a 4 años (4q1), mortalidad de menores de cinco años (5q0) y esperanza de vida al nacer, como en Mortpak QFIVE."
+        },
+        {
+            "en": "The proportion of children dead drives the estimates; the multiplier variant and model life table family only adjust them slightly. The model life table sex does not change q(x), only the 1q0, 4q1, 5q0 and life expectancy derived from it.",
+            "fr": "La proportion d'enfants décédés détermine les estimations ; la variante de multiplicateurs et la famille de tables types ne les ajustent que légèrement. Le sexe de la table type ne modifie pas q(x), seulement les 1q0, 4q1, 5q0 et l'espérance de vie qui en sont dérivés.",
+            "es": "La proporción de hijos fallecidos determina las estimaciones; la variante de multiplicadores y la familia de tablas modelo solo las ajustan ligeramente. El sexo de la tabla modelo no cambia q(x), solo los 1q0, 4q1, 5q0 y la esperanza de vida que se derivan de ella."
+        },
+        {
+            "en": "1q0, 4q1, 5q0 and life expectancy at birth are those of the model life table with the same q(x). They put the estimates for different ages x on one scale, so you can read the trend over time.",
+            "fr": "1q0, 4q1, 5q0 et l'espérance de vie à la naissance sont ceux de la table type ayant le même q(x). Ils placent les estimations des différents âges x sur une même échelle, pour lire la tendance dans le temps.",
+            "es": "1q0, 4q1, 5q0 y la esperanza de vida al nacer son los de la tabla modelo con el mismo q(x). Ponen las estimaciones de las distintas edades x en una misma escala, para leer la tendencia en el tiempo."
+        },
+        {
+            "en": "Both-sex model life tables use a sex ratio at birth of 1.04 males per female. With 'All families' every family of the multiplier variant is shown, to compare them.",
+            "fr": "Les tables types pour les deux sexes utilisent un rapport de masculinité à la naissance de 1,04 garçon par fille. Avec 'Toutes les familles', chaque famille de la variante de multiplicateurs est affichée pour les comparer.",
+            "es": "Las tablas modelo de ambos sexos usan una razón de sexo al nacer de 1,04 varones por mujer. Con 'Todas las familias' se muestran todas las familias de la variante de multiplicadores, para compararlas."
+        },
+        {
+            "en": "Panama 1976: counts (UN Manual X)",
+            "fr": "Panama 1976 : effectifs (Manuel X des Nations Unies)",
+            "es": "Panamá 1976: números absolutos (Manual X de las Naciones Unidas)"
+        },
+        {
+            "en": "Mortpak QFIVE template: averages per woman",
+            "fr": "Modèle Mortpak QFIVE : moyennes par femme",
+            "es": "Plantilla de Mortpak QFIVE: promedios por mujer"
+        },
+        {
+            "en": "Malawi 2008: counts (IUSSP)",
+            "fr": "Malawi 2008 : effectifs (IUSSP)",
+            "es": "Malawi 2008: números absolutos (IUSSP)"
+        },
+        {
+            "en": "Changes the 1q0, 4q1, 5q0 and life expectancy derived from the estimates; the q(x) estimates stay the same.",
+            "fr": "Modifie les 1q0, 4q1, 5q0 et l'espérance de vie dérivés des estimations ; les estimations de q(x) restent identiques.",
+            "es": "Cambia los 1q0, 4q1, 5q0 y la esperanza de vida derivados de las estimaciones; las estimaciones de q(x) no cambian."
+        },
+        {
+            "en": "Year of observation",
+            "fr": "Année d'observation",
+            "es": "Año de observación"
+        },
+        {
+            "en": "Month of observation",
+            "fr": "Mois d'observation",
+            "es": "Mes de observación"
+        },
+        {
+            "en": "All families",
+            "fr": "Toutes les familles",
+            "es": "Todas las familias"
+        },
+        {
+            "en": "Show on the chart",
+            "fr": "Afficher sur le graphique",
+            "es": "Mostrar en el gráfico"
+        },
+        {
+            "en": "January",
+            "fr": "Janvier",
+            "es": "Enero"
+        },
+        {
+            "en": "February",
+            "fr": "Février",
+            "es": "Febrero"
+        },
+        {
+            "en": "March",
+            "fr": "Mars",
+            "es": "Marzo"
+        },
+        {
+            "en": "April",
+            "fr": "Avril",
+            "es": "Abril"
+        },
+        {
+            "en": "May",
+            "fr": "Mai",
+            "es": "Mayo"
+        },
+        {
+            "en": "June",
+            "fr": "Juin",
+            "es": "Junio"
+        },
+        {
+            "en": "July",
+            "fr": "Juillet",
+            "es": "Julio"
+        },
+        {
+            "en": "August",
+            "fr": "Août",
+            "es": "Agosto"
+        },
+        {
+            "en": "September",
+            "fr": "Septembre",
+            "es": "Septiembre"
+        },
+        {
+            "en": "October",
+            "fr": "Octobre",
+            "es": "Octubre"
+        },
+        {
+            "en": "November",
+            "fr": "Novembre",
+            "es": "Noviembre"
+        },
+        {
+            "en": "December",
+            "fr": "Décembre",
+            "es": "Diciembre"
+        },
+        {
+            "en": "Infant mortality, 1q0",
+            "fr": "Mortalité infantile, 1q0",
+            "es": "Mortalidad infantil, 1q0"
+        },
+        {
+            "en": "Under-five mortality, 5q0",
+            "fr": "Mortalité des moins de cinq ans, 5q0",
+            "es": "Mortalidad de menores de cinco años, 5q0"
+        },
+        {
+            "en": "Child mortality, 4q1",
+            "fr": "Mortalité juvénile, 4q1",
+            "es": "Mortalidad de 1 a 4 años, 4q1"
+        },
+        {
+            "en": "Both sexes",
+            "fr": "Deux sexes",
+            "es": "Ambos sexos"
+        },
+        {
+            "en": "Some estimates fall outside the range of the model life tables: the nearest level was used, so their 1q0, 4q1, 5q0 and life expectancy are only approximate.",
+            "fr": "Certaines estimations sortent de la plage des tables types : le niveau le plus proche a été utilisé, donc leurs 1q0, 4q1, 5q0 et espérance de vie ne sont qu'approximatifs.",
+            "es": "Algunas estimaciones quedan fuera del rango de las tablas modelo: se usó el nivel más cercano, por lo que sus 1q0, 4q1, 5q0 y esperanza de vida son solo aproximados."
+        },
+        {
+            "en": "Missing required columns: %s. Provide Age and two of CEB, CD and CS (counts with a Women column, or averages per woman without it), or CEB and PropDead",
+            "fr": "Colonnes requises manquantes : %s. Fournissez Age et deux colonnes parmi CEB, CD et CS (effectifs avec une colonne Women, ou moyennes par femme sans elle), ou CEB et PropDead",
+            "es": "Faltan columnas obligatorias: %s. Incluya Age y dos de CEB, CD y CS (números absolutos con una columna Women, o promedios por mujer sin ella), o CEB y PropDead"
+        },
+        {
+            "en": "check averages per woman",
+            "fr": "moyennes par femme",
+            "es": "promedios por mujer"
+        },
+        {
+            "en": "check PropDead",
+            "fr": "PropDead",
+            "es": "PropDead"
+        },
+        {
+            "en": "check CEB equals CD plus CS",
+            "fr": "CEB égal à CD plus CS",
+            "es": "CEB igual a CD más CS"
+        },
+        {
+            "en": "check Year and Month",
+            "fr": "Year et Month",
+            "es": "Year y Month"
+        },
+        {
+            "en": "Without a Women column, CEB, CD and CS must be averages per woman (for example 2.4). Add a Women column if your data are counts",
+            "fr": "Sans colonne Women, CEB, CD et CS doivent être des moyennes par femme (par exemple 2.4). Ajoutez une colonne Women si vos données sont des effectifs",
+            "es": "Sin columna Women, CEB, CD y CS deben ser promedios por mujer (por ejemplo 2.4). Añada una columna Women si sus datos son números absolutos"
+        },
+        {
+            "en": "PropDead must be a proportion between 0 and 1 (for example 0.08, not 8)",
+            "fr": "PropDead doit être une proportion entre 0 et 1 (par exemple 0.08, et non 8)",
+            "es": "PropDead debe ser una proporción entre 0 y 1 (por ejemplo 0.08, no 8)"
+        },
+        {
+            "en": "CEB must equal CD plus CS in every age group",
+            "fr": "CEB doit être égal à CD plus CS dans chaque groupe d'âges",
+            "es": "CEB debe ser igual a CD más CS en cada grupo de edad"
+        },
+        {
+            "en": "Year and Month must hold a single year and a single month (1 to 12) in each group",
+            "fr": "Year et Month doivent contenir une seule année et un seul mois (1 à 12) dans chaque groupe",
+            "es": "Year y Month deben contener un único año y un único mes (1 a 12) en cada grupo"
+        },
+        {
+            "en": "Date must be a single decimal year (for example 1976.5) in each group",
+            "fr": "Date doit être une seule année décimale (par exemple 1976.5) dans chaque groupe",
+            "es": "Date debe ser un único año decimal (por ejemplo 1976.5) en cada grupo"
         }
     ]
 }

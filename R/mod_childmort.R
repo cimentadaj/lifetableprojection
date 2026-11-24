@@ -94,6 +94,29 @@ childmort_module_ui <- function(i18n) {
             justify-content: center;
             height: 38px;
           }
+          .childmort-sample-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+          .childmort-sample-picker .ui.form {
+            min-width: 300px;
+          }
+          .childmort-sample-picker .field {
+            margin: 0 !important;
+          }
+          .childmort-date-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+          }
+          .childmort-date-inputs > div {
+            flex: 1;
+          }
+          .childmort-indicator {
+            max-width: 360px;
+            margin-bottom: 0.5rem;
+          }
           .childmort-upload-log {
             margin-top: 0.75rem;
             text-align: center;
@@ -215,6 +238,7 @@ childmort_module_ui <- function(i18n) {
                 id = ns("plot_container"),
                 style = "display: none;",
                 shiny::uiOutput(ns("childmort_run_settings")),
+                shiny::uiOutput(ns("childmort_indicator_ui")),
                 shinycssloaders::withSpinner(
                   plotly::plotlyOutput(ns("childmort_plot"), height = "520px", width = "100%")
                 ),
@@ -280,8 +304,11 @@ childmort_info_text <- function(params, n_groups = NULL) {
   } else {
     "Trussell (Coale-Demeny model life tables)"
   }
-  date_label <- if (is.null(params$date_obs) || length(params$date_obs) == 0) {
-    "taken from the Date column"
+  date_label <- if (!is.null(params$year)) {
+    sprintf("%04d-%02d (first day of the month; decimal year %s)",
+            as.integer(params$year), as.integer(params$month %||% 1), format(round(params$date_obs, 3)))
+  } else if (is.null(params$date_obs) || length(params$date_obs) == 0) {
+    "taken from the Date or Year and Month columns"
   } else {
     as.character(params$date_obs)
   }
@@ -292,23 +319,27 @@ childmort_info_text <- function(params, n_groups = NULL) {
       } else {
         "Module: Child Mortality (Brass) Analysis (All Groups)"
       },
-      "Description: Indirect estimation of child mortality from children ever born and children dead reported by women aged 15-49 (UN Manual X, 1983), using MortIndEst::childmort_brass().",
+      "Description: Indirect estimation of child mortality from children ever born and children dead or surviving reported by women aged 15-49 (UN Manual X, 1983), using MortIndEst::childmort_brass(). Each estimate is translated, through the matching model life table, into 1q0, 4q1, 5q0 and e0, as in Mortpak QFIVE.",
       "",
       sprintf("Multiplier variant: %s", variant_label),
-      sprintf("Model life table family: %s", params$mlt_model),
+      sprintf("Model life table family: %s", if (identical(params$mlt_model, "all")) "all families of the variant" else params$mlt_model),
       sprintf("Model life table sex: %s", params$sex),
+      if (identical(params$sex, "both")) "Both-sex model life tables use a sex ratio at birth of 1.04 males per female.",
       sprintf("Date of observation: %s", date_label),
       if (identical(params$variant, "palloni_helligman")) {
-        sprintf("Mean age at maternity: %s", params$mam)
+        sprintf("Mean age at childbearing: %s", params$mam)
       },
       "",
       "Output columns:",
       "- Age / age_label: women's five-year age group",
+      "- family / variant / sex: model life table family, multiplier variant and sex",
       "- x / q_label: childhood age of the estimate, q(x) = probability of dying before age x",
       "- qx: estimated probability of dying; lx = 1 - qx",
       "- t_years: years before the observation date the estimate refers to",
       "- date_t: reference date of the estimate (decimal year)",
-      "- e0_implied: life expectancy at birth of the matching model life table level",
+      "- q0, q1_4, q0_5: infant (1q0), child (4q1) and under-five (5q0) mortality of the matching model life table",
+      "- e0: life expectancy at birth of the matching model life table",
+      "- in_range: FALSE when the estimate is outside the model life tables (the nearest level was used)",
       "",
       sprintf("Analysis Date: %s", format(Sys.time(), "%Y-%m-%d %H:%M:%S")),
       if (!is.null(n_groups)) sprintf("Number of Groups: %d", n_groups),
@@ -316,6 +347,30 @@ childmort_info_text <- function(params, n_groups = NULL) {
       "Note: estimates from women aged 15-19 and 20-24 are usually biased upwards; estimates from women aged 45-49 refer to distant periods and are affected by recall errors."
     ),
     collapse = "\n"
+  )
+}
+
+
+#' Control values that apply to a child mortality run on the given data
+#'
+#' The date controls are `NULL` when the data carry a Date column or Year and
+#' Month columns, and the mean age at maternity is `NULL` for Trussell, so the
+#' settings summary and the change warning use only what the run used.
+#'
+#' @param input Module input.
+#' @param data Uploaded data (any column names).
+#' @return Named list of control values.
+#' @noRd
+childmort_control_values <- function(input, data) {
+  prepared <- if (is.null(data)) data.frame() else prepare_childmort_input(data)
+  has_date <- "Date" %in% names(prepared) || all(c("Year", "Month") %in% names(prepared))
+  list(
+    variant = input$variant,
+    mlt_model = input$mlt_model,
+    sex = input$mlt_sex,
+    year = if (has_date) NULL else input$date_year,
+    month = if (has_date) NULL else input$date_month,
+    mam = if (identical(input$variant, "palloni_helligman")) input$mam else NULL
   )
 }
 
@@ -330,12 +385,20 @@ childmort_module_server <- function(input, output, session) {
 
   mod_simple_module_server("childmort", list(
     setup = function(input, output, session, i18n) {
-      # Sample data loader
-      childmort_sample_loader <- function() {
-        path <- system.file("extdata", "childmort_sample.csv", package = "lifetableprojection")
+      # Samples, picked in the dropdown next to the sample button
+      sample_files <- c(
+        panama = "childmort_sample.csv",
+        mortpak = "childmort_sample_mortpak.csv",
+        malawi = "childmort_sample_malawi.csv"
+      )
+      read_sample <- function(choice) {
+        file <- sample_files[[choice %||% "panama"]] %||% sample_files[["panama"]]
+        path <- system.file("extdata", file, package = "lifetableprojection")
         df <- readr::read_csv(path, show_col_types = FALSE)
-        df <- df[order(df$Age), , drop = FALSE]
-        df
+        as.data.frame(df[order(df$Age), , drop = FALSE])
+      }
+      childmort_sample_loader <- function() {
+        read_sample(input$sample_choice)
       }
 
       # Create shared data context
@@ -390,17 +453,16 @@ childmort_module_server <- function(input, output, session) {
           shiny::p(shiny::strong(i18n$t("Required columns:"))),
           shiny::tags$ul(
             shiny::tags$li(i18n$t("Age (lower bound of women's five-year age groups: 15, 20, 25, 30, 35, 40, 45)")),
-            shiny::tags$li(i18n$t("Women (number of women in each age group)")),
-            shiny::tags$li(i18n$t("CEB (children ever born to those women)")),
-            shiny::tags$li(i18n$t("CD (children dead) or CS (children surviving)"))
+            shiny::tags$li(i18n$t("Counts, with a Women column (number of women): two of CEB (children ever born), CD (children dead) and CS (children surviving)")),
+            shiny::tags$li(i18n$t("Or averages per woman, without a Women column: CEB and CS, or CEB and PropDead (proportion of children dead)"))
           ),
           shiny::p(shiny::strong(i18n$t("Optional columns:"))),
           shiny::tags$ul(
-            shiny::tags$li(i18n$t("Date (date of the census or survey as a decimal year, e.g. 1976.5). If absent, set it in the analysis step."))
+            shiny::tags$li(i18n$t("Date (decimal year, e.g. 1976.5), or Year and Month of the census or survey. If absent, set them in the analysis step."))
           ),
           shiny::p(shiny::tags$em(i18n$t("Additional grouping columns are supported for batch analysis."))),
           shiny::strong(shiny::h3(i18n$t("Ready? Click 'Browse...' to select your file or start with our sample data."))),
-          shiny::p(i18n$t("Sample data: Panama 1976 survey (UN Manual X, Table 49)."))
+          shiny::p(i18n$t("Sample data: Panama 1976 survey (UN Manual X, Table 49), the Mortpak QFIVE template (averages per woman) and Malawi 2008 census (IUSSP Tools for Demographic Estimation)."))
         )
       })
 
@@ -410,7 +472,7 @@ childmort_module_server <- function(input, output, session) {
         }
         shiny::tagList(
           shiny::h3(i18n$t("Brass Child Mortality Method")),
-          shiny::p(i18n$t("The Brass method converts the proportion of children dead among children ever born, reported by women in each five-year age group, into probabilities of dying in childhood. Women aged 15-19 give q(1), 20-24 give q(2), 25-29 give q(3), 30-34 give q(5), 35-39 give q(10), 40-44 give q(15) and 45-49 give q(20). Each estimate is located in time a number of years before the census or survey, and matched to a model life table to obtain an implied life expectancy at birth.")),
+          shiny::p(i18n$t("The Brass method converts the proportion of children dead among children ever born, reported by women in each five-year age group, into probabilities of dying in childhood. Women aged 15-19 give q(1), 20-24 give q(2), 25-29 give q(3), 30-34 give q(5), 35-39 give q(10), 40-44 give q(15) and 45-49 give q(20). Each estimate is located in time a number of years before the census or survey, and matched to a model life table, which translates it into infant mortality (1q0), child mortality (4q1), under-five mortality (5q0) and life expectancy at birth, as in Mortpak QFIVE.")),
           shiny::div(
             class = "ui relaxed divided list",
             shiny::div(class = "item", shiny::div(class = "content",
@@ -425,8 +487,9 @@ childmort_module_server <- function(input, output, session) {
           shiny::h4(i18n$t("Reading the results")),
           shiny::tags$ul(
             shiny::tags$li(i18n$t("Each point on the chart is an estimate of q(x), the probability of dying before age x, placed at the date it refers to. Estimates from younger women refer to more recent dates.")),
-            shiny::tags$li(i18n$t("The proportion of children dead drives the estimates; the multiplier variant and model life table family only adjust them slightly. The model life table sex changes only the implied life expectancy at birth.")),
-            shiny::tags$li(i18n$t("Implied life expectancy at birth is that of the model life table with the same q(x). It puts the estimates for different ages x on one scale, so you can read the trend over time.")),
+            shiny::tags$li(i18n$t("The proportion of children dead drives the estimates; the multiplier variant and model life table family only adjust them slightly. The model life table sex does not change q(x), only the 1q0, 4q1, 5q0 and life expectancy derived from it.")),
+            shiny::tags$li(i18n$t("1q0, 4q1, 5q0 and life expectancy at birth are those of the model life table with the same q(x). They put the estimates for different ages x on one scale, so you can read the trend over time.")),
+            shiny::tags$li(i18n$t("Both-sex model life tables use a sex ratio at birth of 1.04 males per female. With 'All families' every family of the multiplier variant is shown, to compare them.")),
             shiny::tags$li(i18n$t("Give less weight to estimates from women aged 15-19 and 20-24, which are often too high, and to those from women aged 45-49, which refer to distant dates and suffer from recall errors."))
           ),
           shiny::h4(i18n$t("References")),
@@ -445,15 +508,32 @@ childmort_module_server <- function(input, output, session) {
         if (!is.null(session$userData$language_version)) {
           session$userData$language_version()
         }
-        shiny.semantic::action_button(
-          ns("use_sample_data"),
-          i18n$t("Use sample data"),
-          class = "ui blue button"
+        choices <- stats::setNames(
+          c("panama", "mortpak", "malawi"),
+          c(
+            i18n$t("Panama 1976: counts (UN Manual X)"),
+            i18n$t("Mortpak QFIVE template: averages per woman"),
+            i18n$t("Malawi 2008: counts (IUSSP)")
+          )
+        )
+        shiny::div(
+          class = "childmort-sample-picker",
+          shiny.semantic::selectInput(
+            ns("sample_choice"),
+            NULL,
+            choices = choices,
+            selected = shiny::isolate(input$sample_choice) %||% "panama"
+          ),
+          shiny.semantic::action_button(
+            ns("use_sample_data"),
+            i18n$t("Use sample data"),
+            class = "ui blue button"
+          )
         )
       })
 
-      # Sample data preview table
-      sample_preview <- childmort_sample_loader()
+      # Sample data preview table (Panama, counts)
+      sample_preview <- read_sample("panama")
       output$childmort_sample_table <- rhandsontable::renderRHandsontable({
         renderDataTable(sample_preview, i18n)
       })
@@ -497,7 +577,10 @@ childmort_module_server <- function(input, output, session) {
         }
 
         df <- shared$data()
-        has_date_col <- !is.null(df) && "date" %in% tolower(names(df))
+        prepared <- if (is.null(df)) data.frame() else prepare_childmort_input(df)
+        has_date_col <- "Date" %in% names(prepared) || all(c("Year", "Month") %in% names(prepared))
+        months <- c("January", "February", "March", "April", "May", "June", "July",
+                    "August", "September", "October", "November", "December")
 
         shiny::tagList(
           shiny::div(
@@ -530,24 +613,31 @@ childmort_module_server <- function(input, output, session) {
           shiny.semantic::selectInput(
             ns("mlt_sex"),
             i18n$t("Model life table sex"),
-            choices = stats::setNames(c("male", "female"), c(i18n$t("Male"), i18n$t("Female"))),
-            selected = shiny::isolate(input$mlt_sex) %||% "male"
+            choices = stats::setNames(CHILDMORT_SEXES, i18n$t(unname(CHILDMORT_SEX_LABELS[CHILDMORT_SEXES]))),
+            selected = shiny::isolate(input$mlt_sex) %||% "both"
           ),
           shiny::p(
             class = "childmort-control-hint",
             style = "font-size: 0.9em; color: #666; margin-top: 0.4em;",
-            i18n$t("Only changes the implied life expectancy at birth; the q(x) estimates stay the same.")
+            i18n$t("Changes the 1q0, 4q1, 5q0 and life expectancy derived from the estimates; the q(x) estimates stay the same.")
           ),
           if (has_date_col) {
             shiny::p(i18n$t("Date values will be taken from your data"))
           } else {
-            shiny::numericInput(
-              ns("date_obs"),
-              i18n$t("Date of observation (decimal year)"),
-              value = shiny::isolate(input$date_obs) %||% 2020,
-              min = 1900,
-              max = 2100,
-              step = 0.1
+            shiny::div(
+              class = "childmort-date-inputs",
+              shiny::numericInput(
+                ns("date_year"),
+                i18n$t("Year of observation"),
+                value = shiny::isolate(input$date_year) %||% 2020,
+                min = 1900, max = 2100, step = 1
+              ),
+              shiny.semantic::selectInput(
+                ns("date_month"),
+                i18n$t("Month of observation"),
+                choices = stats::setNames(as.character(1:12), i18n$t(months)),
+                selected = shiny::isolate(input$date_month) %||% "1"
+              )
             )
           }
         )
@@ -567,8 +657,11 @@ childmort_module_server <- function(input, output, session) {
         shiny.semantic::selectInput(
           ns("mlt_model"),
           i18n$t("Model life table family"),
-          choices = stats::setNames(families, i18n$t(unname(family_labels[families]))),
-          selected = if (!is.null(current) && current %in% families) current else default
+          choices = stats::setNames(
+            c(families, "all"),
+            c(i18n$t(unname(family_labels[families])), i18n$t("All families"))
+          ),
+          selected = if (!is.null(current) && current %in% c(families, "all")) current else default
         )
       })
       outputOptions(output, "childmort_family_ui", suspendWhenHidden = FALSE)
@@ -583,7 +676,7 @@ childmort_module_server <- function(input, output, session) {
         }
         shiny::numericInput(
           ns("mam"),
-          i18n$t("Mean age at maternity"),
+          i18n$t("Mean age of mothers at childbearing"),
           value = shiny::isolate(input$mam) %||% 27,
           min = 20,
           max = 40,
@@ -618,13 +711,10 @@ childmort_module_server <- function(input, output, session) {
           value <- if (items$translate_value[i]) i18n$t(items$value[i]) else items$value[i]
           paste0(i18n$t(items$label[i]), ": ", value)
         }, character(1))
-        changed <- childmort_settings_changed(latest$params, list(
-          variant = input$variant,
-          mlt_model = input$mlt_model,
-          sex = input$mlt_sex,
-          date_obs = input$date_obs,
-          mam = input$mam
-        ))
+        changed <- childmort_settings_changed(
+          latest$params,
+          childmort_control_values(input, shared$data())
+        )
         shiny::tagList(
           shiny::div(
             class = "ui small message childmort-run-settings",
@@ -637,6 +727,22 @@ childmort_module_server <- function(input, output, session) {
               i18n$t("The settings have changed. Click 'Estimate Child Mortality' to update the results.")
             )
           }
+        )
+      })
+
+      # What the chart shows; changing it redraws the chart without a new run
+      output$childmort_indicator_ui <- shiny::renderUI({
+        if (!is.null(session$userData$language_version)) {
+          session$userData$language_version()
+        }
+        shiny::div(
+          class = "childmort-indicator",
+          shiny.semantic::selectInput(
+            ns("indicator"),
+            i18n$t("Show on the chart"),
+            choices = stats::setNames(names(CHILDMORT_INDICATORS), i18n$t(unname(CHILDMORT_INDICATORS))),
+            selected = shiny::isolate(input$indicator) %||% "q0"
+          )
         )
       })
 
@@ -821,12 +927,15 @@ childmort_module_server <- function(input, output, session) {
 
       # Save the plot of one group to a PNG file
       save_group_plot <- function(estimates, plot_file, gid) {
+        indicator <- shiny::isolate(input$indicator) %||% "q0"
         plot_obj <- childmort_plot(
           estimates,
+          indicator = indicator,
           title = paste0(i18n$t("Child mortality estimates"), " - ", group_label_for(gid)),
           x_label = i18n$t("Reference date"),
-          y_label = i18n$t("Probability of dying, q(x)"),
-          hover_labels = list(women = i18n$t("Women"), date = i18n$t("Date"))
+          y_label = i18n$t(CHILDMORT_INDICATORS[[indicator]] %||% CHILDMORT_INDICATORS[["q0"]]),
+          hover_labels = list(women = i18n$t("Women"), date = i18n$t("Date")),
+          family_labels = stats::setNames(i18n$t(unname(CHILDMORT_FAMILY_LABELS)), names(CHILDMORT_FAMILY_LABELS))
         )
         ggplot2::ggsave(plot_file, plot = plot_obj, width = 10, height = 6, dpi = 300)
       }
@@ -1012,15 +1121,14 @@ childmort_module_server <- function(input, output, session) {
     },
 
     prepare = function(input, shared, i18n) {
-      df <- shiny::isolate(shared$data())
-      has_date_col <- !is.null(df) && "date" %in% tolower(names(df))
-      variant <- input$variant %||% "trussell"
-      mlt_model <- input$mlt_model %||% if (identical(variant, "trussell")) "West" else "General"
+      values <- childmort_control_values(input, shiny::isolate(shared$data()))
+      variant <- values$variant %||% "trussell"
       list(
         variant = variant,
-        mlt_model = mlt_model,
-        sex = input$mlt_sex %||% "male",
-        date_obs = if (has_date_col) NULL else input$date_obs,
+        mlt_model = values$mlt_model %||% if (identical(variant, "trussell")) "West" else "General",
+        sex = values$sex %||% "both",
+        year = values$year,
+        month = values$month,
         mam = input$mam %||% 27
       )
     },
@@ -1036,7 +1144,8 @@ childmort_module_server <- function(input, output, session) {
           variant = params$variant,
           mlt_model = params$mlt_model,
           sex = params$sex,
-          date_obs = params$date_obs,
+          year = params$year,
+          month = params$month,
           mam = params$mam
         ),
         error = function(e) {
@@ -1074,12 +1183,15 @@ childmort_module_server <- function(input, output, session) {
           return(NULL)
         }
 
+        indicator <- input$indicator %||% "q0"
         plot_obj <- childmort_plot(
           estimates,
+          indicator = indicator,
           title = i18n$t("Child mortality estimates"),
           x_label = i18n$t("Reference date"),
-          y_label = i18n$t("Probability of dying, q(x)"),
-          hover_labels = list(women = i18n$t("Women"), date = i18n$t("Date"))
+          y_label = i18n$t(CHILDMORT_INDICATORS[[indicator]] %||% CHILDMORT_INDICATORS[["q0"]]),
+          hover_labels = list(women = i18n$t("Women"), date = i18n$t("Date")),
+          family_labels = stats::setNames(i18n$t(unname(CHILDMORT_FAMILY_LABELS)), names(CHILDMORT_FAMILY_LABELS))
         )
         plotly::ggplotly(plot_obj, tooltip = "text") |>
           plotly::config(displayModeBar = FALSE)
@@ -1103,7 +1215,10 @@ childmort_module_server <- function(input, output, session) {
           round(est$qx, 4),
           round(est$t_years, 2),
           round(est$date_t, 1),
-          round(est$e0_implied, 1),
+          round(est$q0, 4),
+          round(est$q1_4, 4),
+          round(est$q0_5, 4),
+          round(est$e0, 1),
           stringsAsFactors = FALSE
         )
         names(tbl) <- c(
@@ -1112,12 +1227,18 @@ childmort_module_server <- function(input, output, session) {
           i18n$t("Probability of dying"),
           i18n$t("Years before observation"),
           i18n$t("Reference date"),
+          "1q0", "4q1", "5q0",
           i18n$t("Implied life expectancy at birth")
         )
+        # With all families, one block of rows per family
+        if (length(unique(est$family)) > 1) {
+          family <- i18n$t(unname(CHILDMORT_FAMILY_LABELS[est$family]))
+          tbl <- cbind(stats::setNames(data.frame(family), i18n$t("Model life table family")), tbl)
+        }
         DT::datatable(
           tbl,
           rownames = FALSE,
-          options = list(dom = "t", ordering = FALSE, pageLength = 7)
+          options = list(dom = "t", ordering = FALSE, pageLength = nrow(tbl), scrollX = TRUE)
         )
       })
 
