@@ -4349,6 +4349,46 @@
             "en": "A value of %s is required",
             "fr": "Une valeur de %s est obligatoire",
             "es": "Se necesita un valor de %s"
+        },
+        {
+            "en": "Life tables",
+            "fr": "Tables de mortalité",
+            "es": "Tablas de vida"
+        },
+        {
+            "en": "Build life tables from your data, or model life tables from mortality indicators.",
+            "fr": "Construire des tables de mortalité à partir de vos données, ou des tables types à partir d'indicateurs de mortalité.",
+            "es": "Construir tablas de vida a partir de sus datos, o tablas modelo a partir de indicadores de mortalidad."
+        },
+        {
+            "en": "Evaluate and adjust data by age",
+            "fr": "Évaluer et ajuster les données par âge",
+            "es": "Evaluar y ajustar los datos por edad"
+        },
+        {
+            "en": "Check age heaping, smooth and graduate mortality rates, and redistribute the population at older ages.",
+            "fr": "Mesurer l'attraction des âges, lisser et graduer les taux de mortalité, et redistribuer la population aux âges élevés.",
+            "es": "Medir la preferencia de dígitos en la edad, suavizar y graduar las tasas de mortalidad, y redistribuir la población en las edades avanzadas."
+        },
+        {
+            "en": "Indirect estimation of mortality",
+            "fr": "Estimation indirecte de la mortalité",
+            "es": "Estimación indirecta de la mortalidad"
+        },
+        {
+            "en": "Estimate child and adult mortality from census and survey questions.",
+            "fr": "Estimer la mortalité des enfants et des adultes à partir des questions des recensements et des enquêtes.",
+            "es": "Estimar la mortalidad en la niñez y adulta a partir de preguntas de censos y encuestas."
+        },
+        {
+            "en": "Open (%d modules)",
+            "fr": "Ouvrir (%d modules)",
+            "es": "Abrir (%d módulos)"
+        },
+        {
+            "en": "← All families",
+            "fr": "← Toutes les familles",
+            "es": "← Todas las familias"
         }
     ]
 }

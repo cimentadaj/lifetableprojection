@@ -106,3 +106,83 @@ get_app_modules <- function(i18n) {
     )
   )
 }
+
+#' Families of modules shown on the landing page
+#'
+#' The landing page lists these families; opening one shows its modules.
+#' Every module of `get_app_modules()` belongs to exactly one family.
+#' @noRd
+MODULE_FAMILIES <- list(
+  lifetables = list(
+    name = "Life tables",
+    description = "Build life tables from your data, or model life tables from mortality indicators.",
+    icon = "table",
+    modules = c("lifetable", "mlt")
+  ),
+  data_by_age = list(
+    name = "Evaluate and adjust data by age",
+    description = "Check age heaping, smooth and graduate mortality rates, and redistribute the population at older ages.",
+    icon = "sliders horizontal",
+    modules = c("heaping", "smoothing", "graduation", "odap")
+  ),
+  indirect = list(
+    name = "Indirect estimation of mortality",
+    description = "Estimate child and adult mortality from census and survey questions.",
+    icon = "search",
+    modules = c("childmort", "orphanhood", "intercensal")
+  )
+)
+
+#' Display names of the modules (English; translated where shown)
+#'
+#' Kept apart from `get_app_modules()`, which also builds each module's UI,
+#' so the family cards can list module names cheaply.
+#' @noRd
+MODULE_NAMES <- c(
+  lifetable = "Life Table Analysis",
+  heaping = "Heaping Diagnostics",
+  smoothing = "Smoothing Preview",
+  graduation = "Graduation Tool",
+  odap = "Old-Age Population Redistribution",
+  childmort = "Child Mortality (Brass Method)",
+  orphanhood = "Adult Mortality from Orphanhood",
+  intercensal = "Adult Mortality from Intercensal Survival",
+  mlt = "Model Life Tables"
+)
+
+#' Card of one family of modules on the landing page
+#'
+#' @param family_id Name of the family in `MODULE_FAMILIES`.
+#' @param i18n Translator object.
+#' @return A module-card div with the family's modules and an open button.
+#' @noRd
+create_family_card <- function(family_id, i18n) {
+  fam <- MODULE_FAMILIES[[family_id]]
+  shiny::div(
+    class = "module-card family-card",
+    # Semantic UI icon names, as the module cards use
+    shiny::div(class = "module-icon", shiny.semantic::icon(fam$icon)),
+    shiny::h3(i18n$t(fam$name), class = "module-name"),
+    shiny::p(i18n$t(fam$description), class = "module-description"),
+    shiny::tags$ul(
+      class = "family-module-list",
+      lapply(fam$modules, function(mod_id) shiny::tags$li(i18n$t(MODULE_NAMES[[mod_id]])))
+    ),
+    shiny::actionButton(
+      paste0("goto_family_", family_id),
+      sprintf(i18n$t("Open (%d modules)"), length(fam$modules)),
+      class = "ui blue button"
+    )
+  )
+}
+
+#' Header of an opened family: back button and the family name
+#' @noRd
+create_family_header <- function(family_id, i18n) {
+  fam <- MODULE_FAMILIES[[family_id]]
+  shiny::div(
+    class = "family-header",
+    shiny::actionButton(paste0("back_to_families_", family_id), i18n$t("← All families"), class = "ui grey button"),
+    shiny::h2(i18n$t(fam$name), class = "family-title")
+  )
+}

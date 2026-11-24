@@ -2059,6 +2059,18 @@ app_server <- function(input, output, session) {
   }, ignoreNULL = FALSE, ignoreInit = FALSE)
 
   # Render lifetable module card dynamically for language switching
+  # Family cards and the header of each opened family (landing page)
+  lapply(names(MODULE_FAMILIES), function(family_id) {
+    output[[paste0("family_card_", family_id)]] <- renderUI({
+      input$selected_language
+      create_family_card(family_id, usei18n_local())
+    })
+    output[[paste0("family_header_", family_id)]] <- renderUI({
+      input$selected_language
+      create_family_header(family_id, usei18n_local())
+    })
+  })
+
   output$lifetable_module_card <- renderUI({
     i18n <- usei18n_local()
     # Force reactivity on language change

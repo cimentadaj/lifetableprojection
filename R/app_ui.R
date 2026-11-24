@@ -125,7 +125,22 @@ app_ui <- function(request) {
       )
     }
   })
-  module_cards <- if (length(module_cards) > 0) do.call(tagList, module_cards) else tagList()
+  names(module_cards) <- names(modules)
+  # Landing page: a menu of module families; opening one shows its modules
+  # (see MODULE_FAMILIES and handle_transitions())
+  family_menu <- div(
+    id = "family_menu",
+    class = "modules-grid",
+    lapply(names(MODULE_FAMILIES), function(family_id) uiOutput(paste0("family_card_", family_id)))
+  )
+  family_sections <- lapply(names(MODULE_FAMILIES), function(family_id) {
+    hidden(div(
+      id = paste0("family_section_", family_id),
+      class = "family-section",
+      uiOutput(paste0("family_header_", family_id)),
+      div(class = "modules-grid", module_cards[MODULE_FAMILIES[[family_id]]$modules])
+    ))
+  })
   module_sections <- lapply(modules, `[[`, "ui")
   module_sections <- Filter(Negate(is.null), module_sections)
   module_sections <- if (length(module_sections) > 0) do.call(tagList, module_sections) else tagList()
@@ -372,6 +387,25 @@ app_ui <- function(request) {
           font-size: 1rem !important;
         }
       }
+      /* Module families on the landing page */
+      .family-module-list {
+        margin: 0 0 1.5rem 0;
+        padding-left: 1.2rem;
+        color: #37474f;
+        line-height: 1.7;
+      }
+      .family-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        max-width: 1200px;
+        margin: 0 auto 1.5rem;
+      }
+      .family-title {
+        margin: 0 !important;
+        color: #1a237e;
+        font-size: 1.6rem;
+      }
     ")),
     main_panel(
       div(
@@ -397,10 +431,8 @@ app_ui <- function(request) {
             )
           )
         ),
-        div(
-          class = "modules-grid",
-          module_cards
-        )
+        family_menu,
+        family_sections
       ),
       # Documentation section (initially hidden)
       hidden(

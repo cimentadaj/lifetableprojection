@@ -212,6 +212,21 @@ handle_transitions <- function(input, current_tab) {
     current_tab("module_landing")
   })
 
+  # Module families on the landing page: opening a family shows its modules;
+  # a module's back button shows the landing page as it was left, so it
+  # returns to the family the module belongs to
+  lapply(names(MODULE_FAMILIES), function(family_id) {
+    observeEvent(input[[paste0("goto_family_", family_id)]], {
+      hide("family_menu")
+      for (other in names(MODULE_FAMILIES)) hide(paste0("family_section_", other))
+      show(paste0("family_section_", family_id))
+    })
+    observeEvent(input[[paste0("back_to_families_", family_id)]], {
+      hide(paste0("family_section_", family_id))
+      show("family_menu")
+    })
+  })
+
   # Documentation navigation
   observeEvent(input$show_documentation, {
     hide("module_landing_page")
