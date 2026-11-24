@@ -315,16 +315,93 @@ needs the T1 layer. Commits: `d95005c` (backend), `806214c` (module), `4a9f7fb` 
 
 ## T4: Intercensal survival
 
-- Two censuses (c1, c2, exact dates, 5-year ages with open group), sex, family, `method`
-  (match / fproj / logit / feeney …), `ages_fit`, `e0_accept`, optional `q01_q05`, pre-smoothing span,
-  HIV prevalence / ART.
-- Built-in checks: roxygen examples for Panama 1960–70 (match), India 1980–90 (fproj), Japan (feeney).
-- Open: Ivan is comparing Sarah's interpolation against the current implementation (Oct 5 action item).
-  Pin the MortIndEst commit once he confirms.
+**Status: built and tested (24 Nov 2026) on branch `dev/intercensal-module`**, on MortIndEst `be1d88b`
+(`intercensal_survival()` has not changed since). Not pushed or deployed yet.
+
+**Module**
+- Backend `R/backend_intercensal.R`, module `R/mod_intercensal.R`, landing card and navigation.
+- Samples: Panama females 1960–70 (UN Manual X) and Japan females 1960–70 (Feeney 2002).
+- Strings: about 100 EN/FR/ES.
+- Input: Age (5-year groups from 0, last one open), Pop1, Pop2. Optional: Date1/Date2 (text dates or decimal
+  years) and Sex (per group).
+
+**Controls**
+- Method: the six methods (survival ratios, back and forward projection, variable-r, Feeney, Preston logit).
+- Family: 9 MortCast families or All families.
+- Sex; census dates as year/month/day; ages used for the fit; accepted e0 range.
+- Reference e0 for Feeney and logit. By default it is each family's survival-ratio level; MortIndEst crashes
+  without one.
+- Optional 1q0/5q0.
+- Spectrum HIV life tables (prevalence and ART as proportions; the wrapper passes percentages, see below).
+
+**Outputs**
+- Summary per family: e0 of the fitted life table, 45q15, 35q15, the median and mean implied level,
+  interquartile range, coefficient of variation, ages used and reference e0.
+- Chart of the implied e0 by age (filled points = ages used, dashed line = selected level).
+- By-age table: populations, survival ratio, implied e0, used for the fit.
+- Diagnostics:
+  - survival ratios above 1;
+  - first census moved to make the interval a multiple of 5;
+  - high coefficient of variation;
+  - levels clamped to the accepted range;
+  - Feeney variable-r variant;
+  - logit e5 limit;
+  - families that failed.
+- ZIP: summary, by age, fitted life tables, chart and info file; all-groups ZIP.
+
+**Validation**
+- Five-year ages from 0, each once (catches two sexes in one file that is not grouped by Sex); populations above 0.
+- Date1 and Date2 both or neither, readable, 2.5–30 years apart; Sex female/male, one value per group.
+
+**Checks**
+- UN Manual X, Panama:
+  - variable-r, ages 10–30: mean 60.06 (Manual 60.3);
+  - survival ratios without ages 10, 20, 35, 55 and 65: mean 58.2 (Manual level 16.1, e0 57.75).
+- Synthetic stable populations from CD West female e0 = 60:
+  - survival ratios recover 60.0; variable-r and Feeney within 0.5;
+  - forward and back projection come out about 1.9 and 3.5 higher (see the issues below).
+- Synthetic Spectrum HIV population: the HIV option recovers e0 and 45q15 exactly.
+- Japan Feeney example (snapshot): 72.7.
+
+**Tests**
+- Unit tests: `tests/testthat/test-intercensal.R` (23 tests; full suite 130 tests, 807 expectations, 0 failures, plus the 1 golem test that was already skipped).
+- Chrome e2e, with every UI table compared to the backend:
+  - both samples and all six methods;
+  - reference e0 (default and typed); All families (9 rows); the Manual X age selection; dates typed in the
+    controls;
+  - synthetic HIV upload; HIV without 1q0/5q0 (error shown);
+  - two sexes grouped by Sex, with single and all-groups ZIPs;
+  - invalid files (two sexes not grouped, Date1 only);
+  - FR and ES (switched live on results); navigation between modules.
+
+**MortIndEst issues to report to Ivan (intercensal_survival)**
+- `span_pre_smooth` always fails: `object 'plot_smooth_nSx' not found` (line 481). The app does not offer
+  pre-smoothing.
+- `mlt_input_data` refers to `mlt_data_input`, which does not exist. The app does not offer custom tables.
+- Feeney and logit crash when `mlt_e0_logit_feeney` is `NULL` (`round(NULL / 2.5) * 2.5` is `numeric(0)`, not
+  `NULL`). The app passes the survival-ratio level.
+- In the logit method, the e5 limit `min(max(e5_hat, range[2]), range[2])` always returns the upper limit.
+- On exact stable populations, forward and back projection are biased upwards (1.9 and 3.5 years of e0) while the
+  survival ratios are exact. Possibly the open age group.
+- **HIV units:** `predictNQX()` (the Spectrum SVD-comp models) was fitted on percentages.
+  - Its prevalence knots go up to 12.8 and its ART knots up to 90.5.
+  - But `intercensal_survival()`, `orphanhood_one()` and the Masquelier-Timaeus code pass prevalence and ART as
+    proportions; the orphanhood docs even say "must be proportions".
+  - With 0.05 for 5%, the life tables barely change (e0 51.62 against 51.64 with no HIV; with 5: 49.57).
+  - The intercensal wrapper multiplies by 100. **The deployed orphanhood "Spectrum life tables" option passes
+    proportions, so it shows almost no HIV effect.** Not changed yet: to fix in MortIndEst or in both wrappers
+    once Ivan confirms.
+- `predictNQX(cm = 0.08, am = 0.4, ...)` returns a table whose 5q0 is 0.155, so `cm` is not reproduced when `am`
+  is given.
+- It calls dplyr, purrr, tidyr, ggplot2 (`aes` in logit) and, for HIV, rms / DemoTools functions without
+  importing them. The app attaches them around each call.
+
+**Open:** Ivan's comparison of Sara's interpolation (Oct 5 action item).
 
 ## T5: Translations
 FR/ES for every string added in T2–T4, reviewed in the UI in both languages.
-T2 and T3 are done (T3: 112 strings, checked in the UI in FR and ES on 9 Nov 2026); T4 is pending.
+T2, T3 and T4 are done (T3: 112 strings, checked in the UI in FR and ES on 9 Nov 2026; T4: about 100 strings,
+including its validation messages, errors and diagnostic notes, checked in the UI on 24 Nov 2026).
 On 9 Nov 2026 the messages the two modules build while the app runs were translated too:
 - validation messages, check names, the pass/fail column and the table controls;
 - per-group error messages;

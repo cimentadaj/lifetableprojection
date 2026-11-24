@@ -81,6 +81,17 @@ get_app_modules <- function(i18n) {
       status_label = i18n$t("Active"),
       ui = orphanhood_module_ui(i18n),
       server_fun = orphanhood_module_server
+    ),
+    intercensal = list(
+      id = "intercensal",
+      name = i18n$t("Adult Mortality from Intercensal Survival"),
+      description = i18n$t("Estimate adult mortality from the survival of each age group between two censuses."),
+      icon = "exchange",
+      status = "active",
+      button_label = i18n$t("Go to module"),
+      status_label = i18n$t("Active"),
+      ui = intercensal_module_ui(i18n),
+      server_fun = intercensal_module_server
     )
   )
 }

@@ -3594,6 +3594,521 @@
             "en": "Taken from your data",
             "fr": "Tirée de vos données",
             "es": "Tomada de sus datos"
+        },
+        {
+            "en": "Adult Mortality from Intercensal Survival",
+            "fr": "Mortalité adulte par survie intercensitaire",
+            "es": "Mortalidad adulta por supervivencia intercensal"
+        },
+        {
+            "en": "Estimate adult mortality from the survival of each age group between two censuses.",
+            "fr": "Estimer la mortalité adulte à partir de la survie de chaque groupe d'âges entre deux recensements.",
+            "es": "Estimar la mortalidad adulta a partir de la supervivencia de cada grupo de edad entre dos censos."
+        },
+        {
+            "en": "Estimate adult mortality by comparing the population of each age group in one census with the population ten (or n) years older in the next.",
+            "fr": "Estimer la mortalité adulte en comparant la population de chaque groupe d'âges d'un recensement avec la population âgée de dix (ou n) ans de plus au recensement suivant.",
+            "es": "Estimar la mortalidad adulta comparando la población de cada grupo de edad en un censo con la población diez (o n) años mayor en el censo siguiente."
+        },
+        {
+            "en": "Age (lower bound of five-year age groups starting at 0: 0, 5, 10, ...; the last group is open, e.g. 75 for 75+)",
+            "fr": "Age (limite inférieure des groupes d'âges quinquennaux à partir de 0 : 0, 5, 10, ... ; le dernier groupe est ouvert, p. ex. 75 pour 75+)",
+            "es": "Age (límite inferior de los grupos quinquenales de edad desde 0: 0, 5, 10, ...; el último grupo es abierto, p. ej. 75 para 75+)"
+        },
+        {
+            "en": "Pop1 and Pop2 (population of each age group in the first and second census)",
+            "fr": "Pop1 et Pop2 (population de chaque groupe d'âges au premier et au second recensement)",
+            "es": "Pop1 y Pop2 (población de cada grupo de edad en el primer y el segundo censo)"
+        },
+        {
+            "en": "Date1 and Date2 (census dates, e.g. 1960-12-11, or decimal years). If absent, set them in the analysis step.",
+            "fr": "Date1 et Date2 (dates des recensements, p. ex. 1960-12-11, ou années décimales). Si elles sont absentes, indiquez-les à l'étape d'analyse.",
+            "es": "Date1 y Date2 (fechas de los censos, p. ej. 1960-12-11, o años decimales). Si no están, indíquelas en el paso de análisis."
+        },
+        {
+            "en": "Sex (female or male). With both sexes in one file, group the data by Sex.",
+            "fr": "Sex (female ou male). Avec les deux sexes dans un même fichier, regroupez les données par Sex.",
+            "es": "Sex (female o male). Con ambos sexos en un mismo archivo, agrupe los datos por Sex."
+        },
+        {
+            "en": "Sample data: Panama females 1960-1970 (UN Manual X, Table 174) and Japan females 1960-1970 (Feeney 2002).",
+            "fr": "Données d'exemple : femmes du Panama 1960-1970 (Manuel X des Nations Unies, tableau 174) et femmes du Japon 1960-1970 (Feeney 2002).",
+            "es": "Datos de ejemplo: mujeres de Panamá 1960-1970 (Manual X de las Naciones Unidas, cuadro 174) y mujeres de Japón 1960-1970 (Feeney 2002)."
+        },
+        {
+            "en": "Intercensal Survival Methods",
+            "fr": "Méthodes de survie intercensitaire",
+            "es": "Métodos de supervivencia intercensal"
+        },
+        {
+            "en": "People aged x in the first census are aged x + n in a second census taken n years later, so the ratio of the two counts measures survival between the censuses. Each method converts these ratios into the level of a model life table at each age; the median of those levels over the ages used for the fit gives a complete life table, its life expectancy at birth and the adult mortality indicators 45q15 and 35q15.",
+            "fr": "Les personnes d'âge x au premier recensement ont x + n ans à un second recensement réalisé n ans plus tard ; le rapport des deux effectifs mesure donc la survie entre les recensements. Chaque méthode convertit ces rapports en niveau d'une table type de mortalité à chaque âge ; la médiane de ces niveaux sur les âges retenus pour l'ajustement donne une table de mortalité complète, son espérance de vie à la naissance et les indicateurs de mortalité adulte 45q15 et 35q15.",
+            "es": "Las personas de edad x en el primer censo tienen x + n años en un segundo censo realizado n años después, por lo que el cociente de ambos recuentos mide la supervivencia entre los censos. Cada método convierte estos cocientes en el nivel de una tabla modelo de mortalidad en cada edad; la mediana de esos niveles en las edades usadas para el ajuste da una tabla de vida completa, su esperanza de vida al nacer y los indicadores de mortalidad adulta 45q15 y 35q15."
+        },
+        {
+            "en": "Matches each survival ratio to the model life table level with the same ratio (UN Manual X, chapter VIII).",
+            "fr": "Associe chaque rapport de survie au niveau de la table type ayant le même rapport (Manuel X des Nations Unies, chapitre VIII).",
+            "es": "Asocia cada cociente de supervivencia con el nivel de la tabla modelo que tiene el mismo cociente (Manual X de las Naciones Unidas, capítulo VIII)."
+        },
+        {
+            "en": "Projects the second census back to the date of the first with each model life table level, and finds the level that reproduces the population above each age.",
+            "fr": "Rétroprojette le second recensement à la date du premier avec chaque niveau de table type, et retient le niveau qui reproduit la population au-delà de chaque âge.",
+            "es": "Retroproyecta el segundo censo a la fecha del primero con cada nivel de la tabla modelo y busca el nivel que reproduce la población por encima de cada edad."
+        },
+        {
+            "en": "Projects the first census forward to the date of the second, in the same way.",
+            "fr": "Projette le premier recensement à la date du second, de la même façon.",
+            "es": "Proyecta el primer censo a la fecha del segundo, del mismo modo."
+        },
+        {
+            "en": "Builds a life table from the age-specific growth rates between the censuses and matches its life expectancy at each age (UN Manual X, Table 186).",
+            "fr": "Construit une table de mortalité à partir des taux d'accroissement par âge entre les recensements et rapproche son espérance de vie à chaque âge (Manuel X des Nations Unies, tableau 186).",
+            "es": "Construye una tabla de vida a partir de las tasas de crecimiento por edad entre los censos y empareja su esperanza de vida en cada edad (Manual X de las Naciones Unidas, cuadro 186)."
+        },
+        {
+            "en": "Turns the survival ratios into a survival function and matches the life expectancy at each age; it needs a reference level for the oldest ages (Feeney 2002).",
+            "fr": "Transforme les rapports de survie en fonction de survie et rapproche l'espérance de vie à chaque âge ; elle nécessite un niveau de référence pour les âges les plus élevés (Feeney 2002).",
+            "es": "Convierte los cocientes de supervivencia en una función de supervivencia y empareja la esperanza de vida en cada edad; necesita un nivel de referencia para las edades más avanzadas (Feeney 2002)."
+        },
+        {
+            "en": "Fits a one-parameter logit relation between the data and a reference model life table, using the growth rates and the 5q0 of that table (Preston, Heuveline and Guillot 2001).",
+            "fr": "Ajuste une relation logit à un paramètre entre les données et une table type de référence, à partir des taux d'accroissement et du 5q0 de cette table (Preston, Heuveline et Guillot 2001).",
+            "es": "Ajusta una relación logit de un parámetro entre los datos y una tabla modelo de referencia, usando las tasas de crecimiento y el 5q0 de esa tabla (Preston, Heuveline y Guillot 2001)."
+        },
+        {
+            "en": "The chart shows the level (life expectancy at birth) implied by each age group; filled points are the ages used for the fit and the dashed line is the selected level, their median.",
+            "fr": "Le graphique montre le niveau (espérance de vie à la naissance) impliqué par chaque groupe d'âges ; les points pleins sont les âges retenus pour l'ajustement et la ligne pointillée est le niveau retenu, leur médiane.",
+            "es": "El gráfico muestra el nivel (esperanza de vida al nacer) implícito en cada grupo de edad; los puntos rellenos son las edades usadas para el ajuste y la línea discontinua es el nivel seleccionado, su mediana."
+        },
+        {
+            "en": "Levels that change steadily with age, or survival ratios above 1, point to age misreporting, changes in census coverage or migration. Leave the affected ages out of the fit, as UN Manual X does for Panama.",
+            "fr": "Des niveaux qui varient régulièrement avec l'âge, ou des rapports de survie supérieurs à 1, signalent des erreurs de déclaration de l'âge, des changements de couverture des recensements ou des migrations. Excluez les âges concernés de l'ajustement, comme le fait le Manuel X des Nations Unies pour le Panama.",
+            "es": "Niveles que cambian sistemáticamente con la edad, o cocientes de supervivencia mayores que 1, indican errores en la declaración de la edad, cambios en la cobertura censal o migración. Excluya del ajuste las edades afectadas, como hace el Manual X de las Naciones Unidas para Panamá."
+        },
+        {
+            "en": "The method assumes a population closed to migration and the same census coverage in both censuses. The first census is moved with the overall growth rate so that the interval is a multiple of five years.",
+            "fr": "La méthode suppose une population fermée aux migrations et une couverture identique des deux recensements. Le premier recensement est déplacé avec le taux d'accroissement global pour que l'intervalle soit un multiple de cinq ans.",
+            "es": "El método supone una población cerrada a la migración y la misma cobertura en ambos censos. El primer censo se desplaza con la tasa de crecimiento global para que el intervalo sea múltiplo de cinco años."
+        },
+        {
+            "en": "With the Spectrum HIV model life tables, the age pattern of mortality comes from the HIV prevalence, ART coverage and 5q0 you give, instead of a model life table family.",
+            "fr": "Avec les tables types VIH de Spectrum, le profil par âge de la mortalité provient de la prévalence du VIH, de la couverture du TAR et du 5q0 que vous indiquez, et non d'une famille de tables types.",
+            "es": "Con las tablas modelo de VIH de Spectrum, el patrón de mortalidad por edad proviene de la prevalencia de VIH, la cobertura de TAR y el 5q0 que usted indica, en lugar de una familia de tablas modelo."
+        },
+        {
+            "en": "Panama females 1960-1970 (UN Manual X)",
+            "fr": "Femmes du Panama 1960-1970 (Manuel X des Nations Unies)",
+            "es": "Mujeres de Panamá 1960-1970 (Manual X de las Naciones Unidas)"
+        },
+        {
+            "en": "Japan females 1960-1970 (Feeney)",
+            "fr": "Femmes du Japon 1960-1970 (Feeney)",
+            "es": "Mujeres de Japón 1960-1970 (Feeney)"
+        },
+        {
+            "en": "Month",
+            "fr": "Mois",
+            "es": "Mes"
+        },
+        {
+            "en": "Day",
+            "fr": "Jour",
+            "es": "Día"
+        },
+        {
+            "en": "Sex will be taken from your data",
+            "fr": "Le sexe sera tiré de vos données",
+            "es": "El sexo se tomará de sus datos"
+        },
+        {
+            "en": "Census dates will be taken from your data",
+            "fr": "Les dates des recensements seront tirées de vos données",
+            "es": "Las fechas de los censos se tomarán de sus datos"
+        },
+        {
+            "en": "Ages used for the fit",
+            "fr": "Âges retenus pour l'ajustement",
+            "es": "Edades usadas para el ajuste"
+        },
+        {
+            "en": "The selected level is the median of the levels implied by these age groups.",
+            "fr": "Le niveau retenu est la médiane des niveaux impliqués par ces groupes d'âges.",
+            "es": "El nivel seleccionado es la mediana de los niveles implícitos en estos grupos de edad."
+        },
+        {
+            "en": "Lowest accepted e0",
+            "fr": "e0 minimal accepté",
+            "es": "e0 mínimo aceptado"
+        },
+        {
+            "en": "Highest accepted e0",
+            "fr": "e0 maximal accepté",
+            "es": "e0 máximo aceptado"
+        },
+        {
+            "en": "Child mortality (optional)",
+            "fr": "Mortalité des enfants (facultatif)",
+            "es": "Mortalidad en la niñez (opcional)"
+        },
+        {
+            "en": "Replace the first ages of the fitted life table. Required for the Spectrum HIV life tables.",
+            "fr": "Remplacent les premiers âges de la table ajustée. Obligatoires pour les tables VIH de Spectrum.",
+            "es": "Reemplazan las primeras edades de la tabla ajustada. Obligatorios para las tablas de VIH de Spectrum."
+        },
+        {
+            "en": "Use the Spectrum HIV model life tables",
+            "fr": "Utiliser les tables types VIH de Spectrum",
+            "es": "Usar las tablas modelo de VIH de Spectrum"
+        },
+        {
+            "en": "Model life tables: Spectrum HIV model life tables",
+            "fr": "Tables types : tables types VIH de Spectrum",
+            "es": "Tablas modelo: tablas modelo de VIH de Spectrum"
+        },
+        {
+            "en": "Reference e0 (optional)",
+            "fr": "e0 de référence (facultatif)",
+            "es": "e0 de referencia (opcional)"
+        },
+        {
+            "en": "Level of the model life table the method starts from, rounded to 2.5 years. Leave blank to use the level found by the survival-ratio method.",
+            "fr": "Niveau de la table type dont part la méthode, arrondi à 2,5 ans. Laissez vide pour utiliser le niveau trouvé par la méthode des rapports de survie.",
+            "es": "Nivel de la tabla modelo del que parte el método, redondeado a 2,5 años. Déjelo en blanco para usar el nivel hallado por el método de cocientes de supervivencia."
+        },
+        {
+            "en": "HIV prevalence (proportion)",
+            "fr": "Prévalence du VIH (proportion)",
+            "es": "Prevalencia de VIH (proporción)"
+        },
+        {
+            "en": "ART coverage (proportion)",
+            "fr": "Couverture du TAR (proportion)",
+            "es": "Cobertura de TAR (proporción)"
+        },
+        {
+            "en": "Adult HIV prevalence and the share of people living with HIV on treatment, between 0 and 1 (e.g. 0.05 for 5%).",
+            "fr": "Prévalence du VIH chez les adultes et part des personnes vivant avec le VIH sous traitement, entre 0 et 1 (p. ex. 0.05 pour 5 %).",
+            "es": "Prevalencia de VIH en adultos y proporción de personas con VIH en tratamiento, entre 0 y 1 (p. ej. 0.05 para 5%)."
+        },
+        {
+            "en": "How the populations of the two censuses are turned into a mortality level:<br><br>'Survival ratios' - matches each survival ratio to a model life table<br>'Back / Forward projection' - projects one census to the date of the other<br>'Variable-r' - uses the age-specific growth rates<br>'Feeney' and 'Preston logit' - start from a reference model life table level",
+            "fr": "Comment les populations des deux recensements sont converties en niveau de mortalité :<br><br>'Rapports de survie' - associe chaque rapport de survie à une table type<br>'Rétroprojection / Projection' - projette un recensement à la date de l'autre<br>'r variable' - utilise les taux d'accroissement par âge<br>'Feeney' et 'Logit de Preston' - partent d'un niveau de table type de référence",
+            "es": "Cómo se convierten las poblaciones de los dos censos en un nivel de mortalidad:<br><br>'Cocientes de supervivencia' - asocia cada cociente de supervivencia con una tabla modelo<br>'Retroproyección / Proyección' - proyecta un censo a la fecha del otro<br>'r variable' - usa las tasas de crecimiento por edad<br>'Feeney' y 'Logit de Preston' - parten de un nivel de tabla modelo de referencia"
+        },
+        {
+            "en": "Survival ratio",
+            "fr": "Rapport de survie",
+            "es": "Cociente de supervivencia"
+        },
+        {
+            "en": "Implied e0",
+            "fr": "e0 impliqué",
+            "es": "e0 implícito"
+        },
+        {
+            "en": "Used for the fit",
+            "fr": "Retenu pour l'ajustement",
+            "es": "Usada para el ajuste"
+        },
+        {
+            "en": "Not used for the fit",
+            "fr": "Non retenu pour l'ajustement",
+            "es": "No usada para el ajuste"
+        },
+        {
+            "en": "Selected level (median)",
+            "fr": "Niveau retenu (médiane)",
+            "es": "Nivel seleccionado (mediana)"
+        },
+        {
+            "en": "Levels implied by each age group",
+            "fr": "Niveaux impliqués par chaque groupe d'âges",
+            "es": "Niveles implícitos en cada grupo de edad"
+        },
+        {
+            "en": "HIV prevalence and ART coverage must be proportions between 0 and 1",
+            "fr": "La prévalence du VIH et la couverture du TAR doivent être des proportions entre 0 et 1",
+            "es": "La prevalencia de VIH y la cobertura de TAR deben ser proporciones entre 0 y 1"
+        },
+        {
+            "en": "Life expectancy at birth",
+            "fr": "Espérance de vie à la naissance",
+            "es": "Esperanza de vida al nacer"
+        },
+        {
+            "en": "Mean level",
+            "fr": "Niveau moyen",
+            "es": "Nivel medio"
+        },
+        {
+            "en": "Interquartile range",
+            "fr": "Écart interquartile",
+            "es": "Rango intercuartílico"
+        },
+        {
+            "en": "Coefficient of variation",
+            "fr": "Coefficient de variation",
+            "es": "Coeficiente de variación"
+        },
+        {
+            "en": "Ages used",
+            "fr": "Âges retenus",
+            "es": "Edades usadas"
+        },
+        {
+            "en": "Reference e0",
+            "fr": "e0 de référence",
+            "es": "e0 de referencia"
+        },
+        {
+            "en": "No",
+            "fr": "Non",
+            "es": "No"
+        },
+        {
+            "en": "Age group",
+            "fr": "Groupe d'âges",
+            "es": "Grupo de edad"
+        },
+        {
+            "en": "First census",
+            "fr": "Premier recensement",
+            "es": "Primer censo"
+        },
+        {
+            "en": "Second census",
+            "fr": "Second recensement",
+            "es": "Segundo censo"
+        },
+        {
+            "en": "Survival ratios",
+            "fr": "Rapports de survie",
+            "es": "Cocientes de supervivencia"
+        },
+        {
+            "en": "Back projection",
+            "fr": "Rétroprojection",
+            "es": "Retroproyección"
+        },
+        {
+            "en": "Forward projection",
+            "fr": "Projection",
+            "es": "Proyección"
+        },
+        {
+            "en": "Variable-r (Preston and Bennett)",
+            "fr": "r variable (Preston et Bennett)",
+            "es": "r variable (Preston y Bennett)"
+        },
+        {
+            "en": "Feeney",
+            "fr": "Feeney",
+            "es": "Feeney"
+        },
+        {
+            "en": "Preston logit",
+            "fr": "Logit de Preston",
+            "es": "Logit de Preston"
+        },
+        {
+            "en": "Spectrum HIV model life tables",
+            "fr": "Tables types VIH de Spectrum",
+            "es": "Tablas modelo de VIH de Spectrum"
+        },
+        {
+            "en": "Date of the first census",
+            "fr": "Date du premier recensement",
+            "es": "Fecha del primer censo"
+        },
+        {
+            "en": "Date of the second census",
+            "fr": "Date du second recensement",
+            "es": "Fecha del segundo censo"
+        },
+        {
+            "en": "Age must hold five-year groups starting at 0 (0, 5, 10, ...), each age once, with the last (open) group starting at 50 or above. With both sexes in one file, group the data by Sex.",
+            "fr": "Age doit contenir des groupes quinquennaux à partir de 0 (0, 5, 10, ...), chaque âge une seule fois, le dernier groupe (ouvert) commençant à 50 ans ou plus. Avec les deux sexes dans un même fichier, regroupez les données par Sex.",
+            "es": "Age debe contener grupos quinquenales desde 0 (0, 5, 10, ...), cada edad una sola vez, con el último grupo (abierto) empezando en 50 o más. Con ambos sexos en un mismo archivo, agrupe los datos por Sex."
+        },
+        {
+            "en": "Pop1 and Pop2 must be greater than zero in every age group",
+            "fr": "Pop1 et Pop2 doivent être supérieurs à zéro dans chaque groupe d'âges",
+            "es": "Pop1 y Pop2 deben ser mayores que cero en cada grupo de edad"
+        },
+        {
+            "en": "Provide both Date1 and Date2, or neither and set the census dates in the analysis step",
+            "fr": "Fournissez Date1 et Date2, ou aucune des deux et indiquez les dates des recensements à l'étape d'analyse",
+            "es": "Incluya Date1 y Date2, o ninguna de las dos e indique las fechas de los censos en el paso de análisis"
+        },
+        {
+            "en": "Date1 and Date2 must each hold one date per group: a decimal year (for example 1960.94) or a date such as 1960-12-11",
+            "fr": "Date1 et Date2 doivent contenir chacune une seule date par groupe : une année décimale (par exemple 1960.94) ou une date comme 1960-12-11",
+            "es": "Date1 y Date2 deben contener cada una una sola fecha por grupo: un año decimal (por ejemplo 1960.94) o una fecha como 1960-12-11"
+        },
+        {
+            "en": "The second census must be between 2.5 and 30 years after the first",
+            "fr": "Le second recensement doit avoir lieu entre 2,5 et 30 ans après le premier",
+            "es": "El segundo censo debe realizarse entre 2,5 y 30 años después del primero"
+        },
+        {
+            "en": "Sex must be female or male (or f / m), with a single value in each group. With both sexes in one file, group the data by Sex.",
+            "fr": "Sex doit valoir female ou male (ou f / m), avec une seule valeur par groupe. Avec les deux sexes dans un même fichier, regroupez les données par Sex.",
+            "es": "Sex debe ser female o male (o f / m), con un único valor en cada grupo. Con ambos sexos en un mismo archivo, agrupe los datos por Sex."
+        },
+        {
+            "en": "check populations",
+            "fr": "populations",
+            "es": "poblaciones"
+        },
+        {
+            "en": "check Date1 and Date2",
+            "fr": "Date1 et Date2",
+            "es": "Date1 y Date2"
+        },
+        {
+            "en": "check census dates",
+            "fr": "dates des recensements",
+            "es": "fechas de los censos"
+        },
+        {
+            "en": "check intercensal interval",
+            "fr": "intervalle intercensitaire",
+            "es": "intervalo intercensal"
+        },
+        {
+            "en": "check Sex",
+            "fr": "Sex",
+            "es": "Sex"
+        },
+        {
+            "en": "Census dates",
+            "fr": "Dates des recensements",
+            "es": "Fechas de los censos"
+        },
+        {
+            "en": "Accepted e0 range",
+            "fr": "Plage d'e0 acceptée",
+            "es": "Rango de e0 aceptado"
+        },
+        {
+            "en": "1q0 and 5q0",
+            "fr": "1q0 et 5q0",
+            "es": "1q0 y 5q0"
+        },
+        {
+            "en": "HIV prevalence and ART coverage",
+            "fr": "Prévalence du VIH et couverture du TAR",
+            "es": "Prevalencia de VIH y cobertura de TAR"
+        },
+        {
+            "en": "From the survival-ratio method",
+            "fr": "Issu de la méthode des rapports de survie",
+            "es": "Del método de cocientes de supervivencia"
+        },
+        {
+            "en": "The estimated level falls outside the accepted range of life expectancy at birth. Check the data or widen the range.",
+            "fr": "Le niveau estimé sort de la plage acceptée d'espérance de vie à la naissance. Vérifiez les données ou élargissez la plage.",
+            "es": "El nivel estimado queda fuera del rango aceptado de esperanza de vida al nacer. Revise los datos o amplíe el rango."
+        },
+        {
+            "en": "The estimated level is outside the range of the Spectrum HIV model life tables built from the HIV prevalence, ART coverage and 5q0 given. Check those values.",
+            "fr": "Le niveau estimé sort de la plage des tables types VIH de Spectrum construites à partir de la prévalence du VIH, de la couverture du TAR et du 5q0 indiqués. Vérifiez ces valeurs.",
+            "es": "El nivel estimado queda fuera del rango de las tablas modelo de VIH de Spectrum construidas con la prevalencia de VIH, la cobertura de TAR y el 5q0 indicados. Revise esos valores."
+        },
+        {
+            "en": "The estimated level is outside the range of this model life table family. Try another family or method.",
+            "fr": "Le niveau estimé sort de la plage de cette famille de tables types. Essayez une autre famille ou une autre méthode.",
+            "es": "El nivel estimado queda fuera del rango de esta familia de tablas modelo. Pruebe otra familia u otro método."
+        },
+        {
+            "en": "All survival ratios are above 1 at the ages used for the fit: the second census counts more people than survived from the first. Check the data (coverage, migration) or the ages used.",
+            "fr": "Tous les rapports de survie dépassent 1 aux âges retenus pour l'ajustement : le second recensement compte plus de personnes que celles ayant survécu depuis le premier. Vérifiez les données (couverture, migrations) ou les âges retenus.",
+            "es": "Todos los cocientes de supervivencia son mayores que 1 en las edades usadas para el ajuste: el segundo censo cuenta más personas de las que sobrevivieron desde el primero. Revise los datos (cobertura, migración) o las edades usadas."
+        },
+        {
+            "en": "None of the ages used for the fit gave a usable level. Choose other ages or another method.",
+            "fr": "Aucun des âges retenus pour l'ajustement n'a donné de niveau utilisable. Choisissez d'autres âges ou une autre méthode.",
+            "es": "Ninguna de las edades usadas para el ajuste dio un nivel utilizable. Elija otras edades u otro método."
+        },
+        {
+            "en": "The 1q0 and 5q0 given do not fit the estimated life table (they give probabilities of dying outside 0-1). Check them or leave them blank.",
+            "fr": "Les 1q0 et 5q0 indiqués ne sont pas compatibles avec la table estimée (ils donnent des probabilités de décès hors de 0-1). Vérifiez-les ou laissez-les vides.",
+            "es": "Los 1q0 y 5q0 indicados no encajan en la tabla estimada (dan probabilidades de morir fuera de 0-1). Revíselos o déjelos en blanco."
+        },
+        {
+            "en": "The censuses are not 5 or 10 years apart, so Feeney's method used its variable-r variant.",
+            "fr": "Les recensements ne sont pas espacés de 5 ou 10 ans : la méthode de Feeney a donc utilisé sa variante à r variable.",
+            "es": "Los censos no están separados por 5 o 10 años, por lo que el método de Feeney usó su variante de r variable."
+        },
+        {
+            "en": "The Preston logit estimate of life expectancy at age 5 was outside the model life tables and was replaced by a limit: review the ages used for the fit.",
+            "fr": "L'estimation logit de Preston de l'espérance de vie à 5 ans sortait des tables types et a été remplacée par une limite : revoyez les âges retenus pour l'ajustement.",
+            "es": "La estimación logit de Preston de la esperanza de vida a los 5 años quedó fuera de las tablas modelo y se reemplazó por un límite: revise las edades usadas para el ajuste."
+        },
+        {
+            "en": "Choose at least one age group for the fit",
+            "fr": "Choisissez au moins un groupe d'âges pour l'ajustement",
+            "es": "Elija al menos un grupo de edad para el ajuste"
+        },
+        {
+            "en": "The census dates are required",
+            "fr": "Les dates des recensements sont obligatoires",
+            "es": "Las fechas de los censos son obligatorias"
+        },
+        {
+            "en": "The census dates are not valid dates",
+            "fr": "Les dates des recensements ne sont pas des dates valides",
+            "es": "Las fechas de los censos no son fechas válidas"
+        },
+        {
+            "en": "Give both 1q0 and 5q0, or neither",
+            "fr": "Indiquez 1q0 et 5q0, ou aucun des deux",
+            "es": "Indique 1q0 y 5q0, o ninguno de los dos"
+        },
+        {
+            "en": "1q0 and 5q0 must be probabilities with 0 < 1q0 < 5q0 < 1",
+            "fr": "1q0 et 5q0 doivent être des probabilités avec 0 < 1q0 < 5q0 < 1",
+            "es": "1q0 y 5q0 deben ser probabilidades con 0 < 1q0 < 5q0 < 1"
+        },
+        {
+            "en": "The Spectrum HIV life tables need 1q0 and 5q0",
+            "fr": "Les tables VIH de Spectrum nécessitent 1q0 et 5q0",
+            "es": "Las tablas de VIH de Spectrum necesitan 1q0 y 5q0"
+        },
+        {
+            "en": "The accepted range of life expectancy must have a lower limit below the upper limit",
+            "fr": "La plage acceptée d'espérance de vie doit avoir une limite inférieure plus petite que la limite supérieure",
+            "es": "El rango aceptado de esperanza de vida debe tener un límite inferior menor que el superior"
+        },
+        {
+            "en": "Missing required columns: %s. Provide Age, Pop1 and Pop2 (population of each census by five-year age group)",
+            "fr": "Colonnes requises manquantes : %s. Fournissez Age, Pop1 et Pop2 (population de chaque recensement par groupe d'âges quinquennal)",
+            "es": "Faltan columnas obligatorias: %s. Incluya Age, Pop1 y Pop2 (población de cada censo por grupo quinquenal de edad)"
+        },
+        {
+            "en": "Survival ratios above 1 at ages %s: the second census counts more people than survived from the first (coverage errors or migration). The survival-ratio methods do not use these ages.",
+            "fr": "Rapports de survie supérieurs à 1 aux âges %s : le second recensement compte plus de personnes que celles ayant survécu depuis le premier (erreurs de couverture ou migrations). Les méthodes fondées sur les rapports de survie n'utilisent pas ces âges.",
+            "es": "Cocientes de supervivencia mayores que 1 en las edades %s: el segundo censo cuenta más personas de las que sobrevivieron desde el primero (errores de cobertura o migración). Los métodos de cocientes de supervivencia no usan estas edades."
+        },
+        {
+            "en": "The censuses are %s years apart. The first census was moved to %s, using the overall growth rate, so that the interval is a multiple of five years.",
+            "fr": "Les recensements sont espacés de %s ans. Le premier recensement a été déplacé à %s, avec le taux d'accroissement global, pour que l'intervalle soit un multiple de cinq ans.",
+            "es": "Los censos están separados por %s años. El primer censo se desplazó a %s, con la tasa de crecimiento global, para que el intervalo sea múltiplo de cinco años."
+        },
+        {
+            "en": "The implied levels vary a lot across ages (coefficient of variation %s). Age misreporting or changes in coverage between the censuses are likely: review the chart and the ages used for the fit.",
+            "fr": "Les niveaux impliqués varient beaucoup selon l'âge (coefficient de variation %s). Des erreurs de déclaration de l'âge ou des changements de couverture entre les recensements sont probables : examinez le graphique et les âges retenus pour l'ajustement.",
+            "es": "Los niveles implícitos varían mucho según la edad (coeficiente de variación %s). Es probable que haya errores en la declaración de la edad o cambios de cobertura entre los censos: revise el gráfico y las edades usadas para el ajuste."
+        },
+        {
+            "en": "%s implied level(s) were outside the accepted range of life expectancy at birth and were set to its limits.",
+            "fr": "%s niveau(x) impliqué(s) sortai(en)t de la plage acceptée d'espérance de vie à la naissance et ont été ramenés à ses limites.",
+            "es": "%s nivel(es) implícito(s) quedaron fuera del rango aceptado de esperanza de vida al nacer y se ajustaron a sus límites."
+        },
+        {
+            "en": "Sex column of your data",
+            "fr": "Colonne Sex de vos données",
+            "es": "Columna Sex de sus datos"
         }
     ]
 }
